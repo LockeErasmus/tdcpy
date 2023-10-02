@@ -2,8 +2,9 @@
 import numpy.typing as npt
 from scipy import linalg
 
+from .tds_base import TimeDelaySystem
 
-class DDAE:
+class DDAE(TimeDelaySystem):
     """ Delay Differential Algebraic Equation """
 
     
