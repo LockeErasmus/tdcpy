@@ -1,0 +1,118 @@
+"""
+DDAE implementation
+"""
+
+import logging
+
+import numpy as np
+import numpy.typing as npt
+from scipy import linalg
+
+
+logger = logging.getLogger(__name__)
+
+
+class DDAE:
+
+    def __init__(self, A: list[npt.NDArray], hA: list[float], E=None, **kwargs) -> None:
+        
+        assert len(A) >= 1, "At least one matrix of dynamics is required"
+        assert len(A) == len(hA)
+        assert all(delay>=0 for delay in hA), "Only positive delays possible"
+        
+        
+        assert np.atleast_2d(*A)
+        shape = A[0]
+        assert all(a.shape == shape for a in A), "A_i Matrices have to have same shape"
+        assert all(a.shape[0] == a.shape[1] for a in A), "A_i matrices have to be square"
+
+        # TODO if necessary, add 0 delay term
+        
+        
+        # ---
+        self._A = A
+        self._hA = hA
+
+        self._E = E
+
+        self._n = shape[0]
+
+        # --- KWARGS
+        self.dtype = kwargs.get("dtype", np.float64)
+        self.tol_singular = kwargs.get("tol_singular", 1e-12)
+
+    @property
+    def n(self) -> int:
+        return self._n
+
+    @property
+    def E(self) -> npt.NDArray:
+        if self._E is None:
+            return np.eye(self.n, dtype=self.dtype)
+        else:
+            return self._E
+    
+    @property
+    def hA(self) -> list[float]:
+        """ delays """
+        return self._hA
+    
+    @property
+    def uE(self) -> npt.NDArray:
+        """ orthonormal basis for left null space of E """
+        uE = linalg.null_space(self.E.T, rcond=self.tol_singular)
+        return uE
+    
+    @property
+    def vE(self) -> npt.NDArray:
+        """ orthonormal basis for right null space of E """
+        vE = linalg.null_space(self.E, rcond=self.tol_singular)
+        return vE
+        
+    @property
+    def is_logical(self) -> bool:
+        """ property from original MATLAB package, unused as of now """
+        raise NotImplementedError()
+    
+    @property
+    def is_compressed(self) -> bool:
+        """ Cheks if DDAE is in compressed form (no duplicates in hA) """
+        if len(self.hA) == len(np.unique(self.hA)):
+            return True
+        else:
+            return False
+    
+    @property
+    def is_sorted(self) -> bool:
+        """ Checks if DDAe is in sorted form (ascending hA) """
+        return all(self.hA[i] <= self.hA[i+1] for i in range(len(self.hA) - 1))
+    
+    @property
+    def is_lti(self) -> bool:
+        """ Checks if DDAE is Linear Time-invariant """
+        return True # as of now, always assume DDAE is LTI
+    
+    @property
+    def is_real(self) -> bool:
+        """ Checks if DDAE uses complex storage for any of defining matrices """
+        raise NotImplementedError()
+    
+    @property
+    def dde(self):
+        """ Converts to Delay-difference equation """
+        raise NotImplementedError
+    
+    
+
+    
+
+
+    def sort(self, inplace=False):
+        """ Sorts delays (mainly hA) into ascending order """
+        ...
+    
+    def compress(self, inplace=False):
+        """ Removes delay duplicates (matrices are added) """
+        ...
+    
+

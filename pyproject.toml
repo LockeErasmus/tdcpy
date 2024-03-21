@@ -1,0 +1,28 @@
+[project]
+name = "tdspy"
+version = "0.0.1"
+requires-python = ">= 3.8"
+dependencies = [
+    "numpy",
+]
+description = "Time Delay Systems"
+authors = [
+	{name = "Adam Peichl", email = "adpeichl@gmail.com"}
+]
+maintainers = [
+    { name ="Adam Peichl", email = "adpeichl@gmail.com" }
+]
+
+# TODO add classifiers
+
+readme = {file = "README.txt", content-type = "text/markdown"}
+license = {file = "LICENSE"}
+keywords = ["timedelay", "control", "stability", "DDE", "DDAE"]
+
+[project.urls]
+Homepage = "https://github.com/LockeErasmus/tdspy"
+Repository = "https://github.com/LockeErasmus/tdspy"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
