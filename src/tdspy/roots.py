@@ -8,11 +8,12 @@ import numpy.typing as npt
 from .ddae import DDAE
 
 
-def compute_N_rhp(E, B, C, tau: npt.ND, basic_delay, **kwargs) -> int:
+def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float, **kwargs) -> int:
     """
 
     kwargs:
         n_minimal (int): minimal degree of discretization, default 8
+        commensurate (bool): if commensurate delays
     
     Returns:
         n (int): number of discretization points necessary
