@@ -1,40 +1,14 @@
 """
 Implementation of tds_roots
 """
+import logging
 
 import numpy as np
 import numpy.typing as npt
 
 from .ddae import DDAE
 
-
-def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float, **kwargs) -> int:
-    """
-
-    kwargs:
-        n_minimal (int): minimal degree of discretization, default 8
-        commensurate (bool): if commensurate delays
-    
-    Returns:
-        n (int): number of discretization points necessary
-
-    See:
-     [1] Wu, Z., & Michiels, W. Reliably computing all characteristic roots of
-         delay differential equations in a given right half plane using a 
-         spectral method. Journal of Computational and Applied Mathematics,
-         236(9), 2012, pp. 2499-2514.
-    """
-    n_minimal = kwargs.get("n_minimal", 8)
-    is_commmensurate = kwargs.get("commensurate", False)
-
-    if is_commmensurate:
-        # check that delays are indeed commensurate
-
-
-
-
-
-
+logger = logging.getLogger(__name__)
 
 def roots(tds: DDAE, r=0.0, **kwargs):
     """
