@@ -53,10 +53,20 @@ class DDAE:
             return self._E
     
     @property
+    def A(self) -> list[npt.NDArray]:
+        """ list of dynamics matrices """
+        return self._A
+    
+    @property
     def hA(self) -> list[float]:
         """ delays """
         return self._hA
     
+    @property
+    def mA(self) -> int:
+        """ number of delays """
+        return len(self.hA)
+
     @property
     def uE(self) -> npt.NDArray:
         """ orthonormal basis for left null space of E """
@@ -72,7 +82,7 @@ class DDAE:
     @property
     def is_logical(self) -> bool:
         """ property from original MATLAB package, unused as of now """
-        raise NotImplementedError()
+        raise False
     
     @property
     def is_compressed(self) -> bool:
@@ -97,15 +107,35 @@ class DDAE:
         """ Checks if DDAE uses complex storage for any of defining matrices """
         raise NotImplementedError()
     
-    @property
-    def dde(self):
-        """ Converts to Delay-difference equation """
-        raise NotImplementedError
-    
-    
+    def to_dde(self, **kwargs) -> 'DDAE':
+        """ Converts to Delay-difference Equation 
+        
+        kwargs:
+            tol (float): norm tolerance for considering matrix vanish, default 1e-14
+        """
+        if self.is_logical:
+            raise ValueError(f"Can't form DDE from logical")
+        
+        tol = kwargs.get("tol", 1e-14)
+                
+        D = []
+        hD = []
 
-    
+        uE = self.uE
+        vE = self.vE
 
+        norm_uE = linalg.norm(uE, ord=1, axis=None)
+        norm_vE = linalg.norm(vE, ord=1, axis=None)
+        
+        for Ai, hAi in zip(self.A, self.hA):
+            Di = np.transpose(uE) @ Ai @ vE
+            norm_mat = linalg.norm(Di, ord=1, axis=None)
+            if norm_mat / max(norm_uE, norm_vE) > tol:
+                D.append(Di)
+                hD.append(hAi)
+        
+        nE = uE.shape[1]
+        return DDAE(E=np.zeros(shape=(nE,nE), dtype=self.E.dtype))
 
     def sort(self, inplace=False):
         """ Sorts delays (mainly hA) into ascending order """
