@@ -1,4 +1,14 @@
 """
+Discretization heuristic
+------------------------
+
+References:
+
+ [1] Wu, Z., & Michiels, W. Reliably computing all characteristic roots of
+     delay differential equations in a given right half plane using a 
+     spectral method. Journal of Computational and Applied Mathematics,
+     236(9), 2012, pp. 2499-2514.
+
 """
 
 import logging
@@ -31,10 +41,10 @@ THETA: npt.NDArray = np.linspace(0, np.pi/4, 33, dtype=np.float64)
 cubic_spline_a = interpolate.CubicSpline(THETA, A_THETA)
 cubic_spline_b = interpolate.CubicSpline(THETA, B_THETA)
 
-def commensurate_gk(B, C, n_k, grid_points=20) -> npt.NDArray:
+def commensurate_gk(E, B, C, n_k, grid_points=20) -> npt.NDArray:
     """ TODO """
     stepsize = np.pi / grid_points
-    factor = 1.05*np.sin(stepsize)
+    #factor = 1.05*np.sin(stepsize)
     gk = []
     jhh = np.pi / (grid_points*n_k[-1])
     for k in range(grid_points*n_k[-1]):
@@ -43,10 +53,82 @@ def commensurate_gk(B, C, n_k, grid_points=20) -> npt.NDArray:
         r = linalg.eig(W, E, left=False, right=False)
         gk.append(np.conjugate(r)) # complex conjugate
     return np.concatenate(gk)
+
+def commensurate_gk2(E, B, C, tau, n_k, si, grid_points=20) -> npt.NDArray:
+    """ TODO """
+    stepsize = np.pi / grid_points
+    factor = 1.05*np.sin(stepsize)
+    gk = []
+    jhh = np.pi / (grid_points*n_k[-1])
+    for k in range(grid_points*n_k[-1]):
+        coef = np.exp(1j*k*jhh*n_k[1:]) * np.exp(-factor * si * tau[1:])
+        W = B + np.sum(C*coef, axis=2)
+        r = linalg.eig(W, E, left=False, right=False)
+        gk.append(np.conjugate(r)) # complex conjugate
+    return np.concatenate(gk)
+
+def disproportionate_gk(E, B, C, tau, grid_points=20) -> npt.NDArray:
+    """ TODO - in original implementation, only 3 non zero delays allowed """
+    n_delays = len(tau)
+    stepsize = np.pi / grid_points
+
+    gk = []
+    if n_delays == 2:
+        for k in range(grid_points + 1):
+            W = B + C[:,:,0] * np.exp(1j*k*stepsize)
+            r = linalg.eig(W, E, left=False, right=False)
+            gk.append(np.conjugate(r))
+    elif n_delays == 3:
+        for k in range(grid_points + 1):
+            for j in range(-grid_points+1, grid_points+1, 1):
+                W = B + C[:,:,0] * np.exp(1j*k*stepsize) + C[:,:,1] * np.exp(1j*j*stepsize)
+                r = linalg.eig(W, E, left=False, right=False)
+                gk.append(np.conjugate(r))
+    elif n_delays == 4:
+        for k in range(grid_points + 1):
+            for j in range(-grid_points+1, grid_points+1, 1):
+                for i in range(-grid_points+1, grid_points+1, 1):
+                    W = B + C[:,:,0] * np.exp(1j*k*stepsize) + C[:,:,1] * np.exp(1j*j*stepsize) + C[:,:,2] * np.exp(1j*i*stepsize)
+                    r = linalg.eig(W, E, left=False, right=False)
+                    gk.append(np.conjugate(r))
+    else:
+        raise NotImplementedError(f"Not implemented for more than 3 non-zero delays.")
+    return np.concatenate(gk)
+
+def disproportionate_gk2(E, B, C, tau, si, grid_points=20) -> npt.NDArray:
+    """ TODO - in original implementation, only 3 non zero delays allowed """
+    n_delays = len(tau)
+    stepsize = np.pi / grid_points
+    factor = 1.05*np.sin(stepsize)
+    gk = []
+    if n_delays == 2:
+        for k in range(grid_points + 1):
+            W = B + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
+            r = linalg.eig(W, E, left=False, right=False)
+            gk.append(np.conjugate(r))
+    elif n_delays == 3:
+        for k in range(grid_points + 1):
+            for j in range(-grid_points+1, grid_points+1, 1):
+                W = (B
+                     + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
+                     + C[:,:,1] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[2]))
+                r = linalg.eig(W, E, left=False, right=False)
+                gk.append(np.conjugate(r))
+    elif n_delays == 4:
+        for k in range(grid_points + 1):
+            for j in range(-grid_points+1, grid_points+1, 1):
+                for i in range(-grid_points+1, grid_points+1, 1):
+                    W = (B
+                     + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
+                     + C[:,:,1] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[2])
+                     + C[:,:,2] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[3]))
+                    r = linalg.eig(W, E, left=False, right=False)
+                    gk.append(np.conjugate(r))
+    else:
+        raise NotImplementedError(f"Not implemented for more than 3 non-zero delays.")
+    return np.concatenate(gk)
     
-
-
-def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) -> int:
+def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) -> int:
     """
 
     Args:
@@ -54,6 +136,8 @@ def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
 
     kwargs:
         n_minimal (int): minimal degree of discretization, default 8
+        n_grid (int): number of grids point in interval [0, pi] for discretizing
+            \Psi, default 20
     
     Returns:
         n (int): number of discretization points necessary
@@ -68,7 +152,8 @@ def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     # TODO checks
 
     N_minimal = kwargs.get("n_minimal", 8)
-    mA = len(tau)
+    n_grid = kwargs.get("n_grid", 20) # TODO assert ge 0
+    mA = len(tau) # number of delays
 
     is_commmensurate = False
     if basic_delay is not None:
@@ -86,30 +171,27 @@ def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     else:
         pass # TODO maybe some log message
 
-
-    # parameters needed for the discretisation of the set Psi
-    p=20; # number of grids point p in interval [0, pi] for discretizing \Psi; Note p is increased from 10 to 20 to achieve better robustness for NDDEs. 
-    #h=np.pi / p # step size
-    factor = 1.05*np.sin(np.pi/p)
+    #h=np.pi / n_grid # step size
+    factor = 1.05*np.sin(np.pi/n_grid)
 
     if is_commmensurate:
-        gk = commensurate_gk(B, C, n_k, grid_points=20)
+        gk = commensurate_gk(E, B, C, n_k, grid_points=n_grid)
     else:
-        # TODO cases for 2, 3, 4 delays
-        pass
+        # cases for 2, 3, 4 delays
+        gk = disproportionate_gk(E, B, C, tau, grid_points=n_grid)
 
     #gk = np.concatenate(gk)
     gk = gk[np.isfinite(gk)] # get rid of inf and NaN
     si = np.max(np.real(gk))
 
     if si <= 0:
-        # TODO warning ?
-        N = N_minimal
+        # TODO warning, as per original Pieter comment:
+        #    "What does this mean? Should we give a warning? When can this happen?"
+        return N_minimal
     else:
-        # matlab code starts at line 140
+        # matlab code - line 140 -> TODO to function (repeating code)
         points = gk[(np.real(gk) >= 0) & (np.real(gk) <= factor * si)]
-
-        if False: #points are empty
+        if np.size(points) == 0: # points are empty
             N1 = 0
         else:
             theta_points = np.abs(np.angle(points))
@@ -118,9 +200,33 @@ def compute_N_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
             r_points = np.abs(points)
             N_gk = (r_points - pp_b) / pp_a
             N1 = np.max(N_gk)
-            print(N1)
 
-        # continue on line 157
+        # matlab code - line 157 to 200
+        if is_commmensurate:
+            # commensurate delays
+            gk = commensurate_gk2(E, B, C, tau, n_k, si, grid_points=n_grid)
+        else:
+            # cases for 2, 3, 4 delays
+            gk = disproportionate_gk2(E, B, C, tau, si, grid_points=n_grid)
+            print(gk)
+        
+        # matlab code - line 202 -> TODO to function (repeating code)
+        gk = gk[np.isfinite(gk)] # get rid of inf and NaN
+        print(factor * si)
+        points = gk[np.real(gk) >= factor * si]
+        if np.size(points) == 0: # points are empty
+            N2 = 0
+        else:
+            theta_points = np.abs(np.angle(points))
+            pp_a = cubic_spline_a(theta_points)
+            pp_b = cubic_spline_b(theta_points)
+            r_points = np.abs(points)
+            N_gk = (r_points - pp_b) / pp_a
+            N2 = np.max(N_gk)
+        
+        print(f"{N1=} {N2=} {N_minimal=}")
+        return max(np.ceil(N1), np.ceil(N2), N_minimal)
+
 
 
 
@@ -142,6 +248,7 @@ if __name__ == "__main__":
  [[0.44686477247542555, 0.17775612836209154],
   [0.008192538279984674, 0.5716834321644337],
   [0.6357900350689626, 0.03723974619198067]]], dtype=np.float64)
-    tau = np.array([0, 1.5, 3.0])
+    tau = np.array([0, 0.05, 0.078])
 
-    compute_N_rhp(E, B, C, tau, basic_delay)
+    n = compute_n_rhp(E, B, C, tau)
+    print(f"Discretization = {n}")

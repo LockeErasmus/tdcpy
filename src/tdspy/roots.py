@@ -7,6 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .ddae import DDAE
+from .stability.discretization_heuristic import compute_n_rhp
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,8 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 
     kwargs:
         max_size_evp (int): TODO, default 600
+        discretization (int): discretization if None heuristic is envoked,
+            default None, keep default if you don't know, has to be > 1
     """
 	# TODO sort and compress
 
@@ -50,22 +53,33 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 
     ###########################################################
     # Heuristic for N (degree of the spectral discretisation) #
-    ###########################################################
-    # TODO -> move to separate function
+    ###########################################################    
+    # obtain discretization
+    discretization = kwargs.get("discretization", None)
+    if discretization is None: # envoke heuristic
+        # rescale r
+        rs = r * tau_max
+        # introduce shift of the origin, shifted matrices B, C
+        B = K[0] + (-rs)*E
+        C = np.zeros(shape=(n,n, mA-1)) # TODO dtype of matrix?
+        for i in range(0, mA-1):
+            C[:,:, i] = K[i+1] * np.exp(-rs*tau_s[i+1])
+
+
+
+        discretization = compute_n_rhp() # TODO
+    else: # perform check on user-provided discretization
+        assert isinstance(discretization, int), "discretization has to be int"
+        assert discretization > 1, "discretization has to be > 1"
+
+    
+    
+    
     max_size_evp = kwargs.get("max_size_evp", 600)
     if n <= max_size_evp:
         raise NotImplementedError("The size of the delay differential equation exceeds max_size_evp")
     
     N_max = np.floor(max_size_evp / n) - 1 # condition: (N+1)*n <= max_size_evp
-
-    # case 2.1 - RHP (default case)
-    rs = r * tau_max # rescale r
-    # introduce a shift of the origin, shifted matrices are stored in B and C
-
-
-    C = np.zeros(shape=(n,n, mA-1)) # TODO dtype
-    for i in range(0, mA-1):
-        C[:,:, i] = K[i+1] * np.exp(-rs*tau_s[i+1])
 
     # TODO continue here with logic from row 282
     
