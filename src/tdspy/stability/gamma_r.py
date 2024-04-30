@@ -13,9 +13,17 @@ from scipy import linalg
 logger = logging.getLogger(__name__)
 
 def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs):
-    """ TODO
+    """ Computes gamma(r) of the normalized delay difference equation
+    
+    Equation takes form
+        0 = x(t) + DD[0] * x(t-hDD[0]) + ... + DD[m-1]*x(t-hDD[m-1]), (1)
+    where m == len(DD) == len(hDD).
 
-    Args:
+    The gamma(r) of (1) is given by:
+        max_{theta\in[0,2*pi)^{m}} rho(sum_{k} DD{k}*exp(-r*hDD(k))*exp(1j*theta(k)), (2)
+    where function rho(.) returns the spectral radius of its matrix argument.
+
+    Args: TODO
         DD (list of `ndarray`)
         hDD (ndarray)
         r (float)
@@ -32,6 +40,8 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
     n_theta = kwargs.get("n_theta", 10)
     assert isinstance(n_theta, int), "n_theta has to be of type int"
     assert n_theta > 0, "n_theta has to be > 0"
+
+    correction: bool = kwargs.get("correction", True) # whether to apply correction
 
     if n_theta % 2 == 1:
         n_theta += 1
@@ -67,11 +77,14 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
             M += DD[k2+1] * np.exp(-r*hDD[k2+1]) * np.exp(1j * theta_grid[id[k2]])
         
         vals = linalg.eig(M)        
-        gamma_r = np.max(np.abs(vals))
+        # gamma_r = np.max(np.abs(vals))
+        vals_abs = np.abs(vals)
+        gamma_r_index = np.argmax(vals_abs)
+        gamma_r = vals_abs[gamma_r_index]
         if gamma_r > radius:
             radius = gamma_r
-            #radius_eig = vals[TODO]
-            #radius_ind = ind
+            radius_eig = vals[gamma_r_index]
+            radius_ind = id
         
         # form the next gridpoint
         id[-1] += 1
@@ -83,7 +96,28 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
             id[j-2] = id[j-2] + 1
             j = j -1
 
-    # Continue line 130
+    if radius == 0:
+        # degenerate case, TODO return also metadata
+        gamma_r = 0
+        return gamma_r
+    elif not correction: # correction=False by user -> no correction applied
+        logger.debug(f"No correction")
+        # TODO return metadata
+        return gamma_r
+    else: # correction=True -> apply correction
+        logger.debug("Applying correction to gamma_r")
+        th_v = theta_grid[radius_ind.astype(bool)] # critical values of theta
+        eig_v = radius_eig # critical eigen value
+
+        # compute the corresponding left and right eigenvectors
+        # line 175
+
+
+
+
+
+        
+    
 
 
 
