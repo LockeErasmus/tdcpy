@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class DDAE:
 
-    def __init__(self, A: list[npt.NDArray], hA: list[float], E=None, **kwargs) -> None:
+    def __init__(self, A: list[npt.NDArray], hA: list[float], E=None, uE=None, vE=None,**kwargs) -> None:
         
         assert len(A) >= 1, "At least one matrix of dynamics is required"
         assert len(A) == len(hA)
@@ -28,12 +28,13 @@ class DDAE:
 
         # TODO if necessary, add 0 delay term
         
-        
         # ---
         self._A = A
         self._hA = hA
 
         self._E = E
+        self._uE = uE
+        self._vE = vE
 
         self._n = shape[0]
 
@@ -70,19 +71,25 @@ class DDAE:
     @property
     def uE(self) -> npt.NDArray:
         """ orthonormal basis for left null space of E """
-        uE = linalg.null_space(self.E.T, rcond=self.tol_singular)
-        return uE
+        if self._uE is None:
+            uE = linalg.null_space(self.E.T, rcond=self.tol_singular)
+            return uE
+        else:
+            return self._uE
     
     @property
     def vE(self) -> npt.NDArray:
         """ orthonormal basis for right null space of E """
-        vE = linalg.null_space(self.E, rcond=self.tol_singular)
-        return vE
+        if self._vE is None:
+            vE = linalg.null_space(self.E, rcond=self.tol_singular)
+            return vE
+        else:
+            return self._vE
         
     @property
     def is_logical(self) -> bool:
         """ property from original MATLAB package, unused as of now """
-        raise False
+        return False # as of now, always assume DDAE is not logical
     
     @property
     def is_compressed(self) -> bool:
@@ -107,11 +114,23 @@ class DDAE:
         """ Checks if DDAE uses complex storage for any of defining matrices """
         raise NotImplementedError()
     
-    def to_dde(self, **kwargs) -> 'DDAE':
+    @property
+    def is_delay_difference_equation(self) -> bool:
+        """ Checks if DDAE is a delay difference equation, i.e. E==0 """
+        return not self.is_logical and np.allclose(self.E, 0, atol=1e-12)
+
+    def to_delay_difference_equation(self, **kwargs) -> 'DDAE':
         """ Converts to Delay-difference Equation 
+
+        For a DDAE, the associated delay difference equation is given by
+            U'*A[0]*V x(t-hA(1)) + ... + U'*A[mA]*V x(t-hA(mA)) = 0
+        with U and V orthogonal matrices whose columns form a basis for the null
+        space of E.
         
         kwargs:
-            tol (float): norm tolerance for considering matrix vanish, default 1e-14
+            tol (float): norm tolerance for considering matrix vanish,'
+                default 1e-14
+
         """
         if self.is_logical:
             raise ValueError(f"Can't form DDE from logical")
@@ -135,14 +154,51 @@ class DDAE:
                 hD.append(hAi)
         
         nE = uE.shape[1] # TODO WIP
-        return DDAE(E=np.zeros(shape=(nE,nE), dtype=self.E.dtype))
+        dtype = self.E.dtype # numpy data type
+        diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
+                    uE=np.eye(nE, dtype=dtype), vE=np.eye(nE, dtype=dtype))
+        return diff
 
+    def to_asymptotic_transfer_function(self, **kwargs) -> 'DDAE':
+        raise NotImplementedError("Not implemented yet")
+    
     def sort(self, inplace=False):
         """ Sorts delays (mainly hA) into ascending order """
-        ...
+        raise NotImplementedError("Not implemented yet")
     
     def compress(self, inplace=False):
         """ Removes delay duplicates (matrices are added) """
-        ...
+        raise NotImplementedError("Not implemented yet")
     
+
+def normalize_delay_difference_equation(diff: DDAE):
+    """ normalizes delay difference equation
+
+    Transforms the delay difference equation such that the leading zero delay
+    matrix A0 equals identity.
+
+    Args:
+        diff (DDAE): DDAE in form of delay difference equation (E=0)
+
+    Returns:
+        tuple containing
+
+        - D (list of array): list of matrices DD = [inv(A0)*A1, ... , inv(A0)*Am]
+        - hDD (array): array of non-zero delays
+    """
+    hDD = diff.hA[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
+
+    if diff.mA == 2:
+        DD = [linalg.lstsq(diff.A[0], diff.A[1])]
+        return DD, hDD
+    
+    P, L, U = linalg.lu(diff.A[0]) # LU decomposition for having inverse of A0
+    DD = []
+    for i in range(1, diff.mA):
+        DD.append(
+            linalg.lstsq(U, linalg.lstsq(L, P @ diff.A[i])) # Di = inv(A0) @ Ai
+        )
+    return DD, hDD
+
+
 

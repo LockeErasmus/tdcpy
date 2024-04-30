@@ -26,3 +26,16 @@ install from source with `-e`
 ```bash
 pip install -e tdspy
 ```
+
+
+## Testing
+
+As of now it is usefull to run tests with visible outputs:
+```
+pytest -rP
+```
+shows output of passed tests,
+```
+pytest -rx
+```
+shows output of failed tests (default behaviour of pytest)
