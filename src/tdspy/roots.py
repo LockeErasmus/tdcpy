@@ -16,7 +16,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 
     kwargs:
         max_size_evp (int): TODO, default 600
-        discretization (int): discretization if None heuristic is envoked,
+        discretization (int): discretization, if None heuristic is envoked,
             default None, keep default if you don't know, has to be > 1
     """
 	# TODO sort and compress
@@ -64,10 +64,8 @@ def roots(tds: DDAE, r=0.0, **kwargs):
         C = np.zeros(shape=(n,n, mA-1)) # TODO dtype of matrix?
         for i in range(0, mA-1):
             C[:,:, i] = K[i+1] * np.exp(-rs*tau_s[i+1])
+        discretization = compute_n_rhp(E, B, C, tau=tds.hA) # TODO
 
-
-
-        discretization = compute_n_rhp() # TODO
     else: # perform check on user-provided discretization
         assert isinstance(discretization, int), "discretization has to be int"
         assert discretization > 1, "discretization has to be > 1"
@@ -76,8 +74,11 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     
     
     max_size_evp = kwargs.get("max_size_evp", 600)
-    if n <= max_size_evp:
-        raise NotImplementedError("The size of the delay differential equation exceeds max_size_evp")
+    assert n <= max_size_evp, "The size of the delay differential equation exceeds max_size_evp"
+    N_max = np.floor(max_size_evp / n) - 1
+    
+
+
     
     N_max = np.floor(max_size_evp / n) - 1 # condition: (N+1)*n <= max_size_evp
 

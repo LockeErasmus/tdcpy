@@ -36,7 +36,7 @@ A_THETA: npt.NDArray = np.array([0.9124, 0.9123, 0.9136, 0.9165, 0.9195, 0.9234,
                                  1.0833, 1.1069, 1.1331, 1.1614, 1.1936, 1.2289,
                                  1.2685, 1.3132, 1.3642, 1.4231, 1.4913, 1.5731,
                                  1.6783, 1.7867, 1.8183], dtype=np.float64)
-THETA: npt.NDArray = np.linspace(0, np.pi/4, 33, dtype=np.float64)
+THETA: npt.NDArray = np.linspace(0, np.pi/2, 33, dtype=np.float64)
 
 cubic_spline_a = interpolate.CubicSpline(THETA, A_THETA)
 cubic_spline_b = interpolate.CubicSpline(THETA, B_THETA)
@@ -183,6 +183,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     #gk = np.concatenate(gk)
     gk = gk[np.isfinite(gk)] # get rid of inf and NaN
     si = np.max(np.real(gk))
+    logger.debug(f"{si=}")
 
     if si <= 0:
         # TODO warning, as per original Pieter comment:
@@ -191,14 +192,20 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     else:
         # matlab code - line 140 -> TODO to function (repeating code)
         points = gk[(np.real(gk) >= 0) & (np.real(gk) <= factor * si)]
+        logger.debug(f"{points=}")
         if np.size(points) == 0: # points are empty
             N1 = 0
         else:
             theta_points = np.abs(np.angle(points))
+            logger.debug(f"{theta_points=}")
             pp_a = cubic_spline_a(theta_points)
+            logger.debug(f"{pp_a=}")
             pp_b = cubic_spline_b(theta_points)
+            logger.debug(f"{pp_b=}")
             r_points = np.abs(points)
+            logger.debug(f"{r_points=}")
             N_gk = (r_points - pp_b) / pp_a
+            logger.debug(f"{N_gk=}")
             N1 = np.max(N_gk)
 
         # matlab code - line 157 to 200
@@ -208,11 +215,9 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
         else:
             # cases for 2, 3, 4 delays
             gk = disproportionate_gk2(E, B, C, tau, si, grid_points=n_grid)
-            print(gk)
         
         # matlab code - line 202 -> TODO to function (repeating code)
         gk = gk[np.isfinite(gk)] # get rid of inf and NaN
-        print(factor * si)
         points = gk[np.real(gk) >= factor * si]
         if np.size(points) == 0: # points are empty
             N2 = 0
@@ -224,7 +229,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
             N_gk = (r_points - pp_b) / pp_a
             N2 = np.max(N_gk)
         
-        print(f"{N1=} {N2=} {N_minimal=}")
+        logger.debug(f"{N1=} {N2=} {N_minimal=}")
         return max(np.ceil(N1), np.ceil(N2), N_minimal)
 
 

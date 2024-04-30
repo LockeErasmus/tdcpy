@@ -22,9 +22,9 @@ class DDAE:
         
         
         assert np.atleast_2d(*A)
-        shape = A[0]
-        assert all(a.shape == shape for a in A), "A_i Matrices have to have same shape"
-        assert all(a.shape[0] == a.shape[1] for a in A), "A_i matrices have to be square"
+        shape = A[0].shape
+        assert all([a.shape == shape for a in A]), "A_i Matrices have to have same shape"
+        assert all([a.shape[0] == a.shape[1] for a in A]), "A_i matrices have to be square"
 
         # TODO if necessary, add 0 delay term
         
@@ -134,7 +134,7 @@ class DDAE:
                 D.append(Di)
                 hD.append(hAi)
         
-        nE = uE.shape[1]
+        nE = uE.shape[1] # TODO WIP
         return DDAE(E=np.zeros(shape=(nE,nE), dtype=self.E.dtype))
 
     def sort(self, inplace=False):
