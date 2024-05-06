@@ -46,9 +46,10 @@ def test_foo():
     print(rdde.uE)
     print(rdde.vE)
 
-
-    #diff = rdde.to_delay_difference_equation()
-    #print(diff.A)
-    #print(diff.E)
-    #print(diff.uE)
-    #print(diff.vE)
+def test_diff_01():
+    rdde = generate_example_01()
+    diff = rdde.to_delay_difference_equation()
+    print(diff.A)
+    print(diff.E)
+    print(diff.uE)
+    print(diff.vE)

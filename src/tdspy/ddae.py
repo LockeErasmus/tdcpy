@@ -143,6 +143,9 @@ class DDAE:
         uE = self.uE
         vE = self.vE
 
+        #if np.size(uE) == 0:
+        # TODO case
+
         norm_uE = linalg.norm(uE, ord=1, axis=None)
         norm_vE = linalg.norm(vE, ord=1, axis=None)
         

@@ -37,6 +37,8 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
     assert n_delays > 0, "empty dde representation not allowed"
     assert n_delays == len(DD), "len of DD and hDD has to match"
 
+    n_diff = np.shape(DD[0])[0] # dimension of state vector of delay-diff. eq.
+
     n_theta = kwargs.get("n_theta", 10)
     assert isinstance(n_theta, int), "n_theta has to be of type int"
     assert n_theta > 0, "n_theta has to be > 0"
@@ -100,17 +102,41 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
         # degenerate case, TODO return also metadata
         gamma_r = 0
         return gamma_r
-    elif not correction: # correction=False by user -> no correction applied
+    
+    if not correction: # correction=False by user -> no correction applied, return
         logger.debug(f"No correction")
         # TODO return metadata
         return gamma_r
-    else: # correction=True -> apply correction
-        logger.debug("Applying correction to gamma_r")
-        th_v = theta_grid[radius_ind.astype(bool)] # critical values of theta
-        eig_v = radius_eig # critical eigen value
+    
+    # correction=True -> apply correction
+    logger.debug("Applying correction to gamma_r")
+    th_v = theta_grid[radius_ind.astype(bool)] # critical values of theta
+    eig_v = radius_eig # critical eigen value
 
-        # compute the corresponding left and right eigenvectors
-        # line 175
+    # compute the corresponding left and right eigenvectors
+    # line 175
+    M = DD[0]*np.exp(-r*hDD[0])
+    
+    for i in range(n_opt):
+        M += DD[i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_v[i])
+
+    U, _, Vh = linalg.svd(M - eig_v*np.eye(n_diff))
+    v_s = Vh[:, -1]
+    u_s = U[:, -1]
+    # normalize u_s, such that u_s' * v_s == 1
+    u_s = u_s / np.conj(np.inner(np.conj(u_s), v_s))
+
+    ## Optimization process
+    x0 = np.r_[np.real(v_s), np.imag(v_s), np.real(u_s), np.imag(u_s),
+               np.real(eig_v), np.imag(eig_v), th_v]
+
+    logger.info(f"{x0=}")
+
+
+
+
+    
+
 
 
 

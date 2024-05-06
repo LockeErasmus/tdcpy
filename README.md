@@ -22,11 +22,15 @@ Clone repository
 git clone https://github.com/LockeErasmus/tdspy.git
 ```
 
-install from source with `-e`
+install from source with `-e` if you are in repository
 ```bash
-pip install -e tdspy
+pip install -e .
 ```
-
+or
+```bash
+pip install -e <path-to-tdspy>
+```
+otherwise.
 
 ## Testing
 
