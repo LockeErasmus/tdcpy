@@ -30,3 +30,4 @@ def test_init_01():
     # tests
     assert rdde.n == 4
     assert np.all(rdde.E == np.eye(4))
+

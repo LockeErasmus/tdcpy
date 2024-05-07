@@ -9,9 +9,9 @@ Notes:
 import numpy as np
 import numpy.typing as npt
 
-from .base import Base
+from .base import TDSBase
 
-class RDDE(Base):
+class RDDE(TDSBase):
     """ Retarded Delay Differential Equaton
     
     TODO documentation
@@ -48,4 +48,14 @@ class RDDE(Base):
     def hA(self) -> list[float]:
         """ delays """
         return self._hA
+    
+    @property
+    def mA(self) -> int:
+        """ number of delays """
+        return len(self.hA)
+    
+    @property
+    def p2(self) -> int:
+        """ number of delays """
+        raise NotImplementedError("p2 RDDE")
 

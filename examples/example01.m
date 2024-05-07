@@ -1,7 +1,7 @@
 clear all;
 close all;
 
-import tds_control.stability.compute_N_rhp
+%import tds_control.stability.compute_N_rhp
 n=4
 A0 = [[-1, 0, 0, 0],
       [0, 1, 0, 0],
@@ -20,6 +20,8 @@ r = -1.5
 %%
 rdde = tds_create(A, hA);
 rdde.E
+
+roots = tds_roots(rdde, -4)
 
 %%
 
