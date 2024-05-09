@@ -55,9 +55,9 @@ def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -
     if s0 != 0: # discretization around non-zero -> shift matrices
         logger.debug("")
         assert hA[0] == 0, "First delay assumed to be 0.0"
-        A[0] -= s0*E
+        A[0] = A[0] - s0*E
         for i in range(1,len(A)):
-            A[i] *= np.exp(-s0 * hA[i])
+            A[i] = A[i] * np.exp(-s0 * hA[i])
     
 
     # continue line 86
@@ -113,5 +113,5 @@ def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -
         Sigma_N += s0 * Pi_N
     
     # Construct DAE
-    dae = DAE(A=Sigma_N, B=None, C=None, D=None, E=Pi_N)
+    dae = DAE(A=Sigma_N, B=None, C=None, D=None, E=Pi_N) # TODO update
     return dae

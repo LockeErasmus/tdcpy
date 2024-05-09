@@ -12,6 +12,73 @@ from scipy import linalg
 
 logger = logging.getLogger(__name__)
 
+def jacobian(x: npt.NDArray, DD: list[npt.NDArray], hDD: npt.NDArray, r, v0):
+    """ Calculates jacobian of TODO
+    ¨
+
+    TODO:
+        1. possible to have x not as a vector but as a 2d array, could be better computation-wise
+    """
+    n_diff = np.shape(DD[0])[0] # TODO this could be calculated in advance
+    n_opt = len(DD) - 1 # TODO this could be calculated in advance
+
+    # unpack opt. variables x -> u, v, lambda, theta
+    v = x[:n_diff] + 1j*x[n_diff:2*n_diff]
+    u = x[2*n_diff:3*n_diff] + 1j*x[3*n_diff:4*n_diff]
+    s = x[4*n_diff] + 1j*x[4*n_diff+1] # lambda
+    th = x[4*n_diff+2:] # theta
+
+    # construct M
+    M = DD[0] * np.exp(-r*hDD[0])
+    for i in range(n_opt):
+        M += DD[i+1] * np.exp(-r*hDD[i+1]) * np.exp(1j * th[i])
+
+    # continue line 270
+    M1 = M - s * np.eye(n_diff)
+    M2 = M.H - np.conj(s) * np.eye(n_diff)
+    block_1 = M1 @ v[:,np.newaxis] # (n_opt, 1)
+    block_2 = M2 @ u[:,np.newaxis] # (n_opt, 1)
+    block_3 = np.outer(np.conj(v0), v) - 1
+    block_4 = np.outer(np.conj(u), v) - 1
+
+    # construct jacobian
+    jac_shape = (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt)
+    jac = np.zeros(shape=jac_shape)
+
+    # Jac(1:ndiff,1:ndiff) = real(M1);
+    # Jac(1:ndiff,ndiff+(1:ndiff)) = -imag(M1);
+    # Jac(ndiff+(1:ndiff),1:ndiff) = imag(M1);
+    # Jac(ndiff+(1:ndiff),ndiff+(1:ndiff)) = real(M1);
+    # Jac(1:ndiff,4*ndiff+1) = -real(v);
+    # Jac(1:ndiff,4*ndiff+2) = imag(v);
+    # Jac(ndiff+(1:ndiff),4*ndiff+1) = -imag(v);
+    # Jac(ndiff+(1:ndiff),4*ndiff+2) = -real(v);
+    # Jac(2*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = real(M2);
+    # Jac(2*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = -imag(M2);
+    # Jac(3*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = imag(M2);
+    # Jac(3*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = real(M2);
+    # Jac(2*ndiff+(1:ndiff),4*ndiff+1) = -real(u);
+    # Jac(2*ndiff+(1:ndiff),4*ndiff+2) = -imag(u);
+    # Jac(3*ndiff+(1:ndiff),4*ndiff+1) = -imag(u);
+    # Jac(3*ndiff+(1:ndiff),4*ndiff+2) = real(u);
+    # Jac(4*ndiff+1,1:ndiff) = real(v0);
+    # Jac(4*ndiff+1,ndiff+(1:ndiff)) = imag(v0);
+    # Jac(4*ndiff+2,1:ndiff) = -imag(v0);
+    # Jac(4*ndiff+2,ndiff+(1:ndiff)) = real(v0);
+    # Jac(4*ndiff+3,1:ndiff) = real(u);
+    # Jac(4*ndiff+3,ndiff+(1:ndiff)) = imag(u);
+    # Jac(4*ndiff+3,2*ndiff+(1:ndiff)) = real(v);
+    # Jac(4*ndiff+3,3*ndiff+(1:ndiff)) = imag(v);
+    # Jac(4*ndiff+4,1:ndiff) = -imag(u);
+    # Jac(4*ndiff+4,ndiff+(1:ndiff)) = real(u);
+    # Jac(4*ndiff+4,2*ndiff+(1:ndiff)) = imag(v);
+    # Jac(4*ndiff+4,3*ndiff+(1:ndiff)) = -real(v);
+
+
+    return jac
+
+
+
 def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs):
     """ Computes gamma(r) of the normalized delay difference equation
     

@@ -1,5 +1,7 @@
 """
-Discretization example 01 
+Discretization example 01
+-------------------------
+First demo for calculating roots of RDDE
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,8 +35,10 @@ A1 = np.array([[3, 3, 3, 3],
 rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1.])
 
 
-# create discretization
-dae = tdspy.common.discretize(rdde, 10)
+# discretize rdde -> dae
+s0 = 0
+n = 50
+dae = tdspy.common.discretize(rdde, 50, s0=s0)
 
 # matlab tds_roots() with r=-4 max discretization=600
 matlab_roots = np.array([-3.98775577845041 + 161.773555006624j,
@@ -307,22 +311,25 @@ matlab_roots = np.array([-3.98775577845041 + 161.773555006624j,
                         0.272774827922444 - 0.880380970630798j,
                         -0.453030980991650 - 1.17969784766041j])
 
-# solve gen. eigen value problem
+# solve generalized eigen-value problem
 r = scipy.linalg.eig(dae.A, dae.E, left=False, right=False)
-r = r[np.isfinite(r)] # get rid of inf and NaN
+r = r[np.isfinite(r)] - s0  # get rid of inf and NaN and shift back
 print(r)
 
 plt.figure()
-plt.scatter(np.real(matlab_roots), np.imag(matlab_roots), marker="x", color="k")
-plt.scatter(np.real(r), np.imag(r), marker="+")
+plt.scatter(np.real(matlab_roots), np.imag(matlab_roots),
+            marker="x", color="b", label="matlab tds_roots")
+plt.scatter(np.real(r), np.imag(r), marker="o",
+            edgecolors="r", facecolors='none', label="python")
+plt.legend()
 
 # plot matrices
-plt.figure()
-plt.title("A")
-plt.matshow(dae.A, fignum=0)
+# plt.figure()
+# plt.title("A")
+# plt.matshow(dae.A, fignum=0)
 
-plt.figure()
-plt.title("E")
-plt.matshow(dae.E, fignum=0)
+# plt.figure()
+# plt.title("E")
+# plt.matshow(dae.E, fignum=0)
 
 plt.show()
