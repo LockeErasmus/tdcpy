@@ -19,7 +19,7 @@ hA = [0, 1]
 r = -1.5
 
 %% Create DDAE
-rdde = tds_create(A, hA);
+rdde = tds_create_ddae(eye(4), A, hA);
 rdde.E % has to be identity
 rdde.uE
 

@@ -14,19 +14,17 @@ logger = logging.getLogger(__name__)
 
 class DDAE:
 
-    def __init__(self, A: list[npt.NDArray], hA: list[float], E=None, uE=None, vE=None,**kwargs) -> None:
+    def __init__(self, A: npt.NDArray, hA: npt.NDArray, E=None, uE=None, vE=None,**kwargs) -> None:
         
-        assert len(A) >= 1, "At least one matrix of dynamics is required"
-        assert len(A) == len(hA)
-        assert all(delay>=0 for delay in hA), "Only positive delays possible"
-        
-        
-        assert np.atleast_2d(*A)
+        # assert A.size > 0, "A has to be non-empty array"        
+        # assert np.atleast_3d(A) # TODO check
+        # assert np.atleast_1d(hA) # TODO check
+        assert np.all(hA >= 0.0), "Only positive delays possible"
+        assert A.shape[2] == hA.shape[0], "number of delays does not match number of matrices Ai"
         shape = A[0].shape
-        assert all([a.shape == shape for a in A]), "A_i Matrices have to have same shape"
-        assert all([a.shape[0] == a.shape[1] for a in A]), "A_i matrices have to be square"
 
         # TODO if necessary, add 0 delay term
+
         
         # ---
         self._A = A
@@ -38,13 +36,13 @@ class DDAE:
 
         self._n = shape[0]
 
-        # --- KWARGS
+        # --- KWARGS ---
         self.dtype = kwargs.get("dtype", np.float64)
         self.tol_singular = kwargs.get("tol_singular", 1e-12)
 
     @property
     def n(self) -> int:
-        return self._n
+        return self.A.shape[0]
 
     @property
     def E(self) -> npt.NDArray:
@@ -66,7 +64,7 @@ class DDAE:
     @property
     def mA(self) -> int:
         """ number of delays """
-        return len(self.hA)
+        return self.hA.shape[0]
 
     @property
     def uE(self) -> npt.NDArray:
@@ -94,7 +92,7 @@ class DDAE:
     @property
     def is_compressed(self) -> bool:
         """ Cheks if DDAE is in compressed form (no duplicates in hA) """
-        if len(self.hA) == len(np.unique(self.hA)):
+        if self.mA == len(np.unique(self.hA)):
             return True
         else:
             return False
@@ -123,7 +121,7 @@ class DDAE:
         """ Converts to Delay-difference Equation 
 
         For a DDAE, the associated delay difference equation is given by
-            U'*A[0]*V x(t-hA(1)) + ... + U'*A[mA]*V x(t-hA(mA)) = 0
+            U'*A[0]*V x(t-hA[0]) + ... + U'*A[mA-1]*V x(t-hA[mA-1]) = 0
         with U and V orthogonal matrices whose columns form a basis for the null
         space of E.
         
@@ -137,25 +135,28 @@ class DDAE:
         
         tol = kwargs.get("tol", 1e-14)
                 
-        D = []
-        hD = []
+        uE = self.uE # dynamic property -> calc it once and store into mem
+        vE = self.vE # dynamic property -> calc it once and store into mem
 
-        uE = self.uE
-        vE = self.vE
+        if np.size(uE) == 0:
+            # TODO case where E is non-singular, return EMPTY DDAE
+            return None
+            # return DDAE(A=np.empty(shape=(0,0,0)), hA=np.empty(shape=(0,)))
 
-        #if np.size(uE) == 0:
-        # TODO case
-
+        # calculate .. for both nullspaces, select the bigger one
         norm_uE = linalg.norm(uE, ord=1, axis=None)
         norm_vE = linalg.norm(vE, ord=1, axis=None)
+        norm_null = max(norm_uE, norm_vE)
+
+        # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
+        D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
         
-        for Ai, hAi in zip(self.A, self.hA):
-            Di = np.transpose(uE) @ Ai @ vE
-            norm_mat = linalg.norm(Di, ord=1, axis=None)
-            if norm_mat / max(norm_uE, norm_vE) > tol:
-                D.append(Di)
-                hD.append(hAi)
+        # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
+        mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
+        D = D[:,:,mask]
+        hD = self.hA[mask]
         
+        # form DDAE with E=0, Di, hD, uE=vE=eye(nE)
         nE = uE.shape[1] # TODO WIP
         dtype = self.E.dtype # numpy data type
         diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
@@ -167,14 +168,41 @@ class DDAE:
     
     def sort(self, inplace=False):
         """ Sorts delays (mainly hA) into ascending order """
-        raise NotImplementedError("Not implemented yet")
-    
-    def compress(self, inplace=False):
-        """ Removes delay duplicates (matrices are added) """
-        raise NotImplementedError("Not implemented yet")
+        delay_index = np.argsort(self.hA)
+        if inplace:
+            # TODO as of now, it only sorts A, it should sort all
+            self._A = self.A[:,:, delay_index]
+            self._hA = self.hA[delay_index]
+        else:
+            raise NotImplementedError("Not implemented yet") # implement when we know all fields
+
+    def compress(self, inplace=False, rtol=1e-5, atol=1e-8):
+        """ Removes delay duplicates, sorts delays into ascending order
+        
+        Args:
+            inplace (bool): wheter to modify existing DDEA or create a new one,
+                default False
+            
+        """
+        unique_hA = np.unique(self.hA) # sorted in ascending order
+        newA = np.zeros(shape=(self.n, self.n, unique_hA.shape[0]))
+        for i in range(unique_hA.shape[0]):
+            mask = self.hA == unique_hA[i] # create mask
+            newA[:,:,i] = np.sum(self.A[:,:,mask], axis=2)
+        
+        # perform elimination of newAi close to 0.0
+        mask = np.all(np.isclose(newA, 0.0, rtol=rtol, atol=atol), axis=(0,1))
+        A = newA[:,:,~mask]
+        hA = unique_hA[~mask]
+
+        if inplace:
+            self._A = A
+            self._hA = hA
+        else:
+            return DDAE(A=A, hA=hA)
     
 
-def normalize_delay_difference_equation(diff: DDAE):
+def normalize_delay_difference_equation(diff: DDAE, checkE=True):
     """ normalizes delay difference equation
 
     Transforms the delay difference equation such that the leading zero delay
@@ -186,21 +214,20 @@ def normalize_delay_difference_equation(diff: DDAE):
     Returns:
         tuple containing
 
-        - D (list of array): list of matrices DD = [inv(A0)*A1, ... , inv(A0)*Am]
+        - D (array): 3D array representing matrices [inv(A0)*A1, ... , inv(A0)*Am]
         - hDD (array): array of non-zero delays
     """
     hDD = diff.hA[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
 
+    DD = np.zeros_like(shape=(diff.n, diff.n, diff.mA-1))
+
     if diff.mA == 2:
-        DD = [linalg.lstsq(diff.A[0], diff.A[1])]
+        DD[:,:,0] = linalg.lstsq(diff.A[:,:,0], diff.A[:,:,1])
         return DD, hDD
     
-    P, L, U = linalg.lu(diff.A[0]) # LU decomposition for having inverse of A0
-    DD = []
+    P, L, U = linalg.lu(diff.A[:,:,0]) # LU decomposition for having inverse of A0
     for i in range(1, diff.mA):
-        DD.append(
-            linalg.lstsq(U, linalg.lstsq(L, P @ diff.A[i])) # Di = inv(A0) @ Ai
-        )
+        DD[:,:, i-1] = linalg.lstsq(U, linalg.lstsq(L, P @ diff.A[:,:,i])) # Di = inv(A0) @ Ai
     return DD, hDD
 
 

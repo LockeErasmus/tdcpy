@@ -280,7 +280,10 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
         kwargs:
 
     Returns:
-        n (int): number of discretization points necessary
+        tuple containing
+
+            - n (int): number of discretization points necessary
+            - origin (complex): origin TODO
     
     See:
         [1] Wu, Z., & Michiels, W. (2012) Reliably computing all
@@ -324,7 +327,7 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
 
     n = np.min(np.maximum(n1, n2))
     n = n_minimal if n_minimal > n else n # make sure n >= n_minimal
-    return n
+    return n, 0
 
 if __name__ == "__main__":
     # test case

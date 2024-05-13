@@ -25,10 +25,9 @@ import logging
 logger = logging.getLogger("tdspy")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
-formatter = logging.Formatter("%(message)s")
+formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
 
 # Create DDAE representation
 A0 = np.array([[-1, 0, 0, 0],
@@ -39,9 +38,10 @@ A1 = np.array([[3, 3, 3, 3],
                [0, -1.5, 0, 0],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
+A = np.stack([A0, A1], axis=2)
+hA = np.array([0,1.])
 
-
-rdde = tdspy.ddae.DDAE(A=[A0, A1], hA=[0, 1.])
+rdde = tdspy.ddae.DDAE(A=A, hA=hA)
 print(rdde.n)
 cr = tdspy.roots.roots(rdde, r=-1.5)
 
