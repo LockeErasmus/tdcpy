@@ -268,11 +268,8 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
     region in complex plane:
 
     region[1]+1j*region[4] --------- region[2]+1j*region[4]
-           |                                |
-           |                                |
-           |                                |
-           |                                |
-           |                                |
+             |                                |
+             |                                |
     region[1]+1j*region[3] --------- region[2]+1j*region[3]
 
     Args:

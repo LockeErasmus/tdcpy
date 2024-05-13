@@ -58,4 +58,41 @@ class RDDE(TDSBase):
     def p2(self) -> int:
         """ number of delays """
         raise NotImplementedError("p2 RDDE")
+    
+    @property
+    def is_compressed(self) -> bool:
+        """ Cheks if RDDE is in compressed form (no duplicates in hA) """
+        if len(self.hA) == len(np.unique(self.hA)):
+            return True
+        else:
+            return False
+    
+    @property
+    def is_sorted(self) -> bool:
+        """ Checks if DDAe is in sorted form (ascending hA) """
+        return all(self.hA[i] <= self.hA[i+1] for i in range(len(self.hA) - 1))
+    
+    @property
+    def is_lti(self) -> bool:
+        """ Checks if DDAE is Linear Time-invariant """
+        return True # as of now, always assume RDDE is LTI
+    
+    @property
+    def is_delay_difference_equation(self) -> bool:
+        """ RDDE can not be delay difference equation """
+        return False
+    
+    def sort(self, inplace=False) -> 'RDDE':
+        """ Sorts delays (self.hA) into ascending order """
+        raise NotImplementedError("Not implemented yet")
+    
+    def compress(self, inplace=False) -> 'RDDE':
+        """ Removes delay duplicates, sorts delays into ascending order
+        
+        Args:
+            inplace (bool): wheter to modify existing RDDE or create a new one,
+                default False
+        """
+        raise NotImplementedError("Not implemented yet")
+
 

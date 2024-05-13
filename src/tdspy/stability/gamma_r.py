@@ -2,6 +2,11 @@
 Computation of gamma r
 ----------------------
 TODO
+
+Notes:
+    1. `MemoizeJac` decorator is used because of (i) keep implementation as
+        simillar as possible to MATLAB® and (ii) to optimize calculation of 
+        function value and jacobian as some operations can be shared
 """
 
 import logging
@@ -9,12 +14,14 @@ import numpy as np
 import numpy.typing as npt
 
 from scipy import linalg
+from scipy.optimize._optimize import MemoizeJac
 
 logger = logging.getLogger(__name__)
 
-def jacobian(x: npt.NDArray, DD: list[npt.NDArray], hDD: npt.NDArray, r, v0):
-    """ Calculates jacobian of TODO
-    ¨
+def func(x: npt.NDArray, DD: list[npt.NDArray], hDD: npt.NDArray, r, v0):
+    """ Calculates value and jacobian of the following function
+    
+    
 
     TODO:
         1. possible to have x not as a vector but as a 2d array, could be better computation-wise
@@ -36,46 +43,80 @@ def jacobian(x: npt.NDArray, DD: list[npt.NDArray], hDD: npt.NDArray, r, v0):
     # continue line 270
     M1 = M - s * np.eye(n_diff)
     M2 = M.H - np.conj(s) * np.eye(n_diff)
-    block_1 = M1 @ v[:,np.newaxis] # (n_opt, 1)
-    block_2 = M2 @ u[:,np.newaxis] # (n_opt, 1)
-    block_3 = np.outer(np.conj(v0), v) - 1
-    block_4 = np.outer(np.conj(u), v) - 1
+    block_1 = np.ravel(M1 @ v[:,np.newaxis]) # (n_opt, 1)
+    block_2 = np.ravel(M2 @ u[:,np.newaxis]) # (n_opt, 1)
+    block_3 = np.inner(np.conj(v0), v) - 1
+    block_4 = np.inner(np.conj(u), v) - 1
+
+    # construct y = f(x)
+    #y=[real(block1); imag(block1); real(block2); imag(block2); real(block3);
+    #   imag(block3); real(block4);imag(block4);zeros(n_opt,1)];
+    y = np.zeros(shape=(4*n_diff+4+n_opt,))
+    y[:n_diff] = np.real(block_1)
+    y[n_diff: 2*n_diff] = np.imag(block_1)
+    y[2*n_diff: 3*n_diff] = np.real(block_2)
+    y[3*n_diff: 4*n_diff] = np.imag(block_2)
+    y[4*n_diff] = np.real(block_3)
+    y[4*n_diff+1] = np.imag(block_3)
+    y[4*n_diff+2] = np.real(block_4)
+    y[4*n_diff+3] = np.imag(block_4)
+    # y[4*n_diff+4:] = 0 automatically
 
     # construct jacobian
     jac_shape = (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt)
     jac = np.zeros(shape=jac_shape)
 
-    # Jac(1:ndiff,1:ndiff) = real(M1);
-    # Jac(1:ndiff,ndiff+(1:ndiff)) = -imag(M1);
-    # Jac(ndiff+(1:ndiff),1:ndiff) = imag(M1);
-    # Jac(ndiff+(1:ndiff),ndiff+(1:ndiff)) = real(M1);
-    # Jac(1:ndiff,4*ndiff+1) = -real(v);
-    # Jac(1:ndiff,4*ndiff+2) = imag(v);
-    # Jac(ndiff+(1:ndiff),4*ndiff+1) = -imag(v);
-    # Jac(ndiff+(1:ndiff),4*ndiff+2) = -real(v);
-    # Jac(2*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = real(M2);
-    # Jac(2*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = -imag(M2);
-    # Jac(3*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = imag(M2);
-    # Jac(3*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = real(M2);
-    # Jac(2*ndiff+(1:ndiff),4*ndiff+1) = -real(u);
-    # Jac(2*ndiff+(1:ndiff),4*ndiff+2) = -imag(u);
-    # Jac(3*ndiff+(1:ndiff),4*ndiff+1) = -imag(u);
-    # Jac(3*ndiff+(1:ndiff),4*ndiff+2) = real(u);
-    # Jac(4*ndiff+1,1:ndiff) = real(v0);
-    # Jac(4*ndiff+1,ndiff+(1:ndiff)) = imag(v0);
-    # Jac(4*ndiff+2,1:ndiff) = -imag(v0);
-    # Jac(4*ndiff+2,ndiff+(1:ndiff)) = real(v0);
-    # Jac(4*ndiff+3,1:ndiff) = real(u);
-    # Jac(4*ndiff+3,ndiff+(1:ndiff)) = imag(u);
-    # Jac(4*ndiff+3,2*ndiff+(1:ndiff)) = real(v);
-    # Jac(4*ndiff+3,3*ndiff+(1:ndiff)) = imag(v);
-    # Jac(4*ndiff+4,1:ndiff) = -imag(u);
-    # Jac(4*ndiff+4,ndiff+(1:ndiff)) = real(u);
-    # Jac(4*ndiff+4,2*ndiff+(1:ndiff)) = imag(v);
-    # Jac(4*ndiff+4,3*ndiff+(1:ndiff)) = -real(v);
+    jac[:n_diff, :n_diff] = np.real(M1)
+    jac[:n_diff, n_diff: 2*n_diff] = -np.imag(M1)
+    jac[n_diff: 2*n_diff, :n_diff] = np.imag(M1)
+    jac[n_diff: 2*n_diff, n_diff: 2*n_diff] = np.real(M1)
+    jac[:n_diff, 4*n_diff] = -np.real(v) # Jac(1:ndiff,4*ndiff+1) = -real(v);
+    jac[:n_diff, 4*n_diff+1] = np.real(v) # Jac(1:ndiff,4*ndiff+2) = imag(v)
+    jac[n_diff: 2*n_diff, 4*n_diff] = -np.imag(v) # Jac(ndiff+(1:ndiff),4*ndiff+1) = -imag(v);
+    jac[n_diff: 2*n_diff, 4*n_diff+1] = -np.real(v) # Jac(ndiff+(1:ndiff),4*ndiff+2) = -real(v);
+    jac[2*n_diff: 3*n_diff, 2*n_diff: 3*n_diff] = np.real(M2) # Jac(2*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = real(M2);
+    jac[2*n_diff: 3*n_diff, 3*n_diff: 4*n_diff] = -np.imag(M2) # Jac(2*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = -imag(M2);
+    jac[3*n_diff: 4*n_diff, 2*n_diff: 3*n_diff] = np.imag(M2) # Jac(3*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = imag(M2);
+    jac[3*n_diff: 4*n_diff, 3*n_diff: 4*n_diff] = np.real(M2) # Jac(3*ndiff+(1:ndiff),3*ndiff+(1:ndiff)) = real(M2);
+    jac[2*n_diff: 3*n_diff, 4*n_diff] = -np.real(u) # Jac(2*ndiff+(1:ndiff),4*ndiff+1) = -real(u);
+    jac[2*n_diff: 3*n_diff, 4*n_diff+1] = -np.imag(u) # Jac(2*ndiff+(1:ndiff),4*ndiff+2) = -imag(u);
+    jac[3*n_diff: 4*n_diff, 4*n_diff] = -np.imag(u) # Jac(3*ndiff+(1:ndiff),4*ndiff+1) = -imag(u);
+    jac[3*n_diff: 4*n_diff, 4*n_diff+1] = np.real(u) # Jac(3*ndiff+(1:ndiff),4*ndiff+2) = real(u);
+    jac[4*n_diff, :n_diff] = np.real(v0) # Jac(4*ndiff+1,1:ndiff) = real(v0);
+    jac[4*n_diff, n_diff: 2*n_diff] = np.imag(v0) # Jac(4*ndiff+1,ndiff+(1:ndiff)) = imag(v0);
+    jac[4*n_diff+1, :n_diff] = -np.imag(v0) # Jac(4*ndiff+2,1:ndiff) = -imag(v0);
+    jac[4*n_diff+1, n_diff: 2*n_diff] = np.real(v0) # Jac(4*ndiff+2,ndiff+(1:ndiff)) = real(v0);
+    jac[4*n_diff+2, :n_diff] = np.real(u) # Jac(4*ndiff+3,1:ndiff) = real(u);
+    jac[4*n_diff+2, n_diff: 2*n_diff] = np.imag(u) # Jac(4*ndiff+3,ndiff+(1:ndiff)) = imag(u);
+    jac[4*n_diff+2, 2*n_diff: 3*n_diff] = np.real(v) # Jac(4*ndiff+3,2*ndiff+(1:ndiff)) = real(v);
+    jac[4*n_diff+2, n_diff: 2*n_diff] = np.imag(v) # Jac(4*ndiff+3,3*ndiff+(1:ndiff)) = imag(v);
+    jac[4*n_diff+3, :n_diff] = -np.imag(u) # Jac(4*ndiff+4,1:ndiff) = -imag(u);
+    jac[4*n_diff+3, n_diff :2*n_diff] = np.real(u) # Jac(4*ndiff+4,ndiff+(1:ndiff)) = real(u);
+    jac[4*n_diff+3, 2*n_diff: 3*n_diff] = np.imag(v) # Jac(4*ndiff+4,2*ndiff+(1:ndiff)) = imag(v);
+    jac[4*n_diff+3, 3*n_diff: 4*n_diff] = -np.real(v) # Jac(4*ndiff+4,3*ndiff+(1:ndiff)) = -real(v);
 
+    # n_opt update
+    for k in range(n_opt):
+        ...
+        # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
+        # v2 = DD{k+1}*v*exp(-r*hDD(k+1));
+        # uDv = (v1*v);
+        # M3 = 1j*exp(1j*theta(k))*v2;
+        # M4 = -1j*conj(v1)*exp(-1j*theta(k));
+        # y(2*(2*ndiff+2)+k)= imag( conj(lambda)*exp(1j*theta(k))*uDv ) ;
+        # Jac(1:ndiff,4*ndiff+2+k) = real(M3);
+        # Jac(ndiff+(1:ndiff),4*ndiff+2+k) = imag(M3);
+        # Jac(2*ndiff+(1:ndiff),4*ndiff+2+k) = real(M4);
+        # Jac(3*ndiff+(1:ndiff),4*ndiff+2+k) = imag(M4);
+        # Jac(4*ndiff+4+k,1:ndiff) = imag(conj(lambda)*exp(1j*theta(k))*v1);
+        # Jac(4*ndiff+4+k,ndiff+(1:ndiff)) = real(conj(lambda)*exp(1j*theta(k))*v1);
+        # Jac(4*ndiff+4+k,2*ndiff+(1:ndiff)) = imag(conj(lambda)*exp(1j*theta(k))*v2);
+        # Jac(4*ndiff+4+k,3*ndiff+(1:ndiff)) = -real(conj(lambda)*exp(1j*theta(k))*v2);
+        # Jac(4*ndiff+4+k,4*ndiff+1) = imag(exp(1j*theta(k))*uDv);
+        # Jac(4*ndiff+4+k,4*ndiff+2) = -real(exp(1j*theta(k))*uDv);
+        # Jac(4*ndiff+4+k,4*ndiff+2+k) = imag(1j*conj(lambda)*exp(1j*theta(k))*uDv);
 
-    return jac
+    return y, jac
 
 
 
