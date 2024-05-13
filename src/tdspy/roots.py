@@ -11,6 +11,7 @@ from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
 from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
+from .common.discretization import discretize
 from .gamma_r import gamma_r
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ def roots(tds: DDAE, r=0.0, **kwargs):
         max_size_evp (int): TODO, default 600
         discretization (int): discretization, if None heuristic is envoked,
             default None, keep default if you don't know, has to be > 1
+        basic_delay (float): define if delays are commensurate, default None,
+            used in discretization heuristic case `rhp`
     """
 
     # checks for region definition
@@ -95,6 +98,11 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     ###########################################################    
     # obtain discretization
     discretization = kwargs.get("discretizaton", None)
+    max_size_evp = kwargs.get("max_size_evp", 600)
+    max_size_evp_enforced = False # flag to indicate that size of EVP > max_size_evp
+    assert n <= max_size_evp, "The size of the delay differential equation exceeds max_size_evp"
+    discretization_max = int(np.floor(max_size_evp / n) - 1)
+    
     if case == "rhp":
         if discretization is None: # envoke heuristic
             # rescale r
@@ -104,52 +112,122 @@ def roots(tds: DDAE, r=0.0, **kwargs):
             C = K[:,:,1:] * np.exp(-rs * tau_s[1:])
 
             if False: # TODO line 289 - 295, as of now unimportant, later KWARG
+                # condition C_D > r is assumed to be already checked
                 ...
             else:
                 diff = tds.to_delay_difference_equation()
                 if diff is not None: # empty associated delay difference equation (E is not singular)
-                    if diff.hA[0] != 0 or False:
+                    if diff.hA[0] != 0 or False: # TODO
                         raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
-                    elif gamma_r(diff, r) >= 1.0:
+
+                    if gamma_r(diff, r) >= 1.0:
                         discretization = 30
                         logger.warning((f"Gamma_r exceeds {gamma_r} >= 1 (i.e., CD>r). Spectral "
                                         "discretization with N = 30 (lowered if maximum size of "
                                         "eigenvalue problem is exceeded). Try specifying a "
                                         "rectangular region instead."))
                 
-                if discretization is None: # discretization is still undefined
-                    # region RHP contains finitely many roots
-                    discretization = compute_n_rhp(E, B, C, tau=hA) # TODO        
+                if discretization is None:
+                    # discretization is still undefined, reason:
+                    #   (a) - no underlying delay-difference equation or
+                    #   (b) - gamma_r < 1.0
+                    # => region RHP contains finitely many roots and heuristic
+                    #    can be applied
+                    basic_delay = kwargs.get("basic_delay", None)
+                    discretization = compute_n_rhp(E, B, C, tau=hA, basic_delay=basic_delay)
+            
+            # check if discretization does exceed limit
+            if discretization > discretization_max:
+                max_size_evp_enforced = True
+                discretization = discretization_max
+                size_evp = n*(discretization_max + 1)
+                logger.warning(
+                    (f"Size of the generalized EVP would exceed its maximum "
+                     f"value. Discretization around {max([0,r])} + 0*1j with N "
+                     f"= {discretization} instead (size of new eigenvalue "
+                     f"problem: {size_evp} x {size_evp}. As a consequence, not "
+                     "all characteristic roots in the specified right "
+                     "half-plane might be found. To make sure that all desired "
+                     "characteristic roots are found, either increase r (i.e., "
+                     "shift the desired right half-plane to the right) or "
+                     "increase the kwargs 'max_size_evp'. For more information "
+                     "consult the documentation of this function.")
+                )
+
         else: # discretization provided by user -> peform checks
             assert isinstance(discretization, int), "discretization has to be int"
             assert discretization > 1, "discretization has to be > 1"
             logger.debug(f"User provided {discretization=}")
+        
+        if max_size_evp_enforced and r < 0:
+            rs = 0
+            QQ=K
+        else: # use shift rs
+            QQ = np.concatenate([B[:,:,np.newaxis], C], axis=2)
 
     else: # case == "region":
-        if discretization is None: # envoke heuristic
+        if discretization is None: # envoke rectangular region heuristic
             discretization, origin = compute_n_rect(r, tau_max)
+            
+            # check if discretization does exceed limit
+            if discretization > discretization_max:
+                max_size_evp_enforced = True
+                discretization = discretization_max
+                size_evp = n*(discretization_max + 1)
+                logger.warning(
+                    (f"Size of the generalized EVP would exceed its maximum "
+                     f"value. Discretization around {np.real(origin)/tau_max} + "
+                     f"{np.imag(origin)/tau_max}j with N = {discretization} "
+                     f"instead (size of new eigenvalue problem: {size_evp} x "
+                     f"{size_evp}. As a consequence, not all characteristic "
+                     "roots in the specified right half-plane might be found. "
+                     "To make sure that all desired characteristic roots are "
+                     "found, either increase r (i.e., shift the desired right "
+                     "half-plane to the right) or increase the kwargs "
+                     "'max_size_evp'. For more information consult the "
+                     "documentation of this function.")
+                )
         else:
             assert isinstance(discretization, int), "discretization has to be int"
             assert discretization > 1, "discretization has to be > 1"
             origin = tau_max * ((r[0]+r[1])/2) + 1j*((r[2]+r[3])/2)
             logger.debug(f"User provided {discretization=} | {origin=} ")
+        
+        QQ = np.copy(A)
+        QQ[:,:,0] =  K[:,:,0] + (-origin)*E
+        QQ[:,:,1:] = K[:,:,1:] * np.exp(-origin * tau_s[1:])
 
-
-    max_size_evp = kwargs.get("max_size_evp", 600)
-    assert n <= max_size_evp, "The size of the delay differential equation exceeds max_size_evp"
-    discretization_max = np.floor(max_size_evp / n) - 1
-    if discretization > discretization_max:
-        afm = n*(discretization_max + 1)
-        logger.warning(())
-
-
+    logger.info(f"Degree of spectral discretization is N = {discretization}")
     
+    ########################### 
+	# Spectral discretisation #
+	###########################
+    # [3] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
+    #     method for the delay eigenvalue problem. SIAM Journal on Scientific
+    #     Computing, 32(6), pp. 3278-3300.  Section 2.2.
 
+    # create DDAE and discretize into DAE
+    ddae = DDAE(E=E, A=QQ, hA=tau_s)
+    dae = discretize(ddae, discretization)
 
-    
-    N_max = np.floor(max_size_evp / n) - 1 # condition: (N+1)*n <= max_size_evp
+    # solve EVP
+    raw_roots = linalg.eig(dae.A, dae.E, left=False, right=False)
+    raw_roots = raw_roots[np.isfinite(raw_roots)]# get rid of inf and NaN
 
-    # TODO continue here with logic from row 282
+    # undo shift and scaling
+    if case == "rhp":
+        raw_roots += rs
+    else: # case == "rect"
+        raw_roots += origin
+    raw_roots = raw_roots / tau_max
+
+    ######################
+	# Newton corrections #
+	######################
+    # TODO - line 441
+
+    return raw_roots
+
     
 
 

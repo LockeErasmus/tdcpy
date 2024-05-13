@@ -158,7 +158,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     """
 
     Args:
-        basic_delay (float):default None means delays are not commensurate
+        basic_delay (float): define if delays are commensurate, default None
 
     kwargs:
         n_minimal (int): minimal degree of discretization, default 8
@@ -190,7 +190,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
         n_k = n_k.astype(dtype=int)
         is_commmensurate = True
     elif mA > 4:
-        logger.debug(f"More thatn three delays, delays will be approximated by commensurate delays with basic_delay=1/20")
+        logger.debug(f"More than three delays, delays will be approximated by commensurate delays with basic_delay=1/20")
         NN = 20
         n_k = np.round(tau*NN).astype(dtype=int)
         is_commmensurate = True
@@ -206,10 +206,8 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
         # cases for 2, 3, 4 delays
         gk = disproportionate_gk(E, B, C, tau, grid_points=n_grid)
 
-    #gk = np.concatenate(gk)
     gk = gk[np.isfinite(gk)] # get rid of inf and NaN
     si = np.max(np.real(gk))
-    logger.debug(f"{si=}")
 
     if si <= 0:
         # TODO warning, as per original Pieter comment:
@@ -218,20 +216,14 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     else:
         # matlab code - line 140 -> TODO to function (repeating code)
         points = gk[(np.real(gk) >= 0) & (np.real(gk) <= factor * si)]
-        logger.debug(f"{points=}")
         if np.size(points) == 0: # points are empty
             N1 = 0
         else:
             theta_points = np.abs(np.angle(points))
-            logger.debug(f"{theta_points=}")
             pp_a = cubic_spline_a(theta_points)
-            logger.debug(f"{pp_a=}")
             pp_b = cubic_spline_b(theta_points)
-            logger.debug(f"{pp_b=}")
             r_points = np.abs(points)
-            logger.debug(f"{r_points=}")
             N_gk = (r_points - pp_b) / pp_a
-            logger.debug(f"{N_gk=}")
             N1 = np.max(N_gk)
 
         # matlab code - line 157 to 200
@@ -256,7 +248,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
             N2 = np.max(N_gk)
         
         logger.debug(f"{N1=} {N2=} {N_minimal=}")
-        return max(np.ceil(N1), np.ceil(N2), N_minimal)
+        return int(max(np.ceil(N1), np.ceil(N2), N_minimal))
 
 
 def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
@@ -324,10 +316,12 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
     # N(theta_i) = (R_i - b(theta_i))/a(theta_i), number of descretization points necessary to accurately
     # approximate the top left vertex for the different origins
     n2 = (r2_points - pp2_b) / pp2_a
-
-    n = np.min(np.maximum(n1, n2))
+    nn = np.maximum(n1, n2)
+    n_index = np.argmin(nn)
+    n = nn[n_index]
     n = n_minimal if n_minimal > n else n # make sure n >= n_minimal
-    return n, 0
+    origin = origi[n_index]
+    return n, origin
 
 if __name__ == "__main__":
     # test case

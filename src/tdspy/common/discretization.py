@@ -48,14 +48,13 @@ def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -
     E = tds.E
     A = tds.A
     hA = tds.hA
-    A_stacked = np.stack(A, axis=2)
-
     
     # main body
     if s0 != 0: # discretization around non-zero -> shift matrices
         logger.debug("")
         assert hA[0] == 0, "First delay assumed to be 0.0"
-        A[0] = A[0] - s0*E
+        A[:,:,0] = A[:,:,0] - s0*E
+        A[:,:,1:] = A[:,:,1:] * np.exp(-s0 * hA[1:])
         for i in range(1,len(A)):
             A[i] = A[i] * np.exp(-s0 * hA[i])
     
@@ -98,7 +97,7 @@ def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -
         #  Ri = A0 + sum_{k=1}^{mA} Ak Ti(-2*tau_k/tau_m+1) with Ti(.) the ith Chebyshev polynomial
         d = - np.transpose(hA) / hA_max * 2 + 1
         for i in range(N+1):
-            Ri = np.sum(A_stacked * scipy.special.eval_chebyt(i, d), axis=2)
+            Ri = np.sum(A * scipy.special.eval_chebyt(i, d), axis=2)
             Sigma_N[n_states*N:, i*n_states:(i+1)*n_states] = Ri
 
     elif method == "legendre":

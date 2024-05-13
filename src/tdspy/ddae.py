@@ -174,7 +174,7 @@ class DDAE:
             self._A = self.A[:,:, delay_index]
             self._hA = self.hA[delay_index]
         else:
-            raise NotImplementedError("Not implemented yet") # implement when we know all fields
+            return DDAE(A=self.A[:,:, delay_index], hA=self.hA[delay_index])
 
     def compress(self, inplace=False, rtol=1e-5, atol=1e-8):
         """ Removes delay duplicates, sorts delays into ascending order

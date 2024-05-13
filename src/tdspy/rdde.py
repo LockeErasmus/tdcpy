@@ -79,7 +79,7 @@ class RDDE(TDSBase):
     
     @property
     def is_delay_difference_equation(self) -> bool:
-        """ RDDE can not be delay difference equation """
+        """ RDDE can NOT be delay difference equation """
         return False
     
     def sort(self, inplace=False) -> 'RDDE':

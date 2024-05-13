@@ -40,9 +40,16 @@ A1 = np.array([[3, 3, 3, 3],
                [0, 5, 5, 5]])
 A = np.stack([A0, A1], axis=2)
 hA = np.array([0,1.])
-
-rdde = tdspy.ddae.DDAE(A=A, hA=hA)
-print(rdde.n)
-cr = tdspy.roots.roots(rdde, r=-1.5)
-
+r = -3.5
+ddae = tdspy.ddae.DDAE(A=A, hA=hA)
+rdde = tdspy.rdde.RDDE(A=A, hA=hA)
+cr = tdspy.roots.roots(ddae, r=r, max_size_evp=1200)
 print(cr)
+
+import matplotlib.pyplot as plt
+plt.figure()
+plt.scatter(np.real(cr), np.imag(cr), marker="o",
+            edgecolors="r", facecolors='none', label="python")
+plt.axvline(r, alpha=0.5)
+plt.legend()
+plt.show()
