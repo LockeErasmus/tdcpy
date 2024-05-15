@@ -12,6 +12,7 @@ from .ddae import DDAE
 from .ndde import NDDE
 from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
 from .stability.bounds import lower_bound, upper_bound
+from .stability.newton import newton_correction
 from .common.discretization import discretize
 from .gamma_r import gamma_r
 
@@ -105,13 +106,12 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     discretization_max = int(np.floor(max_size_evp / n) - 1)
     
     if case == "rhp":
+        # rescale r
+        rs = r * tau_max
+        # introduce shift of the origin, shifted matrices B, C
+        B = K[:,:,0] + (-rs)*E
+        C = K[:,:,1:] * np.exp(-rs * tau_s[1:])
         if discretization is None: # envoke heuristic
-            # rescale r
-            rs = r * tau_max
-            # introduce shift of the origin, shifted matrices B, C
-            B = K[:,:,0] + (-rs)*E
-            C = K[:,:,1:] * np.exp(-rs * tau_s[1:])
-
             if False: # TODO line 289 - 295, as of now unimportant, later KWARG
                 # condition C_D > r is assumed to be already checked
                 ...
@@ -226,26 +226,94 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 	# Newton corrections #
 	######################
     # TODO - line 441
-    
+
     # Select characteristic roots for Newton corrections
     if case == "rhp":
-        mask = (np.real(raw_roots) >= lower_bound(r, 0.1, 0.1) 
-                & np.imag(raw_roots) >= 0.0) # due to symetry, drop imag < 0
-        newton_roots = raw_roots[mask]
+        mask = ((np.real(raw_roots) >= lower_bound(r, 0.1, 0.1)) 
+                & (np.imag(raw_roots) >= 0.0)) # due to symetry, drop imag < 0
+        newton_roots0 = raw_roots[mask]
     else: # case == "rect"
         mask = ((np.real(raw_roots)>=lower_bound(r[0], 0.1, 0.1))
                 & (np.real(raw_roots)<=upper_bound(r[1], 0.1, 0.1))
                 & (np.imag(raw_roots)>=lower_bound(r[2], 0.1, 0.1))
                 & (np.imag(raw_roots)<=upper_bound(r[3], 0.1, 0.1)))
-        newton_roots = raw_roots[mask]
+        newton_roots0 = raw_roots[mask]
     
-    # TODO solve if newton roots emtpy
-
-    # continue 476
+    newton_roots = newton_correction(newton_roots0, E, A, hA, inplace=False)
 
 
+    # # TODO solve if newton roots emtpy
+    # newton_roots0 = np.copy(newton_roots)
 
-    return newton_roots
+
+    # newton_max_iterations=2
+    # newton_abs_tol = 1e-8
+    # for i in range(newton_roots.shape[0]):
+    #     newton_roots[i] # initial guess eigen value
+    #     #print(newton_roots[i])
+    #     R_lambda = (newton_roots[i] * E - A[:,:,0]
+    #                 - np.sum(A[:,:,1:]*np.exp(-newton_roots[i]*hA[1:]), axis=2))
+    #     (U, s, Vh) = linalg.svd(R_lambda, compute_uv=True)
+    #     #print(f"Matrix M")
+    #     #print(str(R_lambda))
+    #     #print("")
+    #     #print(s)
+    #     #print(linalg.eig(R_lambda))
+    #     v0 = Vh[-1]
+    #     #print(v0)
+        
+
+    #     residual = linalg.norm(R_lambda @ v0[:, np.newaxis], ord=None, axis=None) # 2-norm of np.ravel(.) is returned
+    #     print(f"iteration ---, {residual=}, {newton_roots[i]}")
+    #     if residual <= newton_abs_tol:
+    #         pass # TODO already sufficiently close
+    #     else:
+    #         # netwton is envoked to increase precission
+    #         jacobian = np.zeros(shape=(n+1, n+1), dtype=R_lambda.dtype)
+    #         jacobian[-1, :n] = np.conj(v0)
+    #         jacobian[-1, -1] = 0
+            
+    #         dR_lambda = np.zeros_like(R_lambda)
+    #         v = np.copy(v0) #
+    #         f_val = np.zeros(shape=(n+1,), dtype=R_lambda.dtype)
+
+    #         for j in range(newton_max_iterations):
+
+    #             dR_lambda = E + np.sum(A[:,:,1:]*(hA[1:]*np.exp(-newton_roots[i]*hA[1:])), axis=2)
+    #             # update jacobian
+    #             jacobian[:n, :n] = R_lambda
+    #             jacobian[:n, -1] = (dR_lambda @ v[:, np.newaxis])[:,0] # TODO check if this is efficient
+
+    #             f_val[:n] = (-R_lambda @ v[:, np.newaxis])[:,0]
+    #             f_val[-1] = -(np.inner(v0, v) - 1) # v0 is already stored in jacovian[-1, :n]
+
+    #             (dx, _, _, _) = linalg.lstsq(jacobian, f_val[:,np.newaxis])
+    #             dx = linalg.inv(jacobian)@f_val[:,np.newaxis]
+
+    #             # update - TODO
+    #             newton_roots[i] += dx[-1, 0]
+    #             v += dx[:n, 0]
+
+    #             # check converged?
+    #             residual = linalg.norm(R_lambda @ v[:, np.newaxis], ord=None, axis=None)
+    #             print(f"iteration {j=}, {residual=}, {newton_roots[i]}")
+    #             if residual <= newton_abs_tol:
+    #                 break # converged
+
+    #             # update R_lambda
+    #             R_lambda = (newton_roots[i] * E - A[:,:,0]
+    #                 - np.sum(A[:,:,1:]*np.exp(-newton_roots[i]*hA[1:]), axis=2))
+            
+
+        
+
+
+
+    # # continue 476
+
+
+
+    return newton_roots, newton_roots0
 
     
 

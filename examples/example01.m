@@ -15,13 +15,13 @@ E = eye(n)
 A = {A0, A1}
 hA = [0, 1]
 
-r = -1.5
+r = -2.5
 
 %%
 rdde = tds_create(A, hA);
 rdde.E
 
-roots = tds_roots(rdde, -4)
+roots = tds_roots(rdde, r);
 
 %%
 

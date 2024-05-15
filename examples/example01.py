@@ -40,16 +40,20 @@ A1 = np.array([[3, 3, 3, 3],
                [0, 5, 5, 5]])
 A = np.stack([A0, A1], axis=2)
 hA = np.array([0,1.])
-r = -3.5
+r = -2.5
 ddae = tdspy.ddae.DDAE(A=A, hA=hA)
 rdde = tdspy.rdde.RDDE(A=A, hA=hA)
-cr = tdspy.roots.roots(ddae, r=r, max_size_evp=1200)
-print(cr)
+cr, cr0 = tdspy.roots.roots(ddae, r=r, max_size_evp=1200)
+# print(cr)
 
 import matplotlib.pyplot as plt
 plt.figure()
 plt.scatter(np.real(cr), np.imag(cr), marker="o",
-            edgecolors="r", facecolors='none', label="python")
+            edgecolors="r", facecolors='none', label="after newton")
+plt.scatter(np.real(cr0), np.imag(cr0), marker="x",
+            color="b", label="before newton")
+for z, z0 in zip(cr, cr0):
+    plt.plot([np.real(z), np.real(z0)], [np.imag(z), np.imag(z0)], color="k", alpha=0.5)
 plt.axvline(r, alpha=0.5)
 plt.legend()
 plt.show()
