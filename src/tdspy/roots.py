@@ -11,6 +11,7 @@ from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
 from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
+from .stability.bounds import lower_bound, upper_bound
 from .common.discretization import discretize
 from .gamma_r import gamma_r
 
@@ -75,7 +76,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
         if case == "rhp":
             mask = np.isfinite(result) & (np.real(result)>=r)
             return result[mask]
-        else: # case == "region"
+        else: # case == "rect"
             mask = (np.isfinite(result) & (np.real(result)>=r[0]) 
                     & (np.real(result)<=r[1]) & (np.imag(result)>=r[2])
                     & (np.imag(result)<=r[3]))
@@ -212,7 +213,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 
     # solve EVP
     raw_roots = linalg.eig(dae.A, dae.E, left=False, right=False)
-    raw_roots = raw_roots[np.isfinite(raw_roots)]# get rid of inf and NaN
+    raw_roots = raw_roots[np.isfinite(raw_roots)] # get rid of inf and NaN
 
     # undo shift and scaling
     if case == "rhp":
@@ -225,8 +226,26 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 	# Newton corrections #
 	######################
     # TODO - line 441
+    
+    # Select characteristic roots for Newton corrections
+    if case == "rhp":
+        mask = (np.real(raw_roots) >= lower_bound(r, 0.1, 0.1) 
+                & np.imag(raw_roots) >= 0.0) # due to symetry, drop imag < 0
+        newton_roots = raw_roots[mask]
+    else: # case == "rect"
+        mask = ((np.real(raw_roots)>=lower_bound(r[0], 0.1, 0.1))
+                & (np.real(raw_roots)<=upper_bound(r[1], 0.1, 0.1))
+                & (np.imag(raw_roots)>=lower_bound(r[2], 0.1, 0.1))
+                & (np.imag(raw_roots)<=upper_bound(r[3], 0.1, 0.1)))
+        newton_roots = raw_roots[mask]
+    
+    # TODO solve if newton roots emtpy
 
-    return raw_roots
+    # continue 476
+
+
+
+    return newton_roots
 
     
 

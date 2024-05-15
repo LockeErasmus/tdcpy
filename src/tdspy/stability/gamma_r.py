@@ -240,20 +240,4 @@ def compute_gamma_r(DD: list[npt.NDArray], hDD: npt.NDArray, r: float, **kwargs)
 
     logger.info(f"{x0=}")
 
-
-
-
-    
-
-
-
-
-
-
-        
-    
-
-
-
-
-
+    # TODO
