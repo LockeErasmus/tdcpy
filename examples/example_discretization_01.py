@@ -32,6 +32,7 @@ A1 = np.array([[3, 3, 3, 3],
                [0, -1.5, 0, 0],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
+
 rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1.])
 
 # discretize rdde -> dae
