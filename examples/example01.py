@@ -43,7 +43,7 @@ hA = np.array([0,1.])
 r = -2.5
 ddae = tdspy.ddae.DDAE(A=A, hA=hA)
 rdde = tdspy.rdde.RDDE(A=A, hA=hA)
-cr, cr0 = tdspy.roots.roots(ddae, r=r, max_size_evp=1200)
+cr, cr0 = tdspy.roots.roots(ddae, r=r, max_size_evp=1200, discretization=100)
 # print(cr)
 
 import matplotlib.pyplot as plt

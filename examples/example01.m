@@ -1,7 +1,10 @@
 clear all;
 close all;
 
-%import tds_control.stability.compute_N_rhp
+
+import tds_control.stability.compute_N_rhp
+%% Define matrices
+
 n=4
 A0 = [[-1, 0, 0, 0],
       [0, 1, 0, 0],
@@ -17,7 +20,7 @@ hA = [0, 1]
 
 r = -2.5
 
-%%
+%% Create TDS object
 rdde = tds_create(A, hA);
 rdde.E
 
