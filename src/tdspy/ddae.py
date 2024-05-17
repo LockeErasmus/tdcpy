@@ -24,6 +24,7 @@ class DDAE:
         shape = A[0].shape
 
         # TODO if necessary, add 0 delay term
+        # REALY ADD 0.0 delay term
 
         
         # ---
@@ -200,7 +201,32 @@ class DDAE:
             self._hA = hA
         else:
             return DDAE(A=A, hA=hA)
+        
+    def eval_char_matrix(self, s: complex) -> npt.NDArray:
+        """ Evaluate characteristic matrix at `s`
+
+        M(s) = E*s - A[0]*exp(-s*hA[0]) - ... - A[mA]*exp(-s*hA[mA])
+        
+        Args:
+            s (complex, float, int): s from complex plane
+        
+        Returns:
+            M (array): characteristic matrix M evaluated at s
+        """
+        return self.E*s - np.sum(self.A * np.exp(-s*self.hA), axis=2)
     
+    def eval_char_matrix_derivative(self, s: complex) -> npt.NDArray:
+        """ Derivative of characteristic matrix with respect to s evaluated at s
+
+        dM(s) = E + hA[0]*A[0]*exp(-s*hA[0]) + ... + hA[mA]*A[mA]*exp(-s*hA[mA])
+        
+        Args:
+            s (complex, float, int): s from complex plane
+        
+        Returns:
+            dM (array): derivative of characteristic matrix M evaluated at s
+        """
+        return self.E + np.sum(self.A * self.hA * np.exp(-s*self.hA), axis=2)
 
 def normalize_delay_difference_equation(diff: DDAE, checkE=True):
     """ normalizes delay difference equation

@@ -238,7 +238,8 @@ def roots(tds: DDAE, r=0.0, **kwargs):
                 & (np.imag(raw_roots) >= lower_bound(r[2], 0.1, 0.1))
                 & (np.imag(raw_roots) <= upper_bound(r[3], 0.1, 0.1)))
         newton_roots0 = raw_roots[mask]
-
+    
+    #newton_roots0 = np.array([1+1j], dtype=np.complex128)
     newton_roots = newton_correction(newton_roots0, E, A, hA, inplace=False)
 
 

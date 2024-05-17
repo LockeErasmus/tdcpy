@@ -24,7 +24,15 @@ r = -2.5
 rdde = tds_create(A, hA);
 rdde.E
 
-roots = tds_roots(rdde, r);
+options = tds_roots_options;
+options.fix_N = 0;
+[roots, roots0, info] = tds_roots(rdde, r, options);
+
+scatter(real(roots0), imag(roots0), 'Marker','x');
+hold on;
+scatter(real(roots), imag(roots));
+xlim([r-0.1, inf]);
+ylim([0, 100]);
 
 %%
 
@@ -48,6 +56,63 @@ C=zeros(n,n,mA-1);
 for ii=1:mA-1
 	C(:,:,ii)=K{ii+1}*exp((-rs)*tau_s(ii+1));
 end
+
+
+%% Apply Newton to only one root to test it
+tol = 1e-10;
+max_it=2;
+l=1+1j % initial guess eigenvalue
+M=l*E-A{1}; % hA(1) == 0, see lines 167 - 171
+for ii=2:mA
+	M=M-A{ii}*exp(-l*hA(ii));
+end
+% and the vector v0 obtained as follows
+[~,~,V] = svd(M);
+v0=V(:,n); % Used for normalization
+v0
+
+v=v0; % initial guess eigenvector
+it=1;
+
+residu = norm(M*v);
+converged = (residu <= tol);
+
+while (it<=max_it) && ~converged
+    % (DL) =  M'(lambda) = E + tau1*A1*exp(-lambda*tau1) + ... + taum*Am*exp(-lambda*taum) 
+    DM=E;
+    for i=2:mA % hA(1) == 0, see lines 167 - 171
+        DM=DM+hA(i)*A{i}*exp(-l*hA(i));
+    end
+    DM
+    v
+    DM*v
+    v-0
+    % Jacobian of the nonlinear system
+    % [M'(lambda)*v  M(lambda); 0 v0']
+	J=[M DM*v;(v0)' 0] 
+	
+	dx=J\[-M*v;-((v0)'*v-1)]; % dx = J(l,v)\F(l,v)
+	v=v+dx(1:n,1);
+    it
+    l
+    residu
+	l=l+dx(n+1,1);
+
+    % characteristic matrix M = l*E- A0 - A1*exp(-l*tau1) - ... - Am*exp(-l*taum) 
+	M=l*E-A{1};
+    for i=1:1:mA-1
+        M=M-A{i+1}*exp(-l*hA(i+1));
+    end
+
+	residu = norm(M*v);
+	converged = (residu <= tol);
+
+	it=it+1;
+end
+
+
+
+
 
 %%
 compute_N_rhp(E,B,C,tau_s)
