@@ -14,23 +14,35 @@ from .ddae import DDAE
 
 class NDDE(TDSBase):
     """ Neutral Delay Differential Equaton
+
+    dxdt(t) = A[i]*x(t - hA[i]) + ... + A[mA]*x(t - hA[mA])
+              - H[0] * dxdt(t - hH[0]) - ... - H[mH] * dxdt(t - hH[mH])
     
     TODO documentation
 
     """
-    def __init__(self, A, hA, H, Hh,
+    def __init__(self, A: npt.NDArray, hA: npt.NDArray, H: npt.NDArray, hH: npt.NDArray,
                  B1=None, hB1=None, C1=None, hC1=None, D1=None, hD11=None,
-                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None, D21=None, hD21=None, D22=None, hD22=None) -> None:
+                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None,
+                 D21=None, hD21=None, D22=None, hD22=None) -> None:
         super().__init__()
 
         # TODO perform checks
-        assert len(A) > 0, "TODO"
+        # assert len(A) > 0, "TODO"
+        # TODO make sure hA[0] == 0
 
+        # TODO assert nonempty H and non-empty A
+        assert np.all(hA >= 0)
+        assert np.all(hH > 0) # no 0 delays allowed in hH
+        
         ## dynamics
         self._A = A
         self._hA = hA
+        self._H = H
+        self._hH = hH
         
         # TODO rest of the system description
+        # self._B1 , ...
 
     @property
     def n(self) -> int:
@@ -38,31 +50,46 @@ class NDDE(TDSBase):
 
     @property
     def E(self) -> npt.NDArray:
-        return np.eye(self.n)
+        return np.eye(self.n) # TODO this is not correct
     
     @property
-    def A(self) -> list[npt.NDArray]:
+    def A(self) -> npt.NDArray:
         """ list of dynamics matrices """
         return self._A
     
     @property
-    def hA(self) -> list[float]:
-        """ delays """
+    def H(self) -> npt.NDArray:
+        """ list of dynamics matrices """
+        return self._H
+    
+    @property
+    def hA(self) -> npt.NDArray:
+        """ A delays """
         return self._hA
     
     @property
     def mA(self) -> int:
-        """ number of delays """
+        """ number of A delays """
         return len(self.hA)
+    
+    @property
+    def hH(self) -> npt.NDArray:
+        """ H delays """
+        return self._hH
+    
+    @property
+    def mH(self) -> int:
+        """ number of H delays """
+        return len(self.hH)
     
     @property
     def p2(self) -> int:
         """ number of delays """
-        raise NotImplementedError("p2 RDDE")
+        raise NotImplementedError("p2 NDDE")
     
     @property
     def is_compressed(self) -> bool:
-        """ Cheks if RDDE is in compressed form (no duplicates in hA) """
+        """ Cheks if NDDE is in compressed form (no duplicates in hA) """
         if len(self.hA) == len(np.unique(self.hA)):
             return True
         else:
@@ -70,13 +97,14 @@ class NDDE(TDSBase):
     
     @property
     def is_sorted(self) -> bool:
-        """ Checks if DDAe is in sorted form (ascending hA) """
+        """ TODO Checks if DDAE is in sorted form (ascending hA) """
         return all(self.hA[i] <= self.hA[i+1] for i in range(len(self.hA) - 1))
+    
     
     @property
     def is_lti(self) -> bool:
-        """ Checks if DDAE is Linear Time-invariant """
-        return True # as of now, always assume RDDE is LTI
+        """ Checks if NDDE is Linear Time-invariant """
+        return True # as of now, always assume NDDE is LTI
     
     @property
     def is_delay_difference_equation(self) -> bool:
@@ -97,9 +125,39 @@ class NDDE(TDSBase):
         raise NotImplementedError("Not implemented yet")
     
     def to_ddae(self) -> 'DDAE':
-        """ Converts NDDE to DDAE """
+        """ Converts NDDE to DDAE
+        
+        
+         [0  I]  [dxdt(t)] = [A0 0] [x(t)] + SUM [A[k]   0] [x(t-tau)]
+         [0  0]  [dadt(t)] = [I -I] [a(t)]   k=1 [H[k-1] 0] [a(t-tau)]
+        
+        
+        """
+        dtype = self.A.dtype # TODO
+        n = self.n
+        mA = self.mA
+        mH = self.mH
+        # construct matrix E
+        E = np.zeros(shape=(2*n, 2*n))
+        E[:n, n:] = np.eye(n)
 
-        raise NotImplementedError("Not implemented yet")
+        # construct matrix A
+        A = np.zeros(shape=(2*n, 2*n, mA+mH))
+        A[:n, :n, :mA] = self.A
+        A[n:, :n, 0] = np.eye(n) # hA[0] == 0 is assumed
+        A[n:, n:, 0] = -np.eye(n) # hA[0] == 0 is assumed
+        A[n:, :n, mA:] = self.H
+
+        # construct delays
+        hA = np.zeros(shape=(mA+mH,))
+        hA[:mA] = self.hA
+        hA[mA:] = self.hH
+
+        # TODO construct correct input/output DDAE matrices
+
+        # TODO compress yes or no?
+
+        return DDAE(E=E, A=A, hA=hA)
 
 
 

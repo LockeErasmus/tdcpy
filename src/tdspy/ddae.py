@@ -196,6 +196,8 @@ class DDAE:
         A = newA[:,:,~mask]
         hA = unique_hA[~mask]
 
+        # TODO also solve input matrices, output matrices
+        
         if inplace:
             self._A = A
             self._hA = hA

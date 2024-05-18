@@ -35,11 +35,11 @@ otherwise.
 ## Testing
 
 As of now it is usefull to run tests with visible outputs:
-```
+```bash
 pytest -rP
 ```
 shows output of passed tests,
-```
+```bash
 pytest -rx
 ```
 shows output of failed tests (default behaviour of pytest)
