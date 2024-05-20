@@ -100,7 +100,11 @@ class NDDE(TDSBase):
         """ TODO Checks if DDAE is in sorted form (ascending hA) """
         return all(self.hA[i] <= self.hA[i+1] for i in range(len(self.hA) - 1))
     
-    
+    @property
+    def is_logical(self) -> bool:
+        """ TODO - as of now, always return False """
+        return False
+        
     @property
     def is_lti(self) -> bool:
         """ Checks if NDDE is Linear Time-invariant """
@@ -158,7 +162,15 @@ class NDDE(TDSBase):
         # TODO compress yes or no?
 
         return DDAE(E=E, A=A, hA=hA)
+    
+    def to_delay_difference_equation(self) -> DDAE:
+        """ Converts to Delay-difference Equation
 
-
-
-
+        For a NDDAE, the associated delay difference equation is given by
+            I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0
+        """
+        if self.is_logical:
+            raise ValueError(f"Can't form Delay-Difference Equation from logical")
+        hD = np.concatenate([[0], self.hH], axis=0)
+        D = np.concatenate([np.eye(self.n)[:,:,np.newaxis], np.transpose(self.H, (1,0,2))], axis=2)
+        return DDAE(E=np.zeros(shape=(self.n, self.n)), A=D, hA=hD)

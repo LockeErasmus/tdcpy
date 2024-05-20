@@ -245,9 +245,11 @@ def normalize_delay_difference_equation(diff: DDAE, checkE=True):
         - D (array): 3D array representing matrices [inv(A0)*A1, ... , inv(A0)*Am]
         - hDD (array): array of non-zero delays
     """
+    print(diff.hA)
     hDD = diff.hA[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
+    print(hDD)
 
-    DD = np.zeros_like(shape=(diff.n, diff.n, diff.mA-1))
+    DD = np.zeros(shape=(diff.n, diff.n, diff.mA-1))
 
     if diff.mA == 2:
         DD[:,:,0] = linalg.lstsq(diff.A[:,:,0], diff.A[:,:,1])
