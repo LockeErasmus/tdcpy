@@ -1,9 +1,13 @@
-# tdspy
+# Time-Delay Systems python package
 
 
-## Installation
+## Getting started
 
-### Installing with `pip`
+### Prerequisities
+
+### Installation
+
+#### Installing with `pip`
 
 From github
 ```bash
@@ -15,7 +19,7 @@ Local install
 pip install <path-to-tdspy>
 ```
 
-### Installing from source
+#### Installing from source
 
 Clone repository
 ```bash
@@ -46,8 +50,7 @@ shows output of failed tests (default behaviour of pytest)
 
 
 
-
-## Usage notes
+## Usage
 
 ### Coming from matlab
 
@@ -65,10 +68,55 @@ A1 = np.array([[3, 3, 3, 3],
             [0, -1.5, 0, 0],
             [0, 0, 3, -5],
             [0, 5, 5, 5]])
-A = [A0, A1]
-hA = [0, 1]
+A = [A0, A1] # <- list of array
+hA = [0, 1] # <-list of number
 
 # better in python
-A = np.stack([A0, A1], axis=2) # results in array (4,4,2)
+A = np.stack([A0, A1], axis=2) # results is array (4,4,2)
 hA = np.array([0., 1])
 ```
+
+### Examples
+
+Please see the folder ./examples
+
+## Roadmap
+
+### tdspy package
+
+- [] `DDAE`, `RDDE`, `NDDE` classes implementation
+    - [x] E, A, hA
+    - [] I/O
+- []
+
+### Project
+- [] `CONTRIBUTING.md` - specify guidelines, ...
+- [] `pipy` setup also, register page https://pypi.org/project/tdspy/
+- [] add Wim Michiels articles into README
+- [] docstrings and sphinx
+
+### Problems
+- Compare:
+    - `NDDE -> DDAE -> delay-difference equation -> normalize`
+    - `NDDE -> delay-difference equation` (already normalized)
+
+## Contributing
+
+Contributions are greatly appriciated. If you have any suggestion that would make this project better, you can:
+1. contact me
+1. open an issue (with tag `enhancement`)
+1. fork the project, make changes and open a pull request
+
+## License
+
+This package is available under [GNU GPLv3 license](./LICENSE).
+
+## Contact
+
+Adam Peichl - adpeichl@gmail.com
+
+## Acknowledgments
+
+
+
+

@@ -6,7 +6,7 @@ TODO
 Notes:
     1. `MemoizeJac` decorator is used because of (i) keep implementation as
         simillar as possible to MATLAB® and (ii) to optimize calculation of 
-        function value and jacobian as some operations can be shared
+        function value and jacobian as some operations are shared
 """
 
 import logging
@@ -61,7 +61,7 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     y[4*n_diff+1] = np.imag(block_3)
     y[4*n_diff+2] = np.real(block_4)
     y[4*n_diff+3] = np.imag(block_4)
-    # y[4*n_diff+4:] = 0 automatically
+    # y[4*n_diff+4:] = 0 automatically fullfiled
 
     # construct jacobian
     jac_shape = (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt)
@@ -96,27 +96,36 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     jac[4*n_diff+3, 2*n_diff: 3*n_diff] = np.imag(v) # Jac(4*ndiff+4,2*ndiff+(1:ndiff)) = imag(v);
     jac[4*n_diff+3, 3*n_diff: 4*n_diff] = -np.real(v) # Jac(4*ndiff+4,3*ndiff+(1:ndiff)) = -real(v);
 
+    print(str(np.round(jac, decimals=1)))
+
     # n_opt update
     for k in range(n_opt):
-        v1 = np.conj(u)[np.newaxis, :] @ DD[:,:,k] * np.exp(-r*hDD[k]) # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
-        v2 = DD[:,:,k] @ v[:,np.newaxis] * np.exp(-r*hDD[k])# v2 = DD{k+1}*v*exp(-r*hDD(k+1));
+        v1 = np.conj(u)[np.newaxis, :] @ DD[:,:,k+1] * np.exp(-r*hDD[k+1]) # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
+        v2 = DD[:,:,k+1] @ v[:,np.newaxis] * np.exp(-r*hDD[k+1]) # v2 = DD{k+1}*v*exp(-r*hDD(k+1));
         uDv = np.inner(v1, v) # uDv = (v1*v);
         M3 = 1j*np.exp(1j*th[k])*v2 # M3 = 1j*exp(1j*theta(k))*v2;
         M4 = -1j*np.conj(v1) * np.exp(-1j*th[k]); # M4 = -1j*conj(v1)*exp(-1j*theta(k));
-        y[4*n_diff+4+k] = np.imag( np.conj(s) * np.exp(1j*th[k])*uDv) # y(2*(2*ndiff+2)+k)= imag( conj(lambda)*exp(1j*theta(k))*uDv ) ;
-        # Jac(1:ndiff,4*ndiff+2+k) = real(M3);
-        # Jac(ndiff+(1:ndiff),4*ndiff+2+k) = imag(M3);
-        # Jac(2*ndiff+(1:ndiff),4*ndiff+2+k) = real(M4);
-        # Jac(3*ndiff+(1:ndiff),4*ndiff+2+k) = imag(M4);
-        # Jac(4*ndiff+4+k,1:ndiff) = imag(conj(lambda)*exp(1j*theta(k))*v1);
-        # Jac(4*ndiff+4+k,ndiff+(1:ndiff)) = real(conj(lambda)*exp(1j*theta(k))*v1);
-        # Jac(4*ndiff+4+k,2*ndiff+(1:ndiff)) = imag(conj(lambda)*exp(1j*theta(k))*v2);
-        # Jac(4*ndiff+4+k,3*ndiff+(1:ndiff)) = -real(conj(lambda)*exp(1j*theta(k))*v2);
-        # Jac(4*ndiff+4+k,4*ndiff+1) = imag(exp(1j*theta(k))*uDv);
-        # Jac(4*ndiff+4+k,4*ndiff+2) = -real(exp(1j*theta(k))*uDv);
-        # Jac(4*ndiff+4+k,4*ndiff+2+k) = imag(1j*conj(lambda)*exp(1j*theta(k))*uDv);
+        print(f"{v1=}")
+        print(f"{v2=}")
+        print(f"{uDv=}")
+        print(f"{M3=}")
+        print(f"{M4=}")
+        y[4*n_diff+4+k] = np.imag( np.conj(s) * np.exp(1j*th[k])*uDv) # y(2*(2*ndiff+2)+k)= imag( conj(lambda)*exp(1j*theta(k))*uDv );
+        jac[:n_diff, 4*n_diff+1+k+1] = np.real(M3) # Jac(1:ndiff,4*ndiff+2+k) = real(M3);
+        jac[n_diff: 2*n_diff, 4*n_diff+1+k+1] = np.imag(M3) # Jac(ndiff+(1:ndiff),4*ndiff+2+k) = imag(M3);
+        jac[2*n_diff: 3*n_diff, 4*n_diff+1+k+1] = np.real(M4) # Jac(2*ndiff+(1:ndiff),4*ndiff+2+k) = real(M4);
+        jac[3*n_diff: 4*n_diff, 4*n_diff+1+k+1] = np.imag(M4) # Jac(3*ndiff+(1:ndiff),4*ndiff+2+k) = imag(M4);
+        jac[4*n_diff+3+k+1, :n_diff] = np.imag(np.conj(s)*np.exp(1j*th[k])*v1) # Jac(4*ndiff+4+k,1:ndiff) = imag(conj(lambda)*exp(1j*theta(k))*v1);
+        jac[4*n_diff+3+k+1, n_diff :2*n_diff] = np.real(np.conj(s)*np.exp(1j*th[k])*v1) # Jac(4*ndiff+4+k,ndiff+(1:ndiff)) = real(conj(lambda)*exp(1j*theta(k))*v1);
+        jac[4*n_diff+3+k+1, 2*n_diff: 3*n_diff] = np.imag(np.conj(s)*np.exp(1j*th[k])*v2) # Jac(4*ndiff+4+k,2*ndiff+(1:ndiff)) = imag(conj(lambda)*exp(1j*theta(k))*v2);
+        jac[4*n_diff+3+k+1, 3*n_diff: 4*n_diff] = -np.real(np.conj(s)*np.exp(1j*th[k])*v2)# Jac(4*ndiff+4+k,3*ndiff+(1:ndiff)) = -real(conj(lambda)*exp(1j*theta(k))*v2);
+        jac[4*n_diff+3+k+1, 4*n_diff] = np.imag(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+1) = imag(exp(1j*theta(k))*uDv);
+        jac[4*n_diff+3+k+1, 4*n_diff+1] =  -np.real(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2) = -real(exp(1j*theta(k))*uDv);
+        jac[4*n_diff+3+k+1, 4*n_diff+1+k+1] = np.imag(1j*np.conj(s)*np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2+k) = imag(1j*conj(lambda)*exp(1j*theta(k))*uDv);
+    
+    print(str(np.round(jac, decimals=2)))
 
-    return y
+    return y, jac
 
 
 
@@ -273,12 +282,32 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
         func,
         x0,
         args=(DD, hDD, r, v_s),
+        jac=True,
         method=kwargs.get("scipy_root_method", "lm"),
         tol=kwargs.get("scipy_root_tol", None),
         callback=kwargs.get("scipy_root_callback", None),
         options=kwargs.get("scipy_root_options", None),
-    )
-    print(x0)
-    print(sol.x)
+    ) # solution is saved in sol.x
 
-    # TODO
+    if not sol.success:
+        # root-finding algorithm failed
+        logger.warning("Correction step failed.")
+    
+    x_star = sol.x # solution x*
+    th_star = x_star[4*n_diff+2:]
+
+    M = DD[:,:,0] * np.exp(-r*hDD[0])
+    for i in range(n_opt):
+        M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_star[i])
+    
+    vals = linalg.eig(M, left=False, right=False)
+    gamma_r_index = np.argmax(np.abs(vals))
+    gamma_r = vals_abs[gamma_r_index]
+
+    if (gamma_r - radius) < 0.0: # improvement is worse then 0.0
+        logger.debug(f"Correction failed {gamma_r=}, {radius=}, rely on radius (predictor)")
+        # TODO return also metadata
+        return radius
+    else:
+        logger.debug(f"Correction succesful {gamma_r=}, {radius=}, using gamma_r")
+        return gamma_r

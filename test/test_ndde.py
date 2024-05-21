@@ -49,4 +49,4 @@ def test_conversion_to_ddae():
     assert ddae.hA.shape == (3,)
     assert np.allclose(ddae.hA, np.array([0,1,2.]), atol=1e-10)
 
-
+    assert ddae.is_compressed

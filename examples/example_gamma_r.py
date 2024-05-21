@@ -35,6 +35,9 @@ def generate_example() -> tds.NDDE:
 
     return tds.NDDE(A=A, hA=hA, H=H, hH=hH)
 
+def generate_example_2() -> tds.DDAE:
+    pass
+
 
 ndde = generate_example()
 diff = ndde.to_delay_difference_equation()

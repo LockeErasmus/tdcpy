@@ -1,6 +1,6 @@
 """
-Base for objects: RDDE, NDDE, DDAE
-----------------------------------
+Abstract Parent Class for RDDE, NDDE, DDAE
+------------------------------------------
 """
 
 from abc import ABC, abstractmethod

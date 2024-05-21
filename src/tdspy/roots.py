@@ -14,7 +14,7 @@ from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
 from .stability.bounds import lower_bound, upper_bound
 from .stability.newton import newton_correction
 from .common.discretization import discretize
-from .gamma_r import gamma_r
+from .gamma import gamma 
 
 logger = logging.getLogger(__name__)
 
@@ -121,9 +121,9 @@ def roots(tds: DDAE, r=0.0, **kwargs):
                     if diff.hA[0] != 0 or False: # TODO
                         raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
 
-                    if gamma_r(diff, r) >= 1.0:
+                    if gamma(diff, r) >= 1.0:
                         discretization = 30
-                        logger.warning((f"Gamma_r exceeds {gamma_r} >= 1 (i.e., CD>r). Spectral "
+                        logger.warning((f"Gamma(r; ...) exceeds {gamma} >= 1 (i.e., CD>r). Spectral "
                                         "discretization with N = 30 (lowered if maximum size of "
                                         "eigenvalue problem is exceeded). Try specifying a "
                                         "rectangular region instead."))
@@ -131,7 +131,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
                 if discretization is None:
                     # discretization is still undefined, reason:
                     #   (a) - no underlying delay-difference equation or
-                    #   (b) - gamma_r < 1.0
+                    #   (b) - gamma(r) < 1.0
                     # => region RHP contains finitely many roots and heuristic
                     #    can be applied
                     basic_delay = kwargs.get("basic_delay", None)

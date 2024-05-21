@@ -117,6 +117,20 @@ class DDAE:
     def is_delay_difference_equation(self) -> bool:
         """ Checks if DDAE is a delay difference equation, i.e. E==0 """
         return not self.is_logical and np.allclose(self.E, 0, atol=1e-12)
+    
+    @property
+    def is_normalized_delay_difference_equation(self) -> bool:
+        """ Checks if DDAE is a normalized delay difference equation
+        
+        This condition is defined as fullfilling
+            (a) DDAE is not logical
+            (b) E == 0
+            (c) A[0] == I
+        with `np.allclose` absolute tolerance 1e-12.
+        """
+        flag = (not self.is_logical and np.allclose(self.E, 0, atol=1e-12)
+                and np.allclose(self.A[:,:,0], np.eye(self.n), atol=1e-12))
+        return flag
 
     def to_delay_difference_equation(self, **kwargs) -> 'DDAE':
         """ Converts to Delay-difference Equation 
@@ -170,8 +184,10 @@ class DDAE:
     def sort(self, inplace=False):
         """ Sorts delays (mainly hA) into ascending order """
         delay_index = np.argsort(self.hA)
+
+        # TODO also solve input matrices, output matrices
+
         if inplace:
-            # TODO as of now, it only sorts A, it should sort all
             self._A = self.A[:,:, delay_index]
             self._hA = self.hA[delay_index]
         else:
@@ -183,7 +199,14 @@ class DDAE:
         Args:
             inplace (bool): wheter to modify existing DDEA or create a new one,
                 default False
-            
+            rtol (float): relative tolerance for determining matrix element is
+                zero, default 1e-5
+            atol (float): absolute tolerance for determining matrix element is 
+                zero, default 1e-8
+        
+        Returns:
+            DDAE: compressed representation
+            None: if inplace=True (current object is updated)
         """
         unique_hA = np.unique(self.hA) # sorted in ascending order
         newA = np.zeros(shape=(self.n, self.n, unique_hA.shape[0]))
