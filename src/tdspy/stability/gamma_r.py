@@ -1,10 +1,10 @@
 """
-Computation of gamma r
-----------------------
+Computation of gamma(r, TDS)
+----------------------------
 TODO
 
 Notes:
-    1. `MemoizeJac` decorator is used because of (i) keep implementation as
+    1. `MemoizeJac` decorator can be used because of (i) keep implementation as
         simillar as possible to MATLAB® and (ii) to optimize calculation of 
         function value and jacobian as some operations are shared
 """
@@ -15,15 +15,41 @@ import numpy.typing as npt
 
 from scipy import linalg
 from scipy import optimize
-from scipy.optimize._optimize import MemoizeJac
 
 logger = logging.getLogger(__name__)
 
 def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
-    """ Calculates value and jacobian of the following function
-    
-    
+    """ Calculates value and jacobian of the vector function F(x)
 
+    vector x, shape=(4*ndiff + 2 + (m-1), ):
+
+        x = [Re(v), Im(v), Re(u), Im(u), Re(lambda), Im(s), th]
+    
+    function F(x):
+
+        M * v - s * v                                                   = 0
+        u^{H} * M  - s * u^{H}                                          = 0
+        u^{H} * v  - 1                                                  = 0
+        v0^{H} * v - 1                                                  = 0
+        Im(conj(lambda)*(u^{H}*DD{k}*v)*exp(-r*hDD(k))*exp(1j*theta(k)) = 0 for k = 1,...,m
+        
+    with th = [0; th_v], v0 a normalization vector and
+        
+        M = DD[0]*exp(-r*hDD[0])*exp(1j*th[1]) + ... + DD[m]*exp(-r*hDD[m])*exp(1j*th[m])
+        
+    using fsolve (#optim. variables: 4*ndiff + 2 + (m-1), #constraints: 4*ndiff + 2 + (m-1) ).
+
+    Returns:
+        tuple containing
+
+        - y (array): 1D array representing function F evaluated at x
+        - jac (array): jacobian of F evaluated at x
+    
+    Notes:
+        1. shape of `x` (n_opt, ), n_opt = 4*ndiff + 2 + (m-1)
+        1. shape of `jac` (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
+            n_diff ... dimension of the state vector of the delay-difference equation
+    
     TODO:
         1. possible to have x not as a vector but as a 2d array, could be better computation-wise
     """
