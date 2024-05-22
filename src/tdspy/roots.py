@@ -116,7 +116,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
                 # condition C_D > r is assumed to be already checked
                 ...
             else:
-                diff = tds.to_delay_difference_equation()
+                diff = tds.get_delay_difference_equation()
                 if diff is not None: # empty associated delay difference equation (E is not singular)
                     if diff.hA[0] != 0 or False: # TODO
                         raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
@@ -194,7 +194,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
             origin = tau_max * ((r[0]+r[1])/2) + 1j*((r[2]+r[3])/2)
             logger.debug(f"User provided {discretization=} | {origin=} ")
         
-        QQ = np.copy(A)
+        QQ = np.copy(A).astype(np.complex128)
         QQ[:,:,0] =  K[:,:,0] + (-origin)*E
         QQ[:,:,1:] = K[:,:,1:] * np.exp(-origin * tau_s[1:])
 
@@ -228,9 +228,10 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     # TODO - line 441
 
     # Select characteristic roots for Newton corrections
+    # TODO, sometimes this drop can cause drop double roots with Im part close to 0-
     if case == "rhp":
         mask = ((np.real(raw_roots) >= lower_bound(r, 0.1, 0.1)) 
-                & (np.imag(raw_roots) >= 0.0)) # due to symetry, drop imag < 0
+                & (np.imag(raw_roots) >= -1e-10)) # due to symetry, drop imag < 0
         newton_roots0 = raw_roots[mask]
     else: # case == "rect"
         mask = ((np.real(raw_roots) >= lower_bound(r[0], 0.1, 0.1))
@@ -242,6 +243,10 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     #newton_roots0 = np.array([1+1j], dtype=np.complex128)
     newton_roots = newton_correction(newton_roots0, E, A, hA, inplace=False)
 
+    if case == "rhp":
+        # add back conjugates, but not those close to real 0 axis
+        mask0 = ~np.isclose(np.imag(newton_roots), 0, rtol=0, atol=1e-10)
+        newton_roots = np.r_[newton_roots, np.conj(newton_roots[mask0])]
 
     # # TODO solve if newton roots emtpy
     # newton_roots0 = np.copy(newton_roots)    

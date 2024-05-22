@@ -163,7 +163,7 @@ class NDDE(TDSBase):
 
         return DDAE(E=E, A=A, hA=hA)
     
-    def to_delay_difference_equation(self) -> DDAE:
+    def get_delay_difference_equation(self) -> DDAE:
         """ Converts to Delay-difference Equation
 
         For a NDDAE, the associated delay difference equation is given by

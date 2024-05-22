@@ -40,3 +40,8 @@ class TDSBase(ABC):
     def p2(self) -> int:
         """ input size """
         ...
+    
+    @abstractmethod
+    def get_delay_difference_equation(self):
+        """ associated delay difference equation """
+        ...

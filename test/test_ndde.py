@@ -26,9 +26,9 @@ def generate_example_01() -> tds.NDDE:
     return tds.NDDE(A=A, hA=hA, H=H, hH=hH)
 
 def test_conversion_to_ddae():
-    tds = generate_example_01()
+    ndde = generate_example_01()
 
-    ddae = tds.to_ddae()
+    ddae = ndde.to_ddae()
 
     assert np.allclose(ddae.E, np.array([[0,1],[0,0.]]), atol=1e-10)
     assert ddae.A.shape == (2,2,4)
@@ -50,3 +50,40 @@ def test_conversion_to_ddae():
     assert np.allclose(ddae.hA, np.array([0,1,2.]), atol=1e-10)
 
     assert ddae.is_compressed
+
+
+
+def test_ddae_ndde_conversion_equal():
+    """
+    
+    Tests if paths
+        (1) ndde -> diff
+        (2) ndde -> ddae -> diff -> normalized diff
+    Results in the same solution
+    
+    """
+    ndde = generate_example_01()
+
+    ddae = ndde.to_ddae() # this step should be correct
+    ddae.compress(inplace=True)
+
+    print("uE.T  ", ddae.uE.T)
+    print("vE    ", ddae.vE)
+
+    for i in range(ddae.A.shape[2]):
+        print(f"{i=}  ", ddae.uE.T @ ddae.A[:,:,i] @ ddae.vE)
+
+    diff1 = ddae.get_delay_difference_equation()
+    print(diff1.A.shape)
+    print(diff1.A)
+    
+    diff2 = ndde.get_delay_difference_equation()
+    # print(diff2.A[:,:,0])
+    # print(diff2.A[:,:,0])
+
+
+
+
+    
+
+    

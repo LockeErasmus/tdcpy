@@ -93,7 +93,7 @@ def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -
         #           [0   ...   0   I ]
         #           [R0 R1    ...  RN]
         ##Sigma_N = np.c_[np.zeros(shape=(n_states*N, n_states)), np.eye(n_states*N)] TODO delete this row
-        Sigma_N = np.diag(np.ones(N*n_states), k=n_states)
+        Sigma_N = np.diag(np.ones(N*n_states), k=n_states).astype(np.complex128)
         #  Ri = A0 + sum_{k=1}^{mA} Ak Ti(-2*tau_k/tau_m+1) with Ti(.) the ith Chebyshev polynomial
         d = - np.transpose(hA) / hA_max * 2 + 1
         for i in range(N+1):

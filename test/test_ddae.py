@@ -91,19 +91,24 @@ def test_diff_02():
     vE = ddae.vE
     A = ddae.A
 
+    D1 = np.zeros_like(A)
+    norms = np.zeros(shape=(A.shape[2],))
     for i in range(A.shape[2]):
         Ai = A[:,:,i]
-        print(Ai)
         Di = np.transpose(uE) @ Ai @ vE
-        print(Di)
-        print(f"norm = {linalg.norm(Di, ord=1, axis=None)}")
-        print("--------")
+        D1[:,:,i] = Di
+        norms[i] = linalg.norm(Di, ord=1, axis=None)
     
-    D = np.transpose(np.transpose(np.transpose(uE) @ A) @ vE)
-    norm_mat = linalg.norm(D, ord=1, axis=(0,1))
+    diff = ddae.get_delay_difference_equation()
+
+    assert np.all(np.isclose(diff.A, D1, rtol=0, atol=1e-10))
+    assert np.all(np.isclose(diff.E, 0, rtol=0, atol=1e-10))
+
+    D2 = np.transpose(np.transpose(np.transpose(uE) @ A) @ vE)
+    norm_mat = linalg.norm(D2, ord=1, axis=(0,1))
     print(f"{norm_mat=}")
 
-    diff = ddae.to_delay_difference_equation()
+    diff = ddae.get_delay_difference_equation()
     print(diff.A)
     print(diff.E)
     print(diff.uE)

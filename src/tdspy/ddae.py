@@ -131,8 +131,34 @@ class DDAE:
         flag = (not self.is_logical and np.allclose(self.E, 0, atol=1e-12)
                 and np.allclose(self.A[:,:,0], np.eye(self.n), atol=1e-12))
         return flag
+    
+    @property
+    def is_essentially_retarded(self):
+        """ Checks if DDAE is essentially retarded
+        
+        DDAE is essentially retarded IFF characteristic equation of underlying
+        delay-difference equation 
+        
+            det | SUM A[i] * exp(-s*hA[i]) |
+        
+        does not depend on complex argument `s`, i.e. delay difference equation
+        has to take form:
 
-    def to_delay_difference_equation(self, **kwargs) -> 'DDAE':
+            0 = A[0] x(t)
+        """
+        diff = self.get_delay_difference_equation()
+        if diff.A.shape[2] == 0 and diff.hA[0] == 0:
+            return True
+        return False
+        
+
+    @property
+    def is_essentially_neutral(self):
+        """ Checks if DDAE is essentialy netural """
+        return ~self.is_essentially_retarded
+
+        
+    def get_delay_difference_equation(self, **kwargs) -> 'DDAE':
         """ Converts to Delay-difference Equation 
 
         For a DDAE, the associated delay difference equation is given by
@@ -143,6 +169,10 @@ class DDAE:
         kwargs:
             tol (float): norm tolerance for considering matrix vanish,'
                 default 1e-14
+        
+        Returns:
+            DDAE representing delay difference equation if E is singular
+            None if E is non-singular (there is no delay difference equation)
 
         """
         if self.is_logical:
@@ -164,12 +194,18 @@ class DDAE:
         norm_null = max(norm_uE, norm_vE)
 
         # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
-        D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
+        # D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
+        D = []
+        for i in range(self.A.shape[2]):
+            D.append(uE.T @ self.A[:,:,i] @ vE)
+        D = np.stack(D, axis=2)
         
         # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
         mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
         D = D[:,:,mask]
         hD = self.hA[mask]
+
+        # TODO if D.size == 0 -> None ???
         
         # form DDAE with E=0, Di, hD, uE=vE=eye(nE)
         nE = uE.shape[1] # TODO WIP

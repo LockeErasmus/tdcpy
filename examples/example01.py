@@ -17,8 +17,7 @@ A0 = [ 0 1   0   0] and A1 = [0 -1.5 0  0].
 """
 import numpy as np
 import tdspy
-import tdspy.ddae
-import tdspy.roots
+import tdspy.plot
 
 # Set up logging
 import logging
@@ -41,19 +40,20 @@ A1 = np.array([[3, 3, 3, 3],
 A = np.stack([A0, A1], axis=2)
 hA = np.array([0,1.])
 r = -2.5
-ddae = tdspy.ddae.DDAE(A=A, hA=hA)
-rdde = tdspy.rdde.RDDE(A=A, hA=hA)
-cr, cr0 = tdspy.roots.roots(ddae, r=r)
-# print(cr)
+ddae = tdspy.DDAE(A=A, hA=hA)
+rdde = tdspy.RDDE(A=A, hA=hA)
+cr, cr0 = tdspy.roots(ddae, r=r)
 
 import matplotlib.pyplot as plt
-plt.figure()
-plt.scatter(np.real(cr), np.imag(cr), marker="o",
-            edgecolors="r", facecolors='none', label="after newton")
-plt.scatter(np.real(cr0), np.imag(cr0), marker="x",
-            color="b", label="before newton")
-for z, z0 in zip(cr, cr0):
-    plt.plot([np.real(z), np.real(z0)], [np.imag(z), np.imag(z0)], color="k", alpha=0.5)
-plt.axvline(r, alpha=0.5)
-plt.legend()
+# plt.figure()
+# plt.scatter(np.real(cr), np.imag(cr), marker="o",
+#             edgecolors="r", facecolors='none', label="after newton")
+# plt.scatter(np.real(cr0), np.imag(cr0), marker="x",
+#             color="b", label="before newton")
+# for z, z0 in zip(cr, cr0):
+#     plt.plot([np.real(z), np.real(z0)], [np.imag(z), np.imag(z0)], color="k", alpha=0.5)
+# plt.axvline(r, alpha=0.5)
+# plt.legend()
+
+tdspy.plot.eigen_plot(cr)
 plt.show()

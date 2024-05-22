@@ -94,5 +94,9 @@ class RDDE(TDSBase):
                 default False
         """
         raise NotImplementedError("Not implemented yet")
+    
+    def get_delay_difference_equation(self) -> None:
+        """ RDDE has no associated delay difference equation """
+        return None
 
 

@@ -40,7 +40,7 @@ def generate_example_2() -> tds.DDAE:
 
 
 ndde = generate_example()
-diff = ndde.to_delay_difference_equation()
+diff = ndde.get_delay_difference_equation()
 # note, this delay-difference equation is already normalized (A[0] == I)
 
 print(diff.E, diff.A, diff.hA)

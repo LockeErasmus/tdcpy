@@ -28,11 +28,7 @@ options = tds_roots_options;
 options.fix_N = 0;
 [roots, roots0, info] = tds_roots(rdde, r, options);
 
-scatter(real(roots0), imag(roots0), 'Marker','x');
-hold on;
-scatter(real(roots), imag(roots));
-xlim([r-0.1, inf]);
-ylim([0, 100]);
+tds_eigenplot(roots)
 
 %%
 
