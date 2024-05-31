@@ -156,8 +156,67 @@ class DDAE:
     def is_essentially_neutral(self):
         """ Checks if DDAE is essentialy netural """
         return ~self.is_essentially_retarded
+    
+    def _get_delay_difference_equation(self, uE: npt.NDArray, vE:npt.NDArray,
+                                       normalize=False, tol=1e-14) -> tuple:
+        """ Converts to Delay difference Equation Representation
 
+        For a DDAE, the associated delay difference equation is given by
+            U'*A[0]*V x(t-hA[0]) + ... + U'*A[mA-1]*V x(t-hA[mA-1]) = 0
+        with U and V orthogonal matrices whose columns form a basis for the null
+        space of E.
+
+        Args:
+            uE (array): assumed to be non-zero
+            vE (array): assumed to be non-zero
+            normalize (bool): whether to normalize delay difference equation,
+                i.e. multiply by inv(A[0]), note that D0 and 0 delay term are
+                omitted, optional, default False
+            tol (float): norm tolerance for considering matrix vanish,'
+                default 1e-14
         
+        Returns:
+            tuple containing
+
+                - D (int): number of discretization points necessary
+                - hD (complex): origin TODO
+        """
+        # calculate .. for both nullspaces, select the bigger one
+        norm_uE = linalg.norm(uE, ord=1, axis=None)
+        norm_vE = linalg.norm(vE, ord=1, axis=None)
+        norm_null = max(norm_uE, norm_vE)
+
+        # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
+        # D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
+        D = []
+        for i in range(self.A.shape[2]):
+            D.append(uE.T @ self.A[:,:,i] @ vE)
+        D = np.stack(D, axis=2)
+        
+        # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
+        mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
+        D = D[:,:,mask]
+        hD = self.hA[mask]
+
+        # TODO, what if empty or 1 delay
+
+        # normalize
+        if normalize:
+            hDD = hD[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
+            n, m = D.shape[0], hDD.shape[0]
+            DD = np.zeros(shape=(n, n, m))
+            
+            if m == 1:
+                DD[:,:,0] = linalg.lstsq(D[:,:,0], D[:,:,1])
+            else:
+                P, L, U = linalg.lu(D[:,:,0]) # LU decomposition for having inverse of A0
+                for i in range(1, m+1):
+                    DD[:,:, i-1] = linalg.lstsq(U, linalg.lstsq(L, P @ D[:,:,i])) # Di = inv(A0) @ Ai        
+            
+            return DD, hDD # return normalized
+        else:
+            return D, hD # return not normalized
+   
     def get_delay_difference_equation(self, **kwargs) -> 'DDAE':
         """ Converts to Delay-difference Equation 
 
@@ -177,8 +236,6 @@ class DDAE:
         """
         if self.is_logical:
             raise ValueError(f"Can't form DDE from logical")
-        
-        tol = kwargs.get("tol", 1e-14)
                 
         uE = self.uE # dynamic property -> calc it once and store into mem
         vE = self.vE # dynamic property -> calc it once and store into mem
@@ -188,28 +245,14 @@ class DDAE:
             return None
             # return DDAE(A=np.empty(shape=(0,0,0)), hA=np.empty(shape=(0,)))
 
-        # calculate .. for both nullspaces, select the bigger one
-        norm_uE = linalg.norm(uE, ord=1, axis=None)
-        norm_vE = linalg.norm(vE, ord=1, axis=None)
-        norm_null = max(norm_uE, norm_vE)
-
-        # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
-        # D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
-        D = []
-        for i in range(self.A.shape[2]):
-            D.append(uE.T @ self.A[:,:,i] @ vE)
-        D = np.stack(D, axis=2)
-        
-        # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
-        mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
-        D = D[:,:,mask]
-        hD = self.hA[mask]
-
-        # TODO if D.size == 0 -> None ???
-        
-        # form DDAE with E=0, Di, hD, uE=vE=eye(nE)
-        nE = uE.shape[1] # TODO WIP
-        dtype = self.E.dtype # numpy data type
+        D, hD = self._get_delay_difference_equation(
+            uE,
+            vE,
+            normalize=kwargs.get("normalize", False),
+            tol= kwargs.get("tol", 1e-14),
+        )
+        nE = self.n
+        dtype = self.E.dtype
         diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
                     uE=np.eye(nE, dtype=dtype), vE=np.eye(nE, dtype=dtype))
         return diff

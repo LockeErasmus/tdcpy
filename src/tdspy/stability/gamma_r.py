@@ -49,9 +49,6 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         1. shape of `x` (n_opt, ), n_opt = 4*ndiff + 2 + (m-1)
         1. shape of `jac` (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
             n_diff ... dimension of the state vector of the delay-difference equation
-    
-    TODO:
-        1. possible to have x not as a vector but as a 2d array, could be better computation-wise
     """
     n_diff = DD.shape[0] # TODO this could be calculated in advance
     n_opt = DD.shape[2] - 1 # TODO this could be calculated in advance
@@ -158,25 +155,30 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
 def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     """ Computes gamma(r) of the normalized delay difference equation
     
-    Equation takes form
-        0 = x(t) + DD[0] * x(t-hDD[0]) + ... + DD[m-1]*x(t-hDD[m-1]), (1)
+    Normalized delay difference equation takes form
+        0 = x(t) + DD[0] * x(t-hDD[0]) + ... + DD[m-1]*x(t-hDD[m-1]),      (1)
     where m == len(DD) == len(hDD).
 
-    The gamma(r) of (1) is given by:
-        max_{theta\in[0,2*pi)^{m}} rho(sum_{k} DD{k}*exp(-r*hDD(k))*exp(1j*theta(k)), (2)
-    where function rho(.) returns the spectral radius of its matrix argument.
+    The gamma(r) of (1) is given by the following optimization problem:
+        find maximum theta from [0, 2*pi)^m of expression:
+            rho( SUM for all k DD[k]*exp(-r*hDD[k])*exp(1j*theta[k]) )     (2)
+        where rho(.) is spectral radius of its matrix argument.
 
-    Args: TODO
-        DD (list of `ndarray`)
-        hDD (ndarray)
-        r (float)
+    Args:
+        DD (array): coefficient matrices packed into 3D array shaped (n,n,m),
+            note that coefficients for x(t) are assumed to be identity matrix
+            and therefore omitted (see functions for converting DDAE to delay
+            difference equation and normalizing)
+        hDD (array): delays represented by 1D array shaped (m,), note that delay
+            0 is omitted
+        r (float): 
 
         kwargs:
             n_theta (int): theta discretization, has to be > 0, default 10
             correction (bool): if correction is applied, default True
             scipy_root_method (str): scipy.optimize.root method, default 'lm',
                 i.e. Levenberg-Marquardt algorithm, note: carefull, not all
-                methods can attemt to solve problem
+                methods attempt to solve problem
             scipy_root_tol (float): Tolerance for termination. For detailed
                 control, use `scipy_root_options`, default None
             scipy_root_callback (function): Optional callback function. It is
@@ -196,7 +198,7 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
 
     assert hDD.size > 0 and DD.size > 0, "empty delay-difference equation not allowed"
     n_delays = hDD.shape[0]
-    assert n_delays > 0, "empty dde representation not allowed"
+    assert n_delays > 0, "empty delay difference equation not allowed"
     assert n_delays == DD.shape[2], "len of DD and hDD has to match"
 
     n_diff = DD.shape[0] # dimension of state vector of delay-diff. eq.
@@ -234,7 +236,8 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     print(f"{n_opt=}    {id=}    {theta_grid=}")
 
     while id[0] <= endpoint:
-        # the optimization variable theta = [0 theta_grid(id)] -> we do not need to explicitly form the search grid
+        # the optimization variable theta = [0 theta_grid(id)]
+        # -> we do not need to explicitly form the search grid
         # M = DD{1}*exp(-r*hDD(1))*exp(1j*theta(1)) + .. + DD{m}*exp(-r*hDD(m))*exp(1j*theta(m))
 
         # construct M
@@ -245,13 +248,11 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
             M = M + DD[:,:,k2+1] * np.exp(-r*hDD[k2+1]) * np.exp(1j * theta_grid[id[k2]])
     
         vals = linalg.eig(M, left=False, right=False)
-        # gamma_r = np.max(np.abs(vals))
         vals_abs = np.abs(vals)
         gamma_r_index = np.argmax(vals_abs)
         gamma_r = vals_abs[gamma_r_index]
         if gamma_r > radius:
             radius = gamma_r
-            print(radius)
             radius_eig = vals[gamma_r_index]
             radius_ind = np.copy(id)
         

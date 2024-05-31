@@ -82,6 +82,21 @@ Please see the folder ./examples
 
 ## Roadmap
 
+High level API (= importable from `tdspy`)
+1. `tdspy.RDDE` - class representing Retarded Delay Differential Equation
+1. `tdspy.NDDE` - class representing Neutral Delay Differential Equation
+1. `tdspy.DDAE`  - class representing Delay Differential Algebraic Equation
+1. `tdspy.roots` - computes roots in specified region
+1. `tdspy.cd` - computes strong spectral abscissa of associated delay difference equation
+1. `tdspy.sa` - computes spectral abscissa
+1. `tdspy.strong_sa` - computes strong spectral abscissa MAX(c, cd)
+
+Submodules
+1. `common`
+1. `stability`
+1. `stabobt`
+
+
 ### tdspy package
 
 - [] `DDAE`, `RDDE`, `NDDE` classes implementation
