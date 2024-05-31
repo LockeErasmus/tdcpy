@@ -9,7 +9,9 @@ Notes:
         function value and jacobian as some operations are shared
 """
 
+from collections import namedtuple
 import logging
+
 import numpy as np
 import numpy.typing as npt
 
@@ -17,6 +19,8 @@ from scipy import linalg
 from scipy import optimize
 
 logger = logging.getLogger(__name__)
+
+GammaInfo = namedtuple("GammaInfo", ["th", "M", "s", "u", "v"])
 
 def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     """ Calculates value and jacobian of the vector function F(x)
@@ -123,8 +127,8 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
 
     # n_opt update
     for k in range(n_opt):
-        v1 = np.conj(u)[np.newaxis, :] @ DD[:,:,k+1] * np.exp(-r*hDD[k+1]) # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
-        v2 = DD[:,:,k+1] @ v[:,np.newaxis] * np.exp(-r*hDD[k+1]) # v2 = DD{k+1}*v*exp(-r*hDD(k+1));
+        v1 = np.ravel(np.conj(u)[np.newaxis, :] @ DD[:,:,k+1] * np.exp(-r*hDD[k+1])) # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
+        v2 = np.ravel(DD[:,:,k+1] @ v[:,np.newaxis] * np.exp(-r*hDD[k+1])) # v2 = DD{k+1}*v*exp(-r*hDD(k+1));
         uDv = np.inner(v1, v) # uDv = (v1*v);
         M3 = 1j*np.exp(1j*th[k])*v2 # M3 = 1j*exp(1j*theta(k))*v2;
         M4 = -1j*np.conj(v1) * np.exp(-1j*th[k]); # M4 = -1j*conj(v1)*exp(-1j*theta(k));
@@ -150,9 +154,7 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
 
     return y, jac
 
-
-
-def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
+def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     """ Computes gamma(r) of the normalized delay difference equation
     
     Normalized delay difference equation takes form
@@ -187,12 +189,15 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
                 methods but 'hybr' and 'lm'.
             scipy_root_options (dict): a dictionary of solver options (method),
                 default None
+    
+    Returns:
+        tuple containing:
+            gamma (float): TODO
+            info ()
 
     Notes:
         1. for all kwargs starting with 'scipy_*' check the following documentation
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
-
-
 
     """
 
@@ -216,8 +221,14 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
         # CASE 1: 1 delay -> no sensitivity to infinitesimal delay perturbations
         M = np.sum(DD * np.exp(-r * hDD), axis=2)
         vals = linalg.eig(M, left=False, right=False)
-        gamma_r = np.max(np.abs(vals))
-        return gamma_r
+        vals_abs = np.abs(vals)
+        gamma_r_index = np.argmax(vals_abs)
+        gamma_r = vals_abs[gamma_r_index]
+        eig_v = vals[gamma_r_index]
+        U, _, Vh = linalg.svd(M - eig_v*np.eye(n_diff))
+        v = np.conj(Vh[-1])
+        u = U[-1]
+        return gamma_r, GammaInfo(0, M, eig_v, u, v)
     
     # CASE 2: n_delays > 1 in DDE
     ## STEP 1: prediction step -- grid search over [0,2*pi)^{m}
@@ -269,12 +280,12 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     if radius == 0:
         # degenerate case, TODO return also metadata
         gamma_r = 0
-        return gamma_r
+        return gamma_r, None # TODO
     
     if not correction: # correction=False by user -> no correction applied, return
         logger.debug(f"No correction")
         # TODO return metadata
-        return gamma_r
+        return gamma_r, None # TODO
     
     # correction=True -> apply correction
     logger.debug("Applying correction to gamma_r")
@@ -285,7 +296,6 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     print(f"{eig_v=}")    
 
     # compute the corresponding left and right eigenvectors
-    # line 175
     M = DD[:,:,0] * np.exp(-r*hDD[0])
     for i in range(n_opt):
         M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_v[i])
@@ -334,7 +344,7 @@ def compute_gamma_r(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
     if (gamma_r - radius) < 0.0: # improvement is worse then 0.0
         logger.debug(f"Correction failed {gamma_r=}, {radius=}, rely on radius (predictor)")
         # TODO return also metadata
-        return radius
+        return radius, None # TODO
     else:
         logger.debug(f"Correction succesful {gamma_r=}, {radius=}, using gamma_r")
-        return gamma_r
+        return gamma_r, None # TODO

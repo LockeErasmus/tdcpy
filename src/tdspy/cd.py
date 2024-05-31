@@ -10,6 +10,9 @@ import numpy as np
 import numpy.typing as npt
 
 from .ddae import DDAE
+from .common.delay_difference_equation import normalize_diff
+
+from .stability.gamma_r import compute_gamma
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +41,11 @@ def cd(tds: DDAE, **kwargs):
                 underlying delay difference equation, optional, default 0.0
 
     Returns:
-        TODO
+        tuple containing:
+
+            - cd (float): strong spectral abscissa of associated delay
+                difference equation
+            - info (TODO): TODO - named tuple matching matlab behaviour?
     
     Notes:
         1. If the associated delay difference equations has a large
@@ -53,13 +60,13 @@ def cd(tds: DDAE, **kwargs):
     assert isinstance(n_theta, int) and n_theta > 0
     assert isinstance(cd0, (float, int))
 
-
     # step 1: obtain delay difference equation
     # TODO check tds is correct instance of class
     if tds.is_delay_difference_equation:
-        diff = tds
+        diff = tds.compress()
     else:
         diff = tds.get_delay_difference_equation()
+        diff.compress(inplace=True)
     
     # step 2: filter out trivial cases
     if diff is None: # no associated delay difference equation (or empty)
@@ -76,8 +83,24 @@ def cd(tds: DDAE, **kwargs):
                         "Computation of CD might be slow."))
     
     # step 3.1 normalize delay difference equation - continue line 135
+    DD, hDD = normalize_diff(diff.A, diff.hA)
 
+    if DD.shape[2] == 1:
+        # case only one delay: the strong spectral abscissa is equal to
+        #   cd = ln( rho(DD[0]]) ) / hDD[0]
+        gamma0 = compute_gamma(DD, hDD, 0)
+        cd = np.log(gamma0) / hDD[0]
+        # TODO info return, as of now None
+        return cd, None
+    
+    # to exclude degenerate case gamma(r) == 0 for all r
+    gamma0 = compute_gamma(DD, hDD, 0)
+    if gamma0 == 0.0:
+        return -np.inf, None
+    
+    # gamma(r) =/= 0 --> use fsolve to find zero crossings of gamma(r)-1
+    # TODO continue line 171
 
-
+    print("passing")
 
 

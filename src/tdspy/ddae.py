@@ -155,7 +155,7 @@ class DDAE:
     @property
     def is_essentially_neutral(self):
         """ Checks if DDAE is essentialy netural """
-        return ~self.is_essentially_retarded
+        return not self.is_essentially_retarded
     
     def _get_delay_difference_equation(self, uE: npt.NDArray, vE:npt.NDArray,
                                        normalize=False, tol=1e-14) -> tuple:

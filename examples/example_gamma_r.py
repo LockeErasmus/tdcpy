@@ -17,7 +17,7 @@ logger.addHandler(handler)
 import numpy as np
 
 import tdspy as tds
-from tdspy.stability.gamma_r import compute_gamma_r
+from tdspy.stability.gamma_r import compute_gamma
 
 def generate_example() -> tds.NDDE:
     """ generates example from TDS MATLAB manual (page 23) """
@@ -46,7 +46,11 @@ diff = ndde.get_delay_difference_equation()
 print(diff.E, diff.A, diff.hA)
 
 
-g = compute_gamma_r(diff.A[:,:,1:], diff.hA[1:], 0, correction=False)
+g, info = compute_gamma(diff.A[:,:,1:], diff.hA[1:], 0, correction=False)
 print(g)
-g = compute_gamma_r(diff.A[:,:,1:], diff.hA[1:], 0, correction=True)
+g, info = compute_gamma(diff.A[:,:,1:], diff.hA[1:], 0, correction=True)
+
+
+cd = tds.cd(ndde)
+print(f"strogn spectral abscissa of associated DIFF {cd=}")
 

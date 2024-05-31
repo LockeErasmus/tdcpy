@@ -1,7 +1,7 @@
 clear all;
 close all;
 
-import tds_control.stability.compute_gamma_r
+import tds_control.stability.compute_gamma
 
 
 A = {0.25, -1/3};

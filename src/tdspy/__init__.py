@@ -9,3 +9,4 @@ from .ndde import NDDE
 
 from .roots import roots
 from .gamma import gamma
+from .cd import cd
