@@ -154,7 +154,7 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
 
     return y, jac
 
-def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
+def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
     """ Computes gamma(r) of the normalized delay difference equation
     
     Normalized delay difference equation takes form
@@ -173,7 +173,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs):
             difference equation and normalizing)
         hDD (array): delays represented by 1D array shaped (m,), note that delay
             0 is omitted
-        r (float): 
+        r (float): TODO
 
         kwargs:
             n_theta (int): theta discretization, has to be > 0, default 10
