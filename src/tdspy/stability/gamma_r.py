@@ -123,8 +123,6 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     jac[4*n_diff+3, 2*n_diff: 3*n_diff] = np.imag(v) # Jac(4*ndiff+4,2*ndiff+(1:ndiff)) = imag(v);
     jac[4*n_diff+3, 3*n_diff: 4*n_diff] = -np.real(v) # Jac(4*ndiff+4,3*ndiff+(1:ndiff)) = -real(v);
 
-    print(str(np.round(jac, decimals=1)))
-
     # n_opt update
     for k in range(n_opt):
         v1 = np.ravel(np.conj(u)[np.newaxis, :] @ DD[:,:,k+1] * np.exp(-r*hDD[k+1])) # v1 = u'*DD{k+1}*exp(-r*hDD(k+1));
@@ -132,11 +130,6 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         uDv = np.inner(v1, v) # uDv = (v1*v);
         M3 = 1j*np.exp(1j*th[k])*v2 # M3 = 1j*exp(1j*theta(k))*v2;
         M4 = -1j*np.conj(v1) * np.exp(-1j*th[k]); # M4 = -1j*conj(v1)*exp(-1j*theta(k));
-        print(f"{v1=}")
-        print(f"{v2=}")
-        print(f"{uDv=}")
-        print(f"{M3=}")
-        print(f"{M4=}")
         y[4*n_diff+4+k] = np.imag( np.conj(s) * np.exp(1j*th[k])*uDv) # y(2*(2*ndiff+2)+k)= imag( conj(lambda)*exp(1j*theta(k))*uDv );
         jac[:n_diff, 4*n_diff+1+k+1] = np.real(M3) # Jac(1:ndiff,4*ndiff+2+k) = real(M3);
         jac[n_diff: 2*n_diff, 4*n_diff+1+k+1] = np.imag(M3) # Jac(ndiff+(1:ndiff),4*ndiff+2+k) = imag(M3);
@@ -149,8 +142,6 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         jac[4*n_diff+3+k+1, 4*n_diff] = np.imag(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+1) = imag(exp(1j*theta(k))*uDv);
         jac[4*n_diff+3+k+1, 4*n_diff+1] =  -np.real(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2) = -real(exp(1j*theta(k))*uDv);
         jac[4*n_diff+3+k+1, 4*n_diff+1+k+1] = np.imag(1j*np.conj(s)*np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2+k) = imag(1j*conj(lambda)*exp(1j*theta(k))*uDv);
-    
-    print(str(np.round(jac, decimals=2)))
 
     return y, jac
 
@@ -243,8 +234,6 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         endpoint = n_theta // 2 + 1
     else:
         endpoint = n_theta
-    
-    print(f"{n_opt=}    {id=}    {theta_grid=}")
 
     while id[0] <= endpoint:
         # the optimization variable theta = [0 theta_grid(id)]
@@ -253,7 +242,6 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
 
         # construct M
         # M = np.sum(DD * np.exp(-r * hDD) * np.exp(), axis=2)
-
         M = DD[:,:,0] * np.exp(-r*hDD[0])
         for k2 in range(n_opt):
             M = M + DD[:,:,k2+1] * np.exp(-r*hDD[k2+1]) * np.exp(1j * theta_grid[id[k2]])
@@ -270,10 +258,10 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         # form the next gridpoint
         id[-1] += 1
         j = len(id)
-        while id[j-1] == n_theta +1:
+        while id[j-1] == n_theta:
             if j == 0:
                 break
-            id[j-1] = 1
+            id[j-1] = 0
             id[j-2] = id[j-2] + 1
             j = j -1
 
@@ -292,9 +280,6 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     th_v = theta_grid[radius_ind.astype(int)] # critical values of theta
     eig_v = radius_eig # critical eigen value
 
-    print(f"{th_v=}")
-    print(f"{eig_v=}")    
-
     # compute the corresponding left and right eigenvectors
     M = DD[:,:,0] * np.exp(-r*hDD[0])
     for i in range(n_opt):
@@ -311,8 +296,6 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
                np.real(eig_v), np.imag(eig_v), th_v]
 
     logger.info(f"{x0=}")
-    
-    print(f"y(x0) = {func(x0, DD, hDD, r, v_s)}")
 
     # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_'
     sol = optimize.root(

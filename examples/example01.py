@@ -42,7 +42,7 @@ hA = np.array([0,1.])
 r = -2.5
 ddae = tdspy.DDAE(A=A, hA=hA)
 rdde = tdspy.RDDE(A=A, hA=hA)
-cr, cr0 = tdspy.roots(ddae, r=r)
+cr, cr0 = tdspy.roots(rdde, r=r)
 
 import matplotlib.pyplot as plt
 # plt.figure()

@@ -89,7 +89,7 @@ High level API (= importable from `tdspy`)
 1. `tdspy.roots` - computes roots in specified region
 1. `tdspy.cd` - computes strong spectral abscissa of associated delay difference equation
 1. `tdspy.sa` - computes spectral abscissa
-1. `tdspy.strong_sa` - computes strong spectral abscissa MAX(c, cd)
+1. `tdspy.strong_sa` - computes strong spectral abscissa MAX(sa, cd)
 
 Submodules
 1. `common`
@@ -106,7 +106,7 @@ Submodules
 
 ### Project
 - [] `CONTRIBUTING.md` - specify guidelines, ...
-- [] `pipy` setup also, register page https://pypi.org/project/tdspy/
+- [] `pipy` setup also, register page https://pypi.org/project/tds-control/
 - [] add Wim Michiels articles into README
 - [] docstrings and sphinx
 
