@@ -326,9 +326,15 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         options=kwargs.get("scipy_root_options", None),
     ) # solution is saved in sol.x
 
-    if not sol.success:
-        # root-finding algorithm failed
-        logger.warning("Correction step failed.")
+    if not sol.success: # i.e. root-finding algorithm failed
+        logger.warning("Correction step failed")
+        # TODO log these:
+        # sol.status #
+        # sol.message
+        # sol.nit
+        # sol.nfev # f evals
+        # sol.njev
+        # sol.nhev
     
     x_star = sol.x # solution x*
     th_star = x_star[4*n_diff+2:]
