@@ -321,7 +321,7 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
     n = nn[n_index]
     n = n_minimal if n_minimal > n else n # make sure n >= n_minimal
     origin = origi[n_index]
-    return n, origin
+    return int(n), origin
 
 if __name__ == "__main__":
     # test case
