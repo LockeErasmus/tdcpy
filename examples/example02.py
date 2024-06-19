@@ -47,9 +47,13 @@ hH = np.array([1])
 
 r = -2.5
 ndde = tdspy.NDDE(A=A, hA=hA,H=H, hH=hH)
+print(f"ndde is {ndde}")
 cr, cr0 = tdspy.roots(ndde, r=-2.5)
 
 diff = ndde.get_delay_difference_equation()
+
+ndde_ddae = ndde.to_ddae
+print(f"ndde_ddae is {ndde_ddae.E}, {ndde.A}")
 
 print(diff)
 print(f"E={diff.E=}, A={diff.A}, hA={diff.hA=}")
