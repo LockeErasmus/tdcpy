@@ -39,10 +39,10 @@ A1 = np.array([[3, 3, 3, 3],
                [0, 5, 5, 5]])
 A = np.stack([A0, A1], axis=2)
 hA = np.array([0,1.])
-r = -2.5
+r = -3.0
 ddae = tdspy.DDAE(A=A, hA=hA)
 rdde = tdspy.RDDE(A=A, hA=hA)
-cr, cr0 = tdspy.roots(rdde, r=r)
+cr, info = tdspy.roots(rdde, r=r)
 
 import matplotlib.pyplot as plt
 # plt.figure()

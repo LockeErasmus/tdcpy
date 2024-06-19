@@ -1,6 +1,7 @@
 """
 Implementation of tds_roots
 """
+from collections import namedtuple
 import logging
 
 import numpy as np
@@ -18,20 +19,32 @@ from .gamma import gamma
 
 logger = logging.getLogger(__name__)
 
-def roots(tds: DDAE, r=0.0, **kwargs):
-    """
+
+RootsInfo = namedtuple("RootsInfo", ["discretization", "gamma_r_exceeds_one", "index_exceeds_one",
+                                     "newton_inital_guesses", "newton_final_values", 
+                                     "newton_residuals", "newton_unconverged_initial_guesses", 
+                                     "newton_large_corrections"])
+
+def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
+    """ Computes the characteristic roots of a time-delay system in a given
+    right half-plane or rectangular region.
 
     Args:
-        tds (TODO)
+        tds (TODO): instance of time-delay system, i.e., RDDE, NDDE or DDAE
         r (int or list): region, specify r as number on real axis or rectangular
             region via 4 coordinates [Re_min, Re_max, Im_min, Im_max], default r=0.0
+        kwargs:
+            max_size_evp (int): TODO, default 600
+            discretization (int): discretization, if None heuristic is envoked,
+                default None, keep default if you don't know, has to be > 1
+            basic_delay (float): define if delays are commensurate, default
+                None, used in discretization heuristic case `rhp`
+    
+    Returns:
+            tuple containing
 
-    kwargs:
-        max_size_evp (int): TODO, default 600
-        discretization (int): discretization, if None heuristic is envoked,
-            default None, keep default if you don't know, has to be > 1
-        basic_delay (float): define if delays are commensurate, default None,
-            used in discretization heuristic case `rhp`
+                - roots (array): array of found roots
+                - metadata (RootsInfo): named tuple consisting of TODO
     """
 
     # checks for region definition
@@ -41,7 +54,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     elif isinstance (r, list):
         assert len(r) == 4, "region has to be defined in form [a,b,c,d]"
         assert r[0] < r[1] and r[2] < r[3], "region has to be defined as [a,b,c,d], a<b, c<d"
-        # TODO assert all from r finite ?
+        assert np.all(~np.isinf(r)), "region has to be finite rectangle"
         case = "rect"
     else:
         raise ValueError(("Region (argument `r`) has to be defined as number, "
@@ -209,7 +222,7 @@ def roots(tds: DDAE, r=0.0, **kwargs):
 
     # create DDAE and discretize into DAE
     ddae = DDAE(E=E, A=QQ, hA=tau_s)
-    dae = discretize(ddae, discretization)
+    dae = discretize(ddae, discretization) # TODO, rework to low-level function `discretize`
 
     # solve EVP
     raw_roots = linalg.eig(dae.A, dae.E, left=False, right=False)
@@ -225,13 +238,11 @@ def roots(tds: DDAE, r=0.0, **kwargs):
     ######################
 	# Newton corrections #
 	######################
-    # TODO - line 441
-
     # Select characteristic roots for Newton corrections
     # TODO, sometimes this drop can cause drop double roots with Im part close to 0-
     if case == "rhp":
         mask = ((np.real(raw_roots) >= lower_bound(r, 0.1, 0.1)) 
-                & (np.imag(raw_roots) >= -1e-10)) # due to symetry, drop imag < 0
+                & (np.imag(raw_roots) >= -1e-10)) # due to symetry, drop imag < 0 TODO kwarg
         newton_roots0 = raw_roots[mask]
     else: # case == "rect"
         mask = ((np.real(raw_roots) >= lower_bound(r[0], 0.1, 0.1))
@@ -240,17 +251,27 @@ def roots(tds: DDAE, r=0.0, **kwargs):
                 & (np.imag(raw_roots) <= upper_bound(r[3], 0.1, 0.1)))
         newton_roots0 = raw_roots[mask]
     
-    #newton_roots0 = np.array([1+1j], dtype=np.complex128)
-    newton_roots = newton_correction(newton_roots0, E, A, hA, inplace=False)
+    # perform newton corrections
+    newton_roots, residuals, converged_mask, correction_large_mask = newton_correction(newton_roots0, E, A, hA)
+    newton_roots = newton_roots[np.isfinite(newton_roots)] # get rid of inf and NaN
 
     if case == "rhp":
         # add back conjugates, but not those close to real 0 axis
         mask0 = ~np.isclose(np.imag(newton_roots), 0, rtol=0, atol=1e-10)
-        newton_roots = np.r_[newton_roots, np.conj(newton_roots[mask0])]
+        roots = np.r_[newton_roots, np.conj(newton_roots[mask0])]
+        roots = roots[roots >= r]
+        if roots.size == 0:
+            logger.warning(f"No characteristic roots found in right half-plane (Re(z)>= {r})")
+    else: # case == "rect"
+        mask = ((np.real(newton_roots) >= r[0])
+                & (np.real(newton_roots) <= r[1])
+                & (np.imag(newton_roots) >= r[2])
+                & (np.imag(newton_roots) <= r[3]))
+        roots = newton_roots[mask]
+        if roots.size == 0:
+            logger.warning(f"No characteristic roots found in rectangular region {r}")
 
-    # # TODO solve if newton roots emtpy
-    # newton_roots0 = np.copy(newton_roots)    
+    # prepare RootsInfo TODO - fix gamma_r and index bools
+    info = RootsInfo(discretization, False, False, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
 
-    # # continue 476
-
-    return newton_roots, newton_roots0
+    return roots, info

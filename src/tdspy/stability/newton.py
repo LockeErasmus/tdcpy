@@ -12,7 +12,7 @@ from scipy import linalg
 logger = logging.getLogger(__name__)
 
 def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
-                      hA: npt.NDArray, inplace: bool=False, **kwargs):
+                      hA: npt.NDArray, **kwargs):
     """ Newton corrections applied initial guess `roots0`
 
     root `s` (element of `roots0`) is an initial guess of the eigenvalue of
@@ -43,8 +43,6 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
         E (array): E matrix from TDS representation shaped (n,n)
         A (array): A matrices from TDS representation shaped (n,n,mA)
         hA (array): hA vector of delays from TDS representation shaped (mA,)
-        inplace (bool): whether to apply newton corrections to input vector
-                or create copy and do not alter initial roots, default False
         **kwargs:
             return_residuals(bool): wheter to also return residuals or not,
                 default False
@@ -52,10 +50,12 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
             max_iterations(int): maximum number of newton iterations, default 20
     
     Returns:
-        None : if inplace=True and return_residuals=False
-        roots (array): if inplace=False and return residuals=False
-        residuals (array): if inplace=True and return_residuals=True
-        (roots, residuals) (tuple): if inplace=False and return_residuals=True
+        tuple containing:
+
+            - roots (array): 1D array roots of improved precission
+            - residuals (array): 1D array roots of residuals
+            - converged_mask (array): 1D array mask if root converged
+            - large_correction_mask (array): 1D array mask if correction large
 
     Notes:
         1. The expected shapes of input arrays:
@@ -73,10 +73,7 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
     max_iterations = kwargs.get("max_iterations", 20)
     tol = kwargs.get("tol", 1e-10)
 
-    if inplace:
-        roots = roots0
-    else:
-        roots = np.copy(roots0)
+    roots = np.copy(roots0)
     
     # pre-allocate memory
     n = E.shape[0]
@@ -87,6 +84,8 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
     v = np.zeros_like(v0, dtype=roots.dtype)
     f_val = np.zeros(shape=(n+1,), dtype=roots.dtype)
     residuals = np.zeros(shape=roots0.shape, dtype=np.float64)
+    converged_mask = np.full_like(roots, fill_value=True, dtype=bool)
+    large_correction_mask = np.full_like(roots, fill_value=False, dtype=bool)
 
     for i in range(roots.shape[0]):
         # initial guess of eigen-value stored in `roots[i]`
@@ -128,18 +127,15 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
                 # check if residual <= desired tolerance
                 residuals[i] = linalg.norm(M @ v[:, np.newaxis], ord=None, axis=None)
                 logger.debug(f"  it: {j} | residual={residuals[i]}, root={roots[i]}")
-                if residuals[i] <= tol:
+                if residuals[i] <= tol: # converged
+                    # check for large newton correction
+                    if linalg.norm(v, ord=None, axis=None) > tol and np.abs(roots0[i] - roots[i]) / np.max([(np.abs(roots0[i]) + np.abs(roots[i]))/2,1]) > 0.1:
+                        large_correction_mask[i] = True
+                        logger.warning(f"Large Newton corrections for {roots0[i]} (New value: {roots[i]})")
                     break # converged
             
             if residuals[i] > tol:
+                converged_mask[i] = False
                 logger.warning(f"The Newton corrections failed to converge for root={roots0[i]}, final residual {residuals[i]}")
 
-    # return logic: TODO this is a little bit messy, but to match desired behaviour ...
-    if inplace and not return_residuals:
-        return None
-    elif inplace and return_residuals:
-        return residuals  
-    elif not inplace and return_residuals:
-        return roots, residuals
-    else:
-        return roots
+    return roots, residuals, converged_mask, large_correction_mask
