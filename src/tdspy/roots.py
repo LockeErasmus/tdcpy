@@ -207,8 +207,8 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
             origin = tau_max * ((r[0]+r[1])/2) + 1j*((r[2]+r[3])/2)
             logger.debug(f"User provided {discretization=} | {origin=} ")
         
-        QQ = np.copy(A).astype(np.complex128)
-        QQ[:,:,0] =  K[:,:,0] + (-origin)*E
+        QQ = np.full_like(A, fill_value=0, dtype=np.complex128)
+        QQ[:,:,0] =  K[:,:,0] - origin*E
         QQ[:,:,1:] = K[:,:,1:] * np.exp(-origin * tau_s[1:])
 
     logger.info(f"Degree of spectral discretization is N = {discretization}")

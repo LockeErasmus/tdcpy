@@ -81,10 +81,23 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     return D, hD
 
 
-def ndde_to_diff(A, hA, H, hH, **kwargs):
+def ndde_to_diff(H, hH, **kwargs):
+    """ Converts NDDE to delay difference equation
+
+    For a NDDAE, the associated delay difference equation is given by
+            
+            I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0          (1)
     """
-    """
-    raise NotImplementedError()
+    assert H.ndim == 3 and hH.ndim == 1
+    assert H.shape[0] == hH.shape[1] > 0
+    assert H.shape[2] == hH.shape[0] > 0
+    assert np.all(hH != 0)
+
+    n = H.shape[0]
+    hD = np.concatenate([[0], hH], axis=0)
+    D = np.concatenate([np.eye(n)[:,:,np.newaxis], H], axis=2)
+    
+    return D, hD
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:

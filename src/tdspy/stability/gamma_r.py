@@ -11,6 +11,7 @@ Notes:
 
 from collections import namedtuple
 import logging
+import sys # TODO delete
 
 import numpy as np
 import numpy.typing as npt
@@ -98,8 +99,8 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     jac[:n_diff, n_diff: 2*n_diff] = -np.imag(M1)
     jac[n_diff: 2*n_diff, :n_diff] = np.imag(M1)
     jac[n_diff: 2*n_diff, n_diff: 2*n_diff] = np.real(M1)
-    jac[:n_diff, 4*n_diff] = -np.real(v) # Jac(1:ndiff,4*ndiff+1) = -real(v);
-    jac[:n_diff, 4*n_diff+1] = np.real(v) # Jac(1:ndiff,4*ndiff+2) = imag(v)
+    jac[:n_diff, 4*n_diff] = -np.real(v)  # Jac(1:ndiff,4*ndiff+1) = -real(v);
+    jac[:n_diff, 4*n_diff+1] = np.imag(v) # Jac(1:ndiff,4*ndiff+2) = imag(v)
     jac[n_diff: 2*n_diff, 4*n_diff] = -np.imag(v) # Jac(ndiff+(1:ndiff),4*ndiff+1) = -imag(v);
     jac[n_diff: 2*n_diff, 4*n_diff+1] = -np.real(v) # Jac(ndiff+(1:ndiff),4*ndiff+2) = -real(v);
     jac[2*n_diff: 3*n_diff, 2*n_diff: 3*n_diff] = np.real(M2) # Jac(2*ndiff+(1:ndiff),2*ndiff+(1:ndiff)) = real(M2);
@@ -142,8 +143,18 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         jac[4*n_diff+3+k+1, 4*n_diff] = np.imag(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+1) = imag(exp(1j*theta(k))*uDv);
         jac[4*n_diff+3+k+1, 4*n_diff+1] =  -np.real(np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2) = -real(exp(1j*theta(k))*uDv);
         jac[4*n_diff+3+k+1, 4*n_diff+1+k+1] = np.imag(1j*np.conj(s)*np.exp(1j*th[k])*uDv) # Jac(4*ndiff+4+k,4*ndiff+2+k) = imag(1j*conj(lambda)*exp(1j*theta(k))*uDv);
-
+    
     return y, jac
+
+def l2_func(*args):
+    """ returns L2 of F(x) and its jacobian """
+
+    y, jac = func(*args)
+
+    jac_new = np.sum(2 * jac.T * y, axis=1)
+    y_new = np.linalg.norm(y)**2
+
+    return y_new, jac_new
 
 def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
     """ Computes gamma(r) of the normalized delay difference equation
@@ -184,7 +195,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     Returns:
         tuple containing:
             gamma (float): TODO
-            info ()
+            info (GammaInfo): TODO
 
     Notes:
         1. for all kwargs starting with 'scipy_*' check the following documentation
@@ -218,7 +229,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         eig_v = vals[gamma_r_index]
         U, _, Vh = linalg.svd(M - eig_v*np.eye(n_diff))
         v = np.conj(Vh[-1])
-        u = U[-1]
+        u = U[:,-1]
         return gamma_r, GammaInfo(0, M, eig_v, u, v)
     
     # CASE 2: n_delays > 1 in DDE
@@ -266,14 +277,28 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
             j = j -1
 
     if radius == 0:
-        # degenerate case, TODO return also metadata
+        # degenerate case
         gamma_r = 0
-        return gamma_r, None # TODO
+        gamma_info = GammaInfo(
+            np.zeros(shape=(n_opt+1,)),
+            np.zeros(shape=(n_diff, n_diff)),
+            0,
+            np.zeros(shape=(n_diff,)),
+            np.zeros(shape=(n_diff,)),
+        )
+        return gamma_r, gamma_info
     
-    if not correction: # correction=False by user -> no correction applied, return
+    if not correction: # correction==False by user -> no correction applied
         logger.debug(f"No correction")
-        # TODO return metadata
-        return gamma_r, None # TODO
+        th = theta_grid[radius_ind.astype(int)]
+        M = DD[:,:,0] * np.exp(-r*hDD[0])
+        for i in range(n_opt):
+            M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th[i])
+        U, _, Vh = linalg.svd(M - radius_eig*np.eye(n_diff))
+        v = np.conj(Vh[-1])
+        u = U[:,-1]
+        gamma_info = GammaInfo(np.r_[0, th], M, radius_eig, u, v)
+        return gamma_r, gamma_info
     
     # correction=True -> apply correction
     logger.debug("Applying correction to gamma_r")
@@ -283,21 +308,20 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     # compute the corresponding left and right eigenvectors
     M = DD[:,:,0] * np.exp(-r*hDD[0])
     for i in range(n_opt):
-        M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_v[i])
+        M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_v[i])    
 
     U, _, Vh = linalg.svd(M - eig_v*np.eye(n_diff))
     v_s = np.conj(Vh[-1])
-    u_s = U[-1]
+    u_s = U[:,-1]
     # normalize u_s, such that u_s' * v_s == 1
     u_s = u_s / np.conj(np.inner(np.conj(u_s), v_s))
 
     ## Optimization process
     x0 = np.r_[np.real(v_s), np.imag(v_s), np.real(u_s), np.imag(u_s),
                np.real(eig_v), np.imag(eig_v), th_v]
+    # return lambda x: func(x, DD, hDD, r, v_s), x0 # TODO delete
 
-    logger.info(f"{x0=}")
-
-    # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_'
+    # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_'    
     sol = optimize.root(
         func,
         x0,
@@ -308,6 +332,18 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         callback=kwargs.get("scipy_root_callback", None),
         options=kwargs.get("scipy_root_options", None),
     ) # solution is saved in sol.x
+
+    # logger.info(f"Using solver {kwargs.get('scipy_minimize_method', 'trust-constr')}")
+    # logger.debug(f"{x0=}")
+    # sol = optimize.minimize(
+    #     l2_func,
+    #     x0,
+    #     args=(DD, hDD, r, v_s),
+    #     jac=True,
+    #     hess=None,
+    #     method=kwargs.get("scipy_minimize_method", "trust-constr"),
+    #     options={'disp': True},
+    # ) # solution is saved in sol.x
 
     if not sol.success: # i.e. root-finding algorithm failed
         logger.warning("Correction step failed")
@@ -322,18 +358,25 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     x_star = sol.x # solution x*
     th_star = x_star[4*n_diff+2:]
 
-    M = DD[:,:,0] * np.exp(-r*hDD[0])
+    M_star = DD[:,:,0] * np.exp(-r*hDD[0])
     for i in range(n_opt):
-        M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_star[i])
+        M_star = M_star + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_star[i])
     
-    vals = linalg.eig(M, left=False, right=False)
-    gamma_r_index = np.argmax(np.abs(vals))
+    vals = linalg.eig(M_star, left=False, right=False)
+    vals_abs = np.abs(vals)
+    gamma_r_index = np.argmax(vals_abs)
     gamma_r = vals_abs[gamma_r_index]
-
-    if (gamma_r - radius) < 0.0: # improvement is worse then 0.0
+    
+    improvement = gamma_r - radius
+    if improvement < 0.0: # improvement is worse then 0.0
         logger.debug(f"Correction failed {gamma_r=}, {radius=}, rely on radius (predictor)")
-        # TODO return also metadata
-        return radius, None # TODO
+        gamma_info = GammaInfo(np.r_[0, th_v], M, eig_v, u_s, v_s)
+        return radius, gamma_info
     else:
-        logger.debug(f"Correction succesful {gamma_r=}, {radius=}, using gamma_r")
-        return gamma_r, None # TODO
+        logger.debug(f"Correction succesful {gamma_r=}, {radius=}, {improvement=}, using gamma_r")
+        eig_star = vals[gamma_r_index]
+        U_star, _, Vh_star = linalg.svd(M - eig_star*np.eye(n_diff))
+        v_star = np.conj(Vh_star[-1])
+        u_star = U_star[:,-1]
+        gamma_info = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
+        return gamma_r, gamma_info
