@@ -1,20 +1,6 @@
 """
-Example 2.2 from TDS-CONTROL manal
-We will analyze the following rdde from [1], section 6.1:
-x'(t) = A0 x(t) + A1 x(t-\tau_2) + H1 \dot{x}(t-\tau_1)
-with 
+NDDE example from MATLAB manual page 16, equation (2.20)
 
-               
-A0 = [-0.6  -0.45 ] and A1 =   [-0.15  0.075], \tau_2 = 2.
-     [ 0.1  -1.2  ]            [0.225  -0.75]
-
-H1 = [3   -3/2 ], \tau_1 = 1
-     [5/2    1 ]
-
-[1] Verheyden K., Luzyanina T., and Roose D. (2008). Efficient
-    computation of characteristic roots of delay differential equations
-    using LMS methods. Journal of Computational and Applied Mathematics,
-    214(1), pp. 209–226.
 """
 
 import numpy as np
@@ -30,41 +16,30 @@ formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-# Create DDAE representation
-A0 = np.array([[-0.6, -0.5],
-               [0.1,-1.2]])
+# Create NDDE representation
+A = np.stack([
+    np.array([[0.25]]),
+    np.array([[-1./3]]),
+], axis=2)
+hA = np.array([0, 1.])
+H = np.stack([
+    np.array([[-0.75]]),
+    np.array([[0.5]]),
+], axis=2)
 
-A1 = np.array([[-0.15,0.075],
-               [0.225,-0.75]])
+# Three set of delays
+hH = np.array([1., 2])
+hH = np.array([1., 2.05])
+hH = np.array([1., 2.005])
 
-A = np.stack([A0,A1],axis = 2)
-hA = np.array([0,2.])
+ndde = tds.NDDE(A=A, hA=hA, H=H, hH=hH)
 
-H1 = np.array([[3, -1.5],
-               [2.5,-1]])
-H = np.stack([H1],axis=2)
-hH = np.array([1])
+ddae = ndde.to_ddae().compress()
 
-r = -2.5
-ndde = tdspy.NDDE(A=A, hA=hA,H=H, hH=hH)
-print(f"ndde is {ndde}")
-cr, cr0 = tdspy.roots(ndde, r=-2.5)
+r = [-0.9, 0.2, -500, 500]
+cr, info = tdspy.roots(ddae, r=r, max_size_evp=1500)
 
-diff = ndde.get_delay_difference_equation()
+import matplotlib.pyplot as plt
+tdspy.plot.eigen_plot(cr)
+plt.show()
 
-ndde_ddae = ndde.to_ddae
-print(f"ndde_ddae is {ndde_ddae.E}, {ndde.A}")
-
-print(diff)
-print(f"E={diff.E=}, A={diff.A}, hA={diff.hA=}")
-
-cd = tds.cd(ndde)
-print(f"strong spectral abscissa of associated DIFF {cd=}")
-
-# sa = tds.strong_sa(ndde)
-# print(f"spectral abscissa of the ndde {sa=}")
-
-# import matplotlib.pyplot as plt
-
-# tdspy.plot.eigen_plot(cr)
-# plt.show()

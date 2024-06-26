@@ -304,7 +304,7 @@ class DDAE:
             self._A = A
             self._hA = hA
         else:
-            return DDAE(A=A, hA=hA)
+            return DDAE(E=self.E, A=A, hA=hA)
         
     def eval_char_matrix(self, s: complex) -> npt.NDArray:
         """ Evaluate characteristic matrix at `s`

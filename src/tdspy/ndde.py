@@ -172,5 +172,5 @@ class NDDE(TDSBase):
         if self.is_logical:
             raise ValueError(f"Can't form Delay-Difference Equation from logical")
         hD = np.concatenate([[0], self.hH], axis=0)
-        D = np.concatenate([np.eye(self.n)[:,:,np.newaxis], np.transpose(self.H, (1,0,2))], axis=2)
+        D = np.concatenate([np.eye(self.n)[:,:,np.newaxis], self.H], axis=2)
         return DDAE(E=np.zeros(shape=(self.n, self.n)), A=D, hA=hD)

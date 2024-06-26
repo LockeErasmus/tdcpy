@@ -1,15 +1,20 @@
 """
 Strong spectral abscissa of the associated delay difference equation
 --------------------------------------------------------------------
-TODO
+TODO:
+    1. as of now, just make it work, but later separate high level API and
+       pure math functions
 """
 
 import logging
 
 import numpy as np
 import numpy.typing as npt
+from scipy import linalg, optimize
 
+from .rdde import RDDE
 from .ddae import DDAE
+from .ndde import NDDE
 from .common.delay_difference_equation import normalize_diff
 
 from .stability.gamma_r import compute_gamma
@@ -17,8 +22,47 @@ from .stability.gamma_r import compute_gamma
 logger = logging.getLogger(__name__)
 
 
+def func(r, DD, hDD, **kwargs):
+    """ Value and derivative of a function
 
-def cd(tds: DDAE, **kwargs):
+        f(r) = gamma(r) - 1
+    
+    f(r) = 0 corresponds to zero crossings
+    
+    Note that gamma(r) is gamma evaluated at r of delayed difference equation
+    defined via DD, hDD.
+    
+    Args: TODO
+        r 
+        DD
+        hDD
+        **kwargs: kwargs passed to function `compute_gamma`
+    
+    Returns:
+        tuple containing:
+
+            - fval (float): f()
+            - df (array): derivative of f(.)
+    """
+
+    gamma_r, gamma_info = compute_gamma(DD, hDD, r, **kwargs)
+    th, M, s, u, v = gamma_info # "th", "M", "s", "u", "v"
+
+    num = (np.conj(u)[np.newaxis,:] @ DD[:,:,0] @ v[:, np.newaxis]) * hDD[0]*np.exp(-r*hDD[0])*np.exp(1j*th[0])
+    for i in range(1, DD.shape[2]):
+        num += (np.conj(u)[np.newaxis,:] @ DD[:,:,i] @ v[:, np.newaxis]) * hDD[i]*np.exp(-r*hDD[i])*np.exp(1j*th[i])
+    print(f"{num=}")
+    print(np.ravel(num))
+    df = -np.real( np.conj(s) * np.ravel(num) / np.inner(np.conj(u), v) ) / gamma_r
+    print(f"{df=}")
+    fval = gamma_r - 1
+    return fval, df
+
+f = optimize._optimize.MemoizeJac(func)
+fprime = f.derivative
+
+
+def cd(tds: RDDE | NDDE | DDAE, **kwargs):
     """ Computes strong spectral abscissa of associated delay difference
     equation
  
@@ -94,13 +138,31 @@ def cd(tds: DDAE, **kwargs):
         return cd, None
     
     # to exclude degenerate case gamma(r) == 0 for all r
-    gamma0, _ = compute_gamma(DD, hDD, 0)
+    gamma0, _ = compute_gamma(DD, hDD, 0, **kwargs)
     if gamma0 == 0.0:
         return -np.inf, None
     
     # gamma(r) =/= 0 --> use fsolve to find zero crossings of gamma(r)-1
-    # TODO continue line 171
+    sol = optimize.root(
+        fun=func,
+        x0=cd0,
+        args=(DD, hDD), # TODO args
+        jac=True,
+        method="hybr",
+    )
+   
+    if not sol.success: # i.e. root-finding algorithm failed
+        logger.warning("Failed to find zero crossings")
+        # TODO log some additional info why fail?
+        if gamma0 >= 1:
+            cd_star = np.inf
+        else:
+            cd_star = -np.inf
+    else:
+        cd_star = float(sol.x)
 
-    print("passing")
+    # TODO check inf
+
+    return cd_star, None # TODO metadata
 
 

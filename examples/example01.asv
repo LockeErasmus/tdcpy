@@ -116,5 +116,6 @@ end
 compute_N_rhp(E,B,C,tau_s)
 
 %%
-ddae = tds_create_ddae(eye(n), A, hA);
-ddae2dae(ddae, 7, 'legendre')
+ddae 
+ddae = rdde.to_ddae();
+ddae2dae(ddae, 5, 'legendre')
