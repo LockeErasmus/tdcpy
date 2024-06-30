@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
-    """ Converts DDAE to delay difference equation
+    """ Converts delay differential algebraic equation (DDAE) to delay
+    difference equation
 
     DDAE dynamics represented by
         E*dx/dt = A[0] x(t-hA[0]) + ... + A[m-1] x(t-hA[m-1])
@@ -50,6 +51,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     Notes:
         1. n, m are assumed to be > 1
         2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
+        3. if E is non-singular, D, hD are returned as empty arrays
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
@@ -59,7 +61,13 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     if vE is None:
         vE = linalg.null_space(E, rcond=rcond) # TODO, SVD is now calculated twice
     
-     # calculate norms for both nullspaces, select the bigger one
+    # Case where E is non-singular -> return empty delay difference equation
+    if uE.size == 0 or vE.size == 0:
+        D = np.empty(shape=(A.shape[0], A.shape[1], 0), dtype=A.dtype)
+        hD = np.empty(shape=(0,), dtype=hA.dtype)
+        return D, hD
+
+    # calculate norms for both nullspaces, select the bigger one
     norm_uE = linalg.norm(uE, ord=1, axis=None)
     norm_vE = linalg.norm(vE, ord=1, axis=None)
     norm_null = max(norm_uE, norm_vE)
