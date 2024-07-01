@@ -6,6 +6,7 @@ import logging
 from typing import Type
 
 import numpy as np
+import numpy.typing as npt
 import scipy.special
 
 from tdspy.base import TDSBase
@@ -130,6 +131,47 @@ def _discretize(E, A, hA, discretization: int, s0: complex=0j, method: str="cheb
     
     return Pi_N, Sigma_N # E, A
 
+def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretization: int, s0: complex=0j, method: str="cheb") -> tuple[npt.NDArray, npt.NDArray]:
+    """ Discretizes DDAE into DAE
+
+    DDAE of form:
+
+        E x'(t) = A[0] x(t) + A[1] x(t-hA[1]) + .. + A[m] x(t-hA[m]),      (1)
+
+    is discretized into DAE of form:
+
+        E x'(t) = A x(t).                                                  (2)
+    
+    When method == 'cheb', the code uses the companion-type reformulation of
+    the spectral discretisaion of the infinitesimal generator of the solution
+    operator underlying the DDE as presented in Section 2.2 of the paper below.
+    
+    [1] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
+        method for the delay eigenvalue problem. SIAM Journal on Scientific
+        Computing, 32(6), pp. 3278-3300.  
+
+    When method == 'legendre', the code uses a similar companion-type
+    reformulation but now based on Legendre polynomials instead of Chebyshev
+    polynomials.
+    
+    Args:
+        E (array): right hand side matric of DDAE, assumed non-empty
+        A (array): left hand side matrices of DDAE, assumed non-empty
+        hA (array): vector of delays, assumed non-empty, hA[0] == 0
+        discretization (int): degree of discretization > 0
+        s0 (complex): point discretization is done around, default 0
+        method (str): type of approximation, default 'cheb', allowed 'cheb',
+            'legendre'
+
+    Returns:
+        tuple containing:
+
+            - E (array): left hand-side matrix of DAE
+            - A (array): right hand-side matrix of DAE
+    """
+    # TODO perform checks
+    
+    return _discretize(E, A, hA, discretization, s0, method)
 
 def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -> DAE:
     """ Discretizes RDDE, NDDE or DDAE into DAE

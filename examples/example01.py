@@ -19,6 +19,8 @@ import numpy as np
 import tdspy
 import tdspy.plot
 
+from tdspy.stability.rightmost_root import rightmost_root
+
 # Set up logging
 import logging
 logger = logging.getLogger("tdspy")
@@ -44,6 +46,9 @@ ddae = tdspy.DDAE(A=A, hA=hA)
 rdde = tdspy.RDDE(A=A, hA=hA)
 cr, info = tdspy.roots(rdde, r=r)
 
+z, z_info = rightmost_root(rdde.E, rdde.A, rdde.hA, r=r)
+print(f"rightmost roots is {z}")
+
 import matplotlib.pyplot as plt
 # plt.figure()
 # plt.scatter(np.real(cr), np.imag(cr), marker="o",
@@ -55,5 +60,10 @@ import matplotlib.pyplot as plt
 # plt.axvline(r, alpha=0.5)
 # plt.legend()
 
+
+
+
 tdspy.plot.eigen_plot(cr)
+plt.plot([np.real(z)], [np.imag(z)], "bo", alpha=0.25)
+
 plt.show()
