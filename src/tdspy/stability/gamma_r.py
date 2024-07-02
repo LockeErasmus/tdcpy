@@ -11,7 +11,6 @@ Notes:
 
 from collections import namedtuple
 import logging
-import sys # TODO delete
 
 import numpy as np
 import numpy.typing as npt

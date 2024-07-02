@@ -21,7 +21,7 @@ class DDAE:
         # assert np.atleast_1d(hA) # TODO check
         assert np.all(hA >= 0.0), "Only positive delays possible"
         assert A.shape[2] == hA.shape[0], "number of delays does not match number of matrices Ai"
-        shape = A[0].shape
+        # shape = A[0].shape
 
         # TODO if necessary, add 0 delay term
         # REALY ADD 0.0 delay term
@@ -35,15 +35,13 @@ class DDAE:
         self._uE = uE
         self._vE = vE
 
-        self._n = shape[0]
-
         # --- KWARGS ---
         self.dtype = kwargs.get("dtype", np.float64)
         self.tol_singular = kwargs.get("tol_singular", 1e-12)
 
     @property
     def n(self) -> int:
-        return self.A.shape[0]
+        return self.A.shape[1]
 
     @property
     def E(self) -> npt.NDArray:
@@ -133,7 +131,7 @@ class DDAE:
         return flag
     
     @property
-    def is_essentially_retarded(self):
+    def is_essentially_retarded(self) -> bool:
         """ Checks if DDAE is essentially retarded
         
         DDAE is essentially retarded IFF characteristic equation of underlying

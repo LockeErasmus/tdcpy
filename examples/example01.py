@@ -19,7 +19,7 @@ import numpy as np
 import tdspy
 import tdspy.plot
 
-from tdspy.stability.rightmost_root import rightmost_root
+from tdspy.stability.characteristic_roots import rightmost_root
 
 # Set up logging
 import logging
@@ -59,8 +59,6 @@ import matplotlib.pyplot as plt
 #     plt.plot([np.real(z), np.real(z0)], [np.imag(z), np.imag(z0)], color="k", alpha=0.5)
 # plt.axvline(r, alpha=0.5)
 # plt.legend()
-
-
 
 
 tdspy.plot.eigen_plot(cr)

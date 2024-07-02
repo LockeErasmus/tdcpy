@@ -1,9 +1,12 @@
 """
-Rightmost root
---------------
+Characteristic roots
+--------------------
+Set of functionalities connected to characteristic roots of DDAE
 
-TODO:
-    1. rework in such a way no high level API is used
+Implemented functions:
+    1. roots_ddae -> characteristic roots of DDAE
+    1. rightmost_root -> right most root and necessary things for gradient
+
 """
 
 from collections import namedtuple
@@ -20,17 +23,15 @@ from .gamma_r import compute_gamma
 from .discretization_heuristic import compute_n_rhp, compute_n_rect
 from .newton import newton_correction
 
-
 logger = logging.getLogger(__name__)
 
-
 RootsInfo = namedtuple("RootsInfo", ["discretization", "gamma_r_exceeds_one", "index_exceeds_one",
-                                     "discretization_eigenvalues",
+                                     "discretization_eigenvalues", "max_size_evp_enforced",
                                      "newton_inital_guesses", "newton_final_values", 
                                      "newton_residuals", "newton_unconverged_initial_guesses", 
                                      "newton_large_corrections"])
 
-RightmostRootInfo = namedtuple("RightmostRootInfo", ["M", "DM", "u", "v"])
+RightmostRootInfo = namedtuple("RightmostRootInfo", ["M", "DM", "u", "v", "found", "max_size_evp_enforced"])
 
 def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwargs):
     
@@ -246,7 +247,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
             logger.warning(f"No characteristic roots found in rectangular region {r}")
 
     # prepare RootsInfo TODO - fix gamma_r and index bools
-    info = RootsInfo(discretization, False, False, raw_roots, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
+    info = RootsInfo(discretization, False, False, raw_roots, max_size_evp_enforced, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
 
     return roots, info
 
@@ -258,7 +259,7 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
         E (array): TODO
         A (array): TODO
         hA (array): TODO
-        r (float or list): TODO
+        r (float): TODO
         **kwargs: TODO
     
     Returns:
@@ -276,8 +277,9 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
 
     # find right most root
     root_star = None
+    root_star_found = False # indicator, that right most root succesfully found
 
-    # CASE 1: roots are empty
+    # CASE 1: roots cr are empty
     if cr.size == 0:
         # try to use eigenvalues of discretized DDAE
         u = np.sort_complex(cr_info.discretization_eigenvalues) # in ascending order
@@ -295,17 +297,19 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
 
             if residual <= 1e-6: # i.e. eigenvalue is sufficiently close to 0.0, TODO kwargs
                 root_star = s[-1]
+                root_star_found = True
                 break
     
-        if root_star == None: # no root to the right of r found
+        if root_star is None: # no root to the right of r found
             u_smaller_r = u[np.real(u) < r]
             if u_smaller_r.size == 0: # worst case scenario, rutrn fallback value
                 root_star = r + 0j
             else: # take the rightmost root to the left of r
                 root_star = u_smaller_r[-1] # already sorted, take last element
+
+    # CASE 2: the rightmost point in cr lies significantly to the left of
+    # the rightmost point eigen value from discretization
     elif np.max(np.real(cr)) <= lower_bound(np.max(np.real(cr_info.discretization_eigenvalues)), 0.05, 1.e-3):
-        # CASE 2: the rightmost point in cr lies significantly to the left of
-        # the rightmost point eigen value from discretization
         cr_discretization = cr_info.discretization_eigenvalues
         imax = np.argmax(np.real(cr_discretization))
         root_star1 = cr_discretization[imax]
@@ -327,15 +331,17 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
 
             if residual <= 1e-6: # i.e. eigenvalue is sufficiently close to 0.0, TODO kwargs
                 root_star = s[-1]
+                root_star_found = True
                 break
         
         if root_star is None: # default to rightmost
             root_star = root_star1
 
-    else: # CASE 3:
-        # newton corrections for rightmost root converged inside `roots_ddae(.)`
+    # CASE 3: newton corrections for rightmost root converged inside `roots_ddae(.)`
+    else: 
         i = np.argmax(np.real(cr))
         root_star = cr[i]
+        root_star_found = True
     
     # evaluate M(root_star), M'(root_star), u(root_star) and v(root_star)
     M = root_star * E - np.sum(A * np.exp(-root_star*hA), axis=2)
@@ -344,6 +350,6 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
     u = U[:,-1]
     v = np.conj(Vh[-1])
     
-    root_info = RightmostRootInfo(M, DM, u, v)
+    root_info = RightmostRootInfo(M, DM, u, v, root_star_found, cr_info.max_size_evp_enforced)
 
     return root_star, root_info
