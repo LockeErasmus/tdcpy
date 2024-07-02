@@ -83,11 +83,6 @@ class NDDE(TDSBase):
         return len(self.hH)
     
     @property
-    def p2(self) -> int:
-        """ number of delays """
-        raise NotImplementedError("p2 NDDE")
-    
-    @property
     def is_compressed(self) -> bool:
         """ Cheks if NDDE is in compressed form (no duplicates in hA) """
         if len(self.hA) == len(np.unique(self.hA)):

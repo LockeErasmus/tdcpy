@@ -44,7 +44,7 @@ class DDAE(TDSBase):
         # A, hA
         assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
         assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
-        assert A.shape[2] == hB.shape[0], "number of delays  hA does not match number of matrices Ai"
+        assert A.shape[2] == hA.shape[0], "number of delays  hA does not match number of matrices Ai"
         assert np.all(hA >= 0.0), "only positive delays possible"
         if not np.any(hA == 0): # if necessary, add 0 delay term
             hA = np.r_[0.0, hA]
@@ -54,7 +54,7 @@ class DDAE(TDSBase):
         if E is not None:
             assert isinstance(E, np.ndarray)
             assert E.ndim == 2
-            assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1]
+            assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1], f"{E.shape=}, {A.shape=}"
 
         # I/O matrices
         if B is not None or hB is not None:
@@ -276,7 +276,7 @@ class DDAE(TDSBase):
         """ Checks if DDAE is essentialy netural """
         return not self.is_essentially_retarded
     
-    def _get_delay_difference_equation(self, uE: npt.NDArray, vE:npt.NDArray,
+    def _get_delay_difference_equation(self, uE: npt.NDArray, vE: npt.NDArray,
                                        normalize=False, tol=1e-14) -> tuple:
         """ Converts to Delay difference Equation Representation
 
@@ -370,7 +370,7 @@ class DDAE(TDSBase):
             normalize=kwargs.get("normalize", False),
             tol= kwargs.get("tol", 1e-14),
         )
-        nE = self.n
+        nE = D.shape[1] # TODO --- what if emtpy
         dtype = self.E.dtype
         diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
                     uE=np.eye(nE, dtype=dtype), vE=np.eye(nE, dtype=dtype))

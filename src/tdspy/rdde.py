@@ -55,11 +55,6 @@ class RDDE(TDSBase):
         return len(self.hA)
     
     @property
-    def p2(self) -> int:
-        """ number of delays """
-        raise NotImplementedError("p2 RDDE")
-    
-    @property
     def is_compressed(self) -> bool:
         """ Cheks if RDDE is in compressed form (no duplicates in hA) """
         if len(self.hA) == len(np.unique(self.hA)):
