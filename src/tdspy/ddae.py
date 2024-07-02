@@ -1,5 +1,11 @@
 """
 DDAE implementation
+
+
+TODO:
+    1. `E` should not have default None value and should be first arg?
+    1. lot of checking is duplicated code, maybe function(s)? but then we lose
+        flexibility, as sometimes you need to add special check ...
 """
 
 import logging
@@ -8,32 +14,74 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg
 
+from .base import TDSBase
 
 logger = logging.getLogger(__name__)
 
 
-class DDAE:
+class DDAE(TDSBase):
+    """
+    
+    
+    
+    
+    """
 
-    def __init__(self, A: npt.NDArray, hA: npt.NDArray, E=None, uE=None, vE=None,**kwargs) -> None:
+    def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None, uE: npt.NDArray=None, vE: npt.NDArray=None,
+                 B: npt.NDArray=None, hB: npt.NDArray=None, C: npt.NDArray=None, hC: npt.NDArray=None, 
+                 D: npt.NDArray=None, hD: npt.NDArray=None, **kwargs) -> None:
+        """
         
-        # assert A.size > 0, "A has to be non-empty array"        
-        # assert np.atleast_3d(A) # TODO check
-        # assert np.atleast_1d(hA) # TODO check
-        assert np.all(hA >= 0.0), "Only positive delays possible"
-        assert A.shape[2] == hA.shape[0], "number of delays does not match number of matrices Ai"
-        # shape = A[0].shape
-
-        # TODO if necessary, add 0 delay term
-        # REALY ADD 0.0 delay term
+        Args:
 
         
-        # ---
-        self._A = A
-        self._hA = hA
+            **kwargs:
+                dtype (): default np.float64
+                tol_singular (float): considering value singular, default 1e-12
 
+        
+        """
+        # A, hA
+        assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
+        assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
+        assert A.shape[2] == hB.shape[0], "number of delays  hA does not match number of matrices Ai"
+        assert np.all(hA >= 0.0), "only positive delays possible"
+        if not np.any(hA == 0): # if necessary, add 0 delay term
+            hA = np.r_[0.0, hA]
+            A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
+        
+        # E, TODO checks for nullspaces?
+        if E is not None:
+            assert isinstance(E, np.ndarray)
+            assert E.ndim == 2
+            assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1]
+
+        # I/O matrices
+        if B is not None or hB is not None:
+            # input matrices are defined
+            assert isinstance(B, np.ndarray) and isinstance(hB, np.ndarray), "both ndarrays"
+            assert B.ndim == 3 and hB.ndim == 1, "dimensions check 1"
+            assert B.shape[0] == A.shape[0], " "
+            assert B.shape[2] == hB.shape[0], "number of delays hB does not match number of matrices Bi"
+            assert np.all(hB >= 0.0), "only positive delays possible"
+        
+        # TODO perform checks for C, hC, D, hD
+
+
+        # --- ARGS ---
         self._E = E
         self._uE = uE
         self._vE = vE
+        self._A = A
+        self._hA = hA
+        self._B = B
+        self._hB = B
+        self._C = B
+        self._hC = B
+        self._D = B
+        self._hD = B
+        
+        # TODO checks when for example A, B, C defined and D is not        
 
         # --- KWARGS ---
         self.dtype = kwargs.get("dtype", np.float64)
@@ -41,7 +89,22 @@ class DDAE:
 
     @property
     def n(self) -> int:
+        """ number of variables """
         return self.A.shape[1]
+    
+    @property
+    def n_iputs(self) -> int:
+        """ number of inputs """
+        if self.B is None:
+            return 0
+        return self.B.shape[1]
+
+    @property
+    def n_outputs(self) -> int:
+        """ number of outputs """
+        if self.C is None:
+            return 0
+        return self.C.shape[0]
 
     @property
     def E(self) -> npt.NDArray:
@@ -51,19 +114,70 @@ class DDAE:
             return self._E
     
     @property
-    def A(self) -> list[npt.NDArray]:
-        """ list of dynamics matrices """
+    def A(self) -> npt.NDArray:
+        """ dynamics matrices """
         return self._A
     
     @property
-    def hA(self) -> list[float]:
-        """ delays """
+    def hA(self) -> npt.NDArray:
+        """ dynamic delays """
         return self._hA
     
     @property
     def mA(self) -> int:
         """ number of delays """
         return self.hA.shape[0]
+    
+    @property
+    def B(self) -> npt.NDArray | None:
+        """ input matrices """
+        return self._B
+    
+    @property
+    def hB(self) -> npt.NDArray | None:
+        """ input delays """
+        return self._hB
+    
+    @property
+    def mB(self) -> int:
+        """ number of input delays """
+        if self._hB is None:
+            return 0
+        return self.hB.shape[0]
+
+    @property
+    def C(self) -> npt.NDArray | None:
+        """ output matrices """
+        return self._C
+    
+    @property
+    def hC(self) -> npt.NDArray | None:
+        """ output delays """
+        return self._hC
+    
+    @property
+    def mC(self) -> int:
+        """ number of output delays """
+        if self._hC is None:
+            return 0
+        return self.hC.shape[0]
+
+    @property
+    def D(self) -> npt.NDArray | None:
+        """ feed-through matrices """
+        return self._D
+    
+    @property
+    def hD(self) -> npt.NDArray | None:
+        """ feed-through delays """
+        return self._hD
+    
+    @property
+    def mD(self) -> int:
+        """ number of feed-through delays """
+        if self._hD is None:
+            return 0
+        return self.hD.shape[0]
 
     @property
     def uE(self) -> npt.NDArray:
@@ -109,7 +223,14 @@ class DDAE:
     @property
     def is_real(self) -> bool:
         """ Checks if DDAE uses complex storage for any of defining matrices """
-        raise NotImplementedError()
+        fields_to_check = ["_E", "_uE", "_vE", "_A", "_hA", "_B", "_hB",
+                           "_C", "_hC", "_D", "_hD"]
+        for field in fields_to_check:
+            val = getattr(self, field, None)
+            if val is not None:
+                if not np.isrealobj(val):
+                    return False
+        return True
     
     @property
     def is_delay_difference_equation(self) -> bool:
@@ -233,7 +354,7 @@ class DDAE:
 
         """
         if self.is_logical:
-            raise ValueError(f"Can't form DDE from logical")
+            raise ValueError(f"Can't form delay difference equation from logical TDS")
                 
         uE = self.uE # dynamic property -> calc it once and store into mem
         vE = self.vE # dynamic property -> calc it once and store into mem
@@ -329,36 +450,3 @@ class DDAE:
             dM (array): derivative of characteristic matrix M evaluated at s
         """
         return self.E + np.sum(self.A * self.hA * np.exp(-s*self.hA), axis=2)
-
-def normalize_delay_difference_equation(diff: DDAE, checkE=True):
-    """ normalizes delay difference equation
-
-    Transforms the delay difference equation such that the leading zero delay
-    matrix A0 equals identity.
-
-    Args:
-        diff (DDAE): DDAE in form of delay difference equation (E=0)
-
-    Returns:
-        tuple containing
-
-        - D (array): 3D array representing matrices [inv(A0)*A1, ... , inv(A0)*Am]
-        - hDD (array): array of non-zero delays
-    """
-    print(diff.hA)
-    hDD = diff.hA[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
-    print(hDD)
-
-    DD = np.zeros(shape=(diff.n, diff.n, diff.mA-1))
-
-    if diff.mA == 2:
-        DD[:,:,0] = linalg.lstsq(diff.A[:,:,0], diff.A[:,:,1])
-        return DD, hDD
-    
-    P, L, U = linalg.lu(diff.A[:,:,0]) # LU decomposition for having inverse of A0
-    for i in range(1, diff.mA):
-        DD[:,:, i-1] = linalg.lstsq(U, linalg.lstsq(L, P @ diff.A[:,:,i])) # Di = inv(A0) @ Ai
-    return DD, hDD
-
-
-

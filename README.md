@@ -49,7 +49,6 @@ pytest -rx
 shows output of failed tests (default behaviour of pytest)
 
 
-
 ## Usage
 
 ### Coming from matlab
@@ -99,10 +98,24 @@ Submodules
 
 ### tdspy package
 
-- [] `DDAE`, `RDDE`, `NDDE` classes implementation
-    - [x] E, A, hA
-    - [] I/O
-- []
+```
+.
+├───src
+│   ├───common
+│   ├───plot
+│   ├───stability
+│   └───stabopt
+├───examples <- examples for usage
+├───docs <- documentation
+├───test <- pytest
+│
+│
+├───README.md
+├───.gitignore
+├───requirements.txt
+├───pyproject.toml
+└─── ...
+```
 
 ### Project
 - [] `CONTRIBUTING.md` - specify guidelines, ...
