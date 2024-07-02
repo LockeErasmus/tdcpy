@@ -9,4 +9,5 @@ from .ndde import NDDE
 
 from .roots import roots
 from .gamma import gamma
-from .cd import cd
+from .spectral_abscissa import (spectral_abscissa, spectral_abscissa_diff, 
+                                strong_spectral_abscissa, sa, cd, strong_sa)

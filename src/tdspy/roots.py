@@ -15,22 +15,19 @@ from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
 from .stability.bounds import lower_bound, upper_bound
 from .stability.newton import newton_correction
 from .common.discretization import discretize
-from .gamma import gamma 
+from .gamma import gamma
+
+
+from .stability.characteristic_roots import roots_ddae, RootsInfo
 
 logger = logging.getLogger(__name__)
-
-
-RootsInfo = namedtuple("RootsInfo", ["discretization", "gamma_r_exceeds_one", "index_exceeds_one",
-                                     "newton_inital_guesses", "newton_final_values", 
-                                     "newton_residuals", "newton_unconverged_initial_guesses", 
-                                     "newton_large_corrections"])
 
 def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
     """ Computes the characteristic roots of a time-delay system in a given
     right half-plane or rectangular region.
 
     Args:
-        tds (TODO): instance of time-delay system, i.e., RDDE, NDDE or DDAE
+        tds (TDS): instance of time-delay system, i.e., RDDE, NDDE or DDAE
         r (int or list): region, specify r as number on real axis or rectangular
             region via 4 coordinates [Re_min, Re_max, Im_min, Im_max], default r=0.0
         kwargs:
@@ -82,196 +79,7 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
         hA = tds.hA
         A = tds.A
 
-    # CASE 1: ODE or DAE (no delays)
-    if hA.shape[0] == 1:
-        logger.debug("CASE: ODE or DAE -> finite number of roots")
-        # just use eig and filter based on rhp or region
-        result = linalg.eig(A[:,:,0], E, left=False, right=False)
-        if case == "rhp":
-            mask = np.isfinite(result) & (np.real(result)>=r)
-            return result[mask]
-        else: # case == "rect"
-            mask = (np.isfinite(result) & (np.real(result)>=r[0]) 
-                    & (np.real(result)<=r[1]) & (np.imag(result)>=r[2])
-                    & (np.imag(result)<=r[3]))
-            return result[mask]
+    # find all roots via discretization
+    cr, cr_info = roots_ddae(E, A, hA, r)
 
-    # CASE 2:
-    mA = hA.shape[0] # number of delay terms
-
-    # scale tds such that maximal delay-value equals 1
-    # lambda_hat = lambda*tau_m
-    # det(lambda E - A0 - A1 *exp(-lambda tau_1) - ... - Am *exp(-lambda tau_m)) = 0
-    # => det(lambda_hat E - tau_m *A0 - tau_m * A1 *exp(-lambda_hat tau_1/tau_m) - ... - tau_m Am *exp(-lambda_hat)) = 0
-	# re-scaled system matrices and delays are stored in K and tau_s
-    tau_max = hA[-1] # last delays is maximal one
-    tau_s = hA / tau_max # scale tau vector
-    K = tau_max * A # scale matrices of dynamics
-
-    ###########################################################
-    # Heuristic for N (degree of the spectral discretisation) #
-    ###########################################################    
-    # obtain discretization
-    discretization = kwargs.get("discretization", None)
-    max_size_evp = kwargs.get("max_size_evp", 600)
-    max_size_evp_enforced = False # flag to indicate that size of EVP > max_size_evp
-    assert n <= max_size_evp, "The size of the delay differential equation exceeds max_size_evp"
-    discretization_max = int(np.floor(max_size_evp / n) - 1)
-    
-    if case == "rhp":
-        # rescale r
-        rs = r * tau_max
-        # introduce shift of the origin, shifted matrices B, C
-        B = K[:,:,0] + (-rs)*E
-        C = K[:,:,1:] * np.exp(-rs * tau_s[1:])
-        if discretization is None: # envoke heuristic
-            if False: # TODO line 289 - 295, as of now unimportant, later KWARG
-                # condition C_D > r is assumed to be already checked
-                ...
-            else:
-                diff = tds.get_delay_difference_equation()
-                if diff is not None: # empty associated delay difference equation (E is not singular)
-                    if diff.hA[0] != 0 or False: # TODO
-                        raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
-
-                    if gamma(diff, r) >= 1.0:
-                        discretization = 30
-                        logger.warning((f"Gamma(r; ...) exceeds {gamma} >= 1 (i.e., CD>r). Spectral "
-                                        "discretization with N = 30 (lowered if maximum size of "
-                                        "eigenvalue problem is exceeded). Try specifying a "
-                                        "rectangular region instead."))
-                
-                if discretization is None:
-                    # discretization is still undefined, reason:
-                    #   (a) - no underlying delay-difference equation or
-                    #   (b) - gamma(r) < 1.0
-                    # => region RHP contains finitely many roots and heuristic
-                    #    can be applied
-                    basic_delay = kwargs.get("basic_delay", None)
-                    discretization = compute_n_rhp(E, B, C, tau=hA, basic_delay=basic_delay)
-            
-            # check if discretization does exceed limit
-            if discretization > discretization_max:
-                max_size_evp_enforced = True
-                discretization = discretization_max
-                size_evp = n*(discretization_max + 1)
-                logger.warning(
-                    (f"Size of the generalized EVP would exceed its maximum "
-                     f"value. Discretization around {max([0,r])} + 0*1j with N "
-                     f"= {discretization} instead (size of new eigenvalue "
-                     f"problem: {size_evp} x {size_evp}. As a consequence, not "
-                     "all characteristic roots in the specified right "
-                     "half-plane might be found. To make sure that all desired "
-                     "characteristic roots are found, either increase r (i.e., "
-                     "shift the desired right half-plane to the right) or "
-                     "increase the kwargs 'max_size_evp'. For more information "
-                     "consult the documentation of this function.")
-                )
-
-        else: # discretization provided by user -> peform checks
-            assert isinstance(discretization, int), "discretization has to be int"
-            assert discretization > 1, "discretization has to be > 1"
-            logger.debug(f"User provided {discretization=}")
-        
-        if max_size_evp_enforced and r < 0:
-            rs = 0
-            QQ=K
-        else: # use shift rs
-            QQ = np.concatenate([B[:,:,np.newaxis], C], axis=2)
-
-    else: # case == "region":
-        if discretization is None: # envoke rectangular region heuristic
-            discretization, origin = compute_n_rect(r, tau_max)
-            
-            # check if discretization does exceed limit
-            if discretization > discretization_max:
-                max_size_evp_enforced = True
-                discretization = discretization_max
-                size_evp = n*(discretization_max + 1)
-                logger.warning(
-                    (f"Size of the generalized EVP would exceed its maximum "
-                     f"value. Discretization around {np.real(origin)/tau_max} + "
-                     f"{np.imag(origin)/tau_max}j with N = {discretization} "
-                     f"instead (size of new eigenvalue problem: {size_evp} x "
-                     f"{size_evp}. As a consequence, not all characteristic "
-                     "roots in the specified right half-plane might be found. "
-                     "To make sure that all desired characteristic roots are "
-                     "found, either increase r (i.e., shift the desired right "
-                     "half-plane to the right) or increase the kwargs "
-                     "'max_size_evp'. For more information consult the "
-                     "documentation of this function.")
-                )
-        else:
-            assert isinstance(discretization, int), "discretization has to be int"
-            assert discretization > 1, "discretization has to be > 1"
-            origin = tau_max * ((r[0]+r[1])/2) + 1j*((r[2]+r[3])/2)
-            logger.debug(f"User provided {discretization=} | {origin=} ")
-        
-        QQ = np.full_like(A, fill_value=0, dtype=np.complex128)
-        QQ[:,:,0] =  K[:,:,0] - origin*E
-        QQ[:,:,1:] = K[:,:,1:] * np.exp(-origin * tau_s[1:])
-
-    logger.info(f"Degree of spectral discretization is N = {discretization}")
-    
-    ########################### 
-	# Spectral discretisation #
-	###########################
-    # [3] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
-    #     method for the delay eigenvalue problem. SIAM Journal on Scientific
-    #     Computing, 32(6), pp. 3278-3300.  Section 2.2.
-
-    # create DDAE and discretize into DAE
-    ddae = DDAE(E=E, A=QQ, hA=tau_s)
-    dae = discretize(ddae, discretization) # TODO, rework to low-level function `discretize`
-
-    # solve EVP
-    raw_roots = linalg.eig(dae.A, dae.E, left=False, right=False)
-    raw_roots = raw_roots[np.isfinite(raw_roots)] # get rid of inf and NaN
-
-    # undo shift and scaling
-    if case == "rhp":
-        raw_roots += rs
-    else: # case == "rect"
-        raw_roots += origin
-    raw_roots = raw_roots / tau_max
-
-    ######################
-	# Newton corrections #
-	######################
-    # Select characteristic roots for Newton corrections
-    # TODO, sometimes this drop can cause drop double roots with Im part close to 0-
-    if case == "rhp":
-        mask = ((np.real(raw_roots) >= lower_bound(r, 0.1, 0.1)) 
-                & (np.imag(raw_roots) >= -1e-10)) # due to symetry, drop imag < 0 TODO kwarg
-        newton_roots0 = raw_roots[mask]
-    else: # case == "rect"
-        mask = ((np.real(raw_roots) >= lower_bound(r[0], 0.1, 0.1))
-                & (np.real(raw_roots) <= upper_bound(r[1], 0.1, 0.1))
-                & (np.imag(raw_roots) >= lower_bound(r[2], 0.1, 0.1))
-                & (np.imag(raw_roots) <= upper_bound(r[3], 0.1, 0.1)))
-        newton_roots0 = raw_roots[mask]
-    
-    # perform newton corrections
-    newton_roots, residuals, converged_mask, correction_large_mask = newton_correction(newton_roots0, E, A, hA)
-    newton_roots = newton_roots[np.isfinite(newton_roots)] # get rid of inf and NaN
-
-    if case == "rhp":
-        # add back conjugates, but not those close to real 0 axis
-        mask0 = ~np.isclose(np.imag(newton_roots), 0, rtol=0, atol=1e-10)
-        roots = np.r_[newton_roots, np.conj(newton_roots[mask0])]
-        roots = roots[roots >= r]
-        if roots.size == 0:
-            logger.warning(f"No characteristic roots found in right half-plane (Re(z)>= {r})")
-    else: # case == "rect"
-        mask = ((np.real(newton_roots) >= r[0])
-                & (np.real(newton_roots) <= r[1])
-                & (np.imag(newton_roots) >= r[2])
-                & (np.imag(newton_roots) <= r[3]))
-        roots = newton_roots[mask]
-        if roots.size == 0:
-            logger.warning(f"No characteristic roots found in rectangular region {r}")
-
-    # prepare RootsInfo TODO - fix gamma_r and index bools
-    info = RootsInfo(discretization, False, False, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
-
-    return roots, info
+    return cr, cr_info

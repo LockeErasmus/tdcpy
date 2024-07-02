@@ -35,12 +35,6 @@ class TDSBase(ABC):
         """ state size """
         ...
     
-    @property
-    @abstractmethod
-    def p2(self) -> int:
-        """ input size """
-        ...
-    
     @abstractmethod
     def get_delay_difference_equation(self):
         """ associated delay difference equation """
