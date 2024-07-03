@@ -14,6 +14,7 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg
 
+from .common.compress import compress_matrices_delays, sort_matrices_delays
 from .base import TDSBase
 
 logger = logging.getLogger(__name__)
@@ -21,10 +22,6 @@ logger = logging.getLogger(__name__)
 
 class DDAE(TDSBase):
     """
-    
-    
-    
-    
     """
 
     def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None, uE: npt.NDArray=None, vE: npt.NDArray=None,
@@ -222,7 +219,7 @@ class DDAE(TDSBase):
     
     @property
     def is_real(self) -> bool:
-        """ Checks if DDAE uses complex storage for any of defining matrices """
+        """ Checks if DDAE uses complex storage for any of defining arrays """
         fields_to_check = ["_E", "_uE", "_vE", "_A", "_hA", "_B", "_hB",
                            "_C", "_hC", "_D", "_hD"]
         for field in fields_to_check:
@@ -354,7 +351,7 @@ class DDAE(TDSBase):
 
         """
         if self.is_logical:
-            raise ValueError(f"Can't form delay difference equation from logical TDS")
+            raise ValueError(f"Can't form delay difference equation from logical DDAE")
                 
         uE = self.uE # dynamic property -> calc it once and store into mem
         vE = self.vE # dynamic property -> calc it once and store into mem
@@ -379,17 +376,37 @@ class DDAE(TDSBase):
     def to_asymptotic_transfer_function(self, **kwargs) -> 'DDAE':
         raise NotImplementedError("Not implemented yet")
     
-    def sort(self, inplace=False):
-        """ Sorts delays (mainly hA) into ascending order """
-        delay_index = np.argsort(self.hA)
+    def sort(self, inplace=False) -> 'DDAE':
+        """ Sorts arrays containing matrices and delays (ascending order) """
+        
+        A, hA = sort_matrices_delays(self.A, self.hA)
 
-        # TODO also solve input matrices, output matrices
+        if self.B is None or self.hB is None:
+            B, hB = self.B, self.hB
+        else:
+            B, hB = sort_matrices_delays(self.B, self.hB)
+        
+        if self.C is None or self.hC is None:
+            C, hC = self.C, self.hC
+        else:
+            C, hC = sort_matrices_delays(self.C, self.hC)
+        
+        if self.D is None or self.hD is None:
+            D, hD = self.D, self.hD
+        else:
+            D, hD = sort_matrices_delays(self.D, self.hD)
 
         if inplace:
-            self._A = self.A[:,:, delay_index]
-            self._hA = self.hA[delay_index]
+            self._A = A
+            self._hA = hA
+            self._B = B
+            self._hB = hB
+            self._C = C
+            self._hC = hC
+            self._D = D
+            self._hD = hD
         else:
-            return DDAE(A=self.A[:,:, delay_index], hA=self.hA[delay_index])
+            return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     def compress(self, inplace=False, rtol=1e-5, atol=1e-8):
         """ Removes delay duplicates, sorts delays into ascending order
