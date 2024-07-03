@@ -16,7 +16,7 @@ import numpy.typing as npt
 from scipy import linalg, optimize
 
 from tdspy.common.delay_difference_equation import normalize_diff
-from .gamma_r import compute_gamma
+from .gamma_r import gamma_normalized_diff
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def func(r, DD, hDD, gamma_kwargs):
         r 
         DD
         hDD
-        gamma_kwargs: kwargs passed to function `compute_gamma`
+        gamma_kwargs: kwargs passed to function `gamma_normalized_diff`
     
     Returns:
         tuple containing:
@@ -49,7 +49,7 @@ def func(r, DD, hDD, gamma_kwargs):
             - df (array): derivative of f(.)
     """
 
-    gamma_r, gamma_info = compute_gamma(DD, hDD, r, gamma_kwargs)
+    gamma_r, gamma_info = gamma_normalized_diff(DD, hDD, r, **gamma_kwargs)
     th, M, s, u, v = gamma_info # "th", "M", "s", "u", "v"
 
     num = (np.conj(u)[np.newaxis,:] @ DD[:,:,0] @ v[:, np.newaxis]) * hDD[0]*np.exp(-r*hDD[0])*np.exp(1j*th[0])
@@ -91,7 +91,7 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
             scipy_root_options (dict): a dictionary of solver options (method),
                 default None
             gamma_kwargs (dict): keyword arguments passed to function
-                `compute_gamma` (see documentation)
+                `gamma_normalized_diff` (see documentation)
     Returns:
         tuple containing:
 
@@ -109,12 +109,12 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
     if DD.shape[2] == 1:
         # case only one delay: the strong spectral abscissa is equal to
         #   cd = ln( rho(DD[0]]) ) / hDD[0]
-        gamma0, _ = compute_gamma(DD, hDD, 0, **gamma_kwargs)
+        gamma0, _ = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
         cd = np.log(gamma0) / hDD[0]
         return cd, None # TODO info return, as of now None
 
     # gamma(r) == 0, degenerate case
-    gamma0, _ = compute_gamma(DD, hDD, 0, **gamma_kwargs)
+    gamma0, _ = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
     if gamma0 == 0.0:
         return -np.inf, None # TODO metadata
     

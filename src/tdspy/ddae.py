@@ -75,11 +75,11 @@ class DDAE(TDSBase):
         self._A = A
         self._hA = hA
         self._B = B
-        self._hB = B
-        self._C = B
-        self._hC = B
-        self._D = B
-        self._hD = B
+        self._hB = hB
+        self._C = C
+        self._hC = hC
+        self._D = D
+        self._hD = hD
         
         # TODO checks when for example A, B, C defined and D is not        
 

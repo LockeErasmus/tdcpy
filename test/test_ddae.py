@@ -5,10 +5,12 @@ TODO:
     - split into multiple files later
 """
 
+import pytest
+
 import numpy as np
 from scipy import linalg
 
-import tdspy.ddae
+import tdspy
 
 def generate_example_01():
     # Create DDAE representation
@@ -20,8 +22,10 @@ def generate_example_01():
                 [0, -1.5, 0, 0],
                 [0, 0, 3, -5],
                 [0, 5, 5, 5]])
+    A = np.stack([A0, A1], axis=2)
+    hA = np.array([0, 1.])
 
-    rdde = tdspy.ddae.DDAE(A=[A0, A1], hA=[0, 1.])
+    rdde = tdspy.DDAE(A=A, hA=hA)
     return rdde
 
 def generate_example_02(a: float=0.25, tau1: float=1.0, tau2: float=2.0):
@@ -113,3 +117,8 @@ def test_diff_02():
     print(diff.E)
     print(diff.uE)
     print(diff.vE)
+
+
+def test_feedthrough_ddae():
+    """ Creates a feedthrough DDAE """
+    pass

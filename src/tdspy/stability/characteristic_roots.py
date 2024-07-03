@@ -19,7 +19,7 @@ from scipy import linalg
 from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
 from tdspy.common.discretization import discretize_ddae
 from .bounds import lower_bound, upper_bound
-from .gamma_r import compute_gamma
+from .gamma_r import gamma_normalized_diff, gamma_diff
 from .discretization_heuristic import compute_n_rhp, compute_n_rect
 from .newton import newton_correction
 
@@ -104,15 +104,16 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
                 ...
             else:
                 D, hD = ddae_to_diff(E, A, hA)
+                print(D, hD)
                 if hD.size != 0: # delay difference equation exists (E is singular)
-                    DD, hDD = normalize_diff(D, hD)
-                    if hDD[0] != 0 or False: # TODO
+                    # DD, hDD = normalize_diff(D, hD)
+                    if hD[0] != 0 or False: # TODO
                         raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
 
-                    gamma_diff, gamma_info = compute_gamma(DD, hDD, r)
-                    if gamma_diff >= 1.0:
+                    gamma_val, gamma_info = gamma_diff(D, hD, r)
+                    if gamma_val >= 1.0:
                         discretization = 30
-                        logger.warning((f"gamma(r; ...)= {gamma_diff} exceeds 1 (i.e., CD>r). Spectral "
+                        logger.warning((f"gamma(r; ...)= {gamma_val} exceeds 1 (i.e., CD>r). Spectral "
                                         "discretization with N = 30 (lowered if maximum size of "
                                         "eigenvalue problem is exceeded). Try specifying a "
                                         "rectangular region instead."))

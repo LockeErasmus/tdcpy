@@ -43,6 +43,8 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
                 - roots (array): array of found roots
                 - metadata (RootsInfo): named tuple consisting of TODO
     """
+    # kwargs TODO
+
 
     # checks for region definition
     if isinstance(r, (int, float)):
@@ -80,6 +82,6 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
         A = tds.A
 
     # find all roots via discretization
-    cr, cr_info = roots_ddae(E, A, hA, r)
+    cr, cr_info = roots_ddae(E, A, hA, r, **kwargs)
 
     return cr, cr_info

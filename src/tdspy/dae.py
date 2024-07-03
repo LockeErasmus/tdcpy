@@ -1,5 +1,8 @@
 """
 Differential Algebraic Equation
+
+TODO:
+    1. decide if this high level API object is necessary
 """
 
 import logging

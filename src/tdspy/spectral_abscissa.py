@@ -22,7 +22,7 @@ from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
 from .stability.characteristic_roots import rightmost_root
-from .stability.gamma_r import compute_gamma
+from .stability.gamma_r import gamma_normalized_diff
 from .stability.spectral_abscissa import spectral_abscissa_diff as sa_diff
 
 from .common.delay_difference_equation import normalize_diff
@@ -82,7 +82,7 @@ def spectral_abscissa(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> float:
         logger.warning("Spectral abscissa might be inaccurate. Provide a better value for r")
     
     if check_gamma_sa and isinstance(tds, (NDDE, DDAE)):
-        # gamma_sa, gamma_info = compute_gamma() # TODO
+        # gamma_sa, gamma_info = gamma_normalized_diff() # TODO
         gamma_sa = 1.0 # TODO TODO
         if gamma_sa > 1 + 1e-6:
             logger.warning("Strong spectral abscissa might be larger than spectral abscissa")
