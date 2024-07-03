@@ -1,7 +1,8 @@
 """
 Computation of gamma(r, TDS)
 ----------------------------
-TODO
+TODO:
+    ---
 
 Notes:
     1. `MemoizeJac` decorator can be used because of (i) keep implementation as
@@ -17,6 +18,9 @@ import numpy.typing as npt
 
 from scipy import linalg
 from scipy import optimize
+
+from tdspy.common.delay_difference_equation import normalize_diff
+from tdspy.common.compress import compress_matrices_delays
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +159,7 @@ def l2_func(*args):
 
     return y_new, jac_new
 
-def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
+def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
     """ Computes gamma(r) of the normalized delay difference equation
     
     Normalized delay difference equation takes form
@@ -199,15 +203,13 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     Notes:
         1. for all kwargs starting with 'scipy_*' check the following documentation
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
-
     """
 
     assert hDD.size > 0 and DD.size > 0, "empty delay-difference equation not allowed"
-    n_delays = hDD.shape[0]
-    assert n_delays > 0, "empty delay difference equation not allowed"
-    assert n_delays == DD.shape[2], "len of DD and hDD has to match"
+    assert hDD.shape[0] > 0, "empty delay difference equation not allowed"
+    assert hDD.shape[0] == DD.shape[2], "len of DD and hDD has to match"
 
-    n_diff = DD.shape[0] # dimension of state vector of delay-diff. eq.
+    n_diff = DD.shape[0] # dimension of state vector of normalized DIFF
 
     n_theta = kwargs.get("n_theta", 10)
     assert isinstance(n_theta, int), "n_theta has to be of type int"
@@ -218,7 +220,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
     if n_theta % 2 == 1:
         n_theta += 1
 
-    if n_delays == 1:
+    if hDD.shape[0] == 1:
         # CASE 1: 1 delay -> no sensitivity to infinitesimal delay perturbations
         M = np.sum(DD * np.exp(-r * hDD), axis=2)
         vals = linalg.eig(M, left=False, right=False)
@@ -231,7 +233,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         u = U[:,-1]
         return gamma_r, GammaInfo(0, M, eig_v, u, v)
     
-    # CASE 2: n_delays > 1 in DDE
+    # CASE 2: number of delays greater than 1 in normalized DIFF
     ## STEP 1: prediction step -- grid search over [0,2*pi)^{m}
     n_opt = DD.shape[2] - 1 # number of free optimization parameters
     radius = 0 # store maximal value
@@ -251,7 +253,7 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         # M = DD{1}*exp(-r*hDD(1))*exp(1j*theta(1)) + .. + DD{m}*exp(-r*hDD(m))*exp(1j*theta(m))
 
         # construct M
-        # M = np.sum(DD * np.exp(-r * hDD) * np.exp(), axis=2)
+        # M = np.sum(DD * np.exp(-r * hDD) * np.exp(theta), axis=2)
         M = DD[:,:,0] * np.exp(-r*hDD[0])
         for k2 in range(n_opt):
             M = M + DD[:,:,k2+1] * np.exp(-r*hDD[k2+1]) * np.exp(1j * theta_grid[id[k2]])
@@ -379,3 +381,31 @@ def compute_gamma(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tupl
         u_star = U_star[:,-1]
         gamma_info = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
         return gamma_r, gamma_info
+
+
+def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
+    """ Computes gamma(r) of delay difference equation
+    
+    TODO 
+    """
+
+    # perform compression
+    D, hD = compress_matrices_delays(D, hD)
+
+    if  hD.size < 2:
+        # emtpy delay difference equation or 1 delay -> gamma(r) = 0 by default
+        if hD.size == 0:
+            M = np.zeros(shape=(0,0))
+        else:
+            M = np.zeros(shape=(D.shape[0], D.shape[1]))
+        gamma_info = GammaInfo(np.zeros(shape=(0,)), M, 0+0j, np.zeros(shape=(0,)), np.zeros(shape=(0,)))
+        return 0.0, gamma_info
+    
+    # number of unique delays in DIFF at least 2
+    if hD.size > 3: # -> slow computation warning
+        logger.warning(f"Large number of delays in the delay difference equation {hD.size=}. Computing gamma(r) might be slow.")
+    
+    DD, hDD = normalize_diff(D, hD)
+
+    gamma_val, gamma_info = gamma_normalized_diff(DD, hDD, r, **kwargs)
+    return gamma_val, gamma_info

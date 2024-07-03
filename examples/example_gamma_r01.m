@@ -1,7 +1,7 @@
 clear all;
 close all;
 
-% import tds_control.stability.compute_gamma
+% import tds_control.stability.gamma_normalized_diff
 
 % settings 01; gamma0 = 1.0
 A = {0.25, -1/3};

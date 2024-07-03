@@ -29,8 +29,8 @@ H = np.stack([
 
 # Three set of delays
 hH = np.array([1., 2])
-hH = np.array([1., 2.05])
-hH = np.array([1., 2.005])
+#hH = np.array([1., 2.05])
+#hH = np.array([1., 2.005])
 
 ndde = tds.NDDE(A=A, hA=hA, H=H, hH=hH)
 

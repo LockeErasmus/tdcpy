@@ -17,7 +17,7 @@ logger.addHandler(handler)
 import numpy as np
 
 import tdspy as tds
-from tdspy.stability.gamma_r import compute_gamma, func
+from tdspy.stability.gamma_r import gamma_normalized_diff, func
 
 def generate_example() -> tds.NDDE:
     """ generates example from TDS MATLAB manual (page 23) """
@@ -78,7 +78,7 @@ def generate_example_3() -> tds.NDDE:
 ndde = generate_example_3()
 diff = ndde.get_delay_difference_equation()
 
-g, info = compute_gamma(diff.A[:,:,1:], diff.hA[1:], 0, correction=True)
+g, info = gamma_normalized_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True)
 
 
 
