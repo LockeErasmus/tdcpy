@@ -42,29 +42,54 @@ class DDAE(TDSBase):
         assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
         assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
         assert A.shape[2] == hA.shape[0], "number of delays  hA does not match number of matrices Ai"
-        assert np.all(hA >= 0.0), "only positive delays possible"
+        assert np.all(hA >= 0.0), "only non-negative delays possible"
         if not np.any(hA == 0): # if necessary, add 0 delay term
             hA = np.r_[0.0, hA]
             A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
         
-        # E, TODO checks for nullspaces?
+        # E, uE, vE
         if E is not None:
             assert isinstance(E, np.ndarray)
             assert E.ndim == 2
             assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1], f"{E.shape=}, {A.shape=}"
+        if uE is not None:
+            assert isinstance(uE, np.ndarray)
+            if uE.size > 0:
+                assert uE.ndim == 2, "ndim of nullspace has to be 2"
+                assert uE.shape[0] == A[0], "uE^T @ Ai has to be possible (dimensions has to match)"
+        if vE is not None:
+            assert isinstance(vE, np.ndarray)
+            if vE.size > 0:
+                assert vE.ndim == 2, "ndim of nullspace has to be 2"
+                assert vE.shape[0] == A[1], "Ai @ vE has to be possible (dimensions has to match)"
 
         # I/O matrices
+        # TODO: tests are (somewhat) repeating, consider function?
         if B is not None or hB is not None:
             # input matrices are defined
             assert isinstance(B, np.ndarray) and isinstance(hB, np.ndarray), "both ndarrays"
             assert B.ndim == 3 and hB.ndim == 1, "dimensions check 1"
-            assert B.shape[0] == A.shape[0], " "
+            assert B.shape[0] == A.shape[0], "shapes of system does not match A-B matrices"
             assert B.shape[2] == hB.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hB >= 0.0), "only positive delays possible"
+            assert np.all(hB >= 0.0), "only non-negative delays possible"
         
-        # TODO perform checks for C, hC, D, hD
-
-
+        if C is not None or hC is not None:
+            # output matrices are defined
+            assert isinstance(C, np.ndarray) and isinstance(hC, np.ndarray), "both ndarrays"
+            assert C.ndim == 3 and hC.ndim == 1, "dimensions check 1"
+            assert C.shape[1] == A.shape[1], "shapes of system does not match A-C matrices "
+            assert C.shape[2] == hC.shape[0], "number of delays hB does not match number of matrices Bi"
+            assert np.all(hC >= 0.0), "only non-negative delays possible"
+        
+        if D is not None or hD is not None:
+            # feed-through matrices are defined
+            assert isinstance(C, np.ndarray), "C, hC needs to be defined to define D, hD"
+            assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray), "both ndarrays"
+            assert D.ndim == 3 and hD.ndim == 1, "dimensions check 1"
+            assert D.shape[0] == C.shape[0], "shapes of system does not match C-D matrices "
+            assert D.shape[2] == hD.shape[0], "number of delays hB does not match number of matrices Bi"
+            assert np.all(hD >= 0.0), "only non-negative delays possible"
+        
         # --- ARGS ---
         self._E = E
         self._uE = uE
