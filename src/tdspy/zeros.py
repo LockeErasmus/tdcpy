@@ -21,8 +21,9 @@ def zeros(tds: RDDE | NDDE | DDAE, r, input_index: int=0, output_index: int=0, *
         tds (TDS): instance of time-delay system, i.e., RDDE, NDDE or DDAE
         r (list): rectangular region defined via 4 coordinates 
             [Re_min, Re_max, Im_min, Im_max]
-        input_index (int): TODO
-        output_index (int): TODO
+        input_index (int): input index for transmission zeros computation,
+            default 0
+        output_index (int): output index for transmission zeros computation,
         **kwargs:
             max_size_evp (int): TODO, default 600
             discretization (int): discretization, if None heuristic is envoked,

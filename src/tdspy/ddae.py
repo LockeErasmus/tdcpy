@@ -47,7 +47,7 @@ class DDAE(TDSBase):
             hA = np.r_[0.0, hA]
             A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
         
-        # E, TODO checks for nullspaces?
+        # E, TODO: also perform checks for nullspaces?
         if E is not None:
             assert isinstance(E, np.ndarray)
             assert E.ndim == 2
