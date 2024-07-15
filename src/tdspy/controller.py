@@ -49,10 +49,16 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
 
     logger.debug(f"Mapping TDS1 outputs {3} to TDS2 inputs {3}")
 
-
     # Extract matrices and delays
     E1, A1, B1, C1, D1 = tds1.E, tds1.A, tds1.B, tds1.C, tds1.D
+    hA1, hB1, hC1, hD1 = tds1.hA, tds1.hB, tds1.hC, tds1.hD
     E2, A2, B2, C2, D2 = tds2.E, tds2.A, tds2.B, tds2.C, tds2.D
+    hA2, hB2, hC2, hD2 = tds2.hA, tds2.hB, tds2.hC, tds2.hD
+
+    # interconnection algorithm
+    
+
+
 
 
 def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
