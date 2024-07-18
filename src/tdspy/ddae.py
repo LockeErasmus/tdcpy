@@ -14,6 +14,7 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg
 
+from .common.compress import compress_matrices_delays, sort_matrices_delays
 from .base import TDSBase
 
 logger = logging.getLogger(__name__)
@@ -21,10 +22,6 @@ logger = logging.getLogger(__name__)
 
 class DDAE(TDSBase):
     """
-    
-    
-    
-    
     """
 
     def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None, uE: npt.NDArray=None, vE: npt.NDArray=None,
@@ -45,29 +42,54 @@ class DDAE(TDSBase):
         assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
         assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
         assert A.shape[2] == hA.shape[0], "number of delays  hA does not match number of matrices Ai"
-        assert np.all(hA >= 0.0), "only positive delays possible"
+        assert np.all(hA >= 0.0), "only non-negative delays possible"
         if not np.any(hA == 0): # if necessary, add 0 delay term
             hA = np.r_[0.0, hA]
             A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
         
-        # E, TODO checks for nullspaces?
+        # E, uE, vE
         if E is not None:
             assert isinstance(E, np.ndarray)
             assert E.ndim == 2
             assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1], f"{E.shape=}, {A.shape=}"
+        if uE is not None:
+            assert isinstance(uE, np.ndarray)
+            if uE.size > 0:
+                assert uE.ndim == 2, "ndim of nullspace has to be 2"
+                assert uE.shape[0] == A[0], "uE^T @ Ai has to be possible (dimensions has to match)"
+        if vE is not None:
+            assert isinstance(vE, np.ndarray)
+            if vE.size > 0:
+                assert vE.ndim == 2, "ndim of nullspace has to be 2"
+                assert vE.shape[0] == A[1], "Ai @ vE has to be possible (dimensions has to match)"
 
         # I/O matrices
+        # TODO: tests are (somewhat) repeating, consider function?
         if B is not None or hB is not None:
             # input matrices are defined
             assert isinstance(B, np.ndarray) and isinstance(hB, np.ndarray), "both ndarrays"
             assert B.ndim == 3 and hB.ndim == 1, "dimensions check 1"
-            assert B.shape[0] == A.shape[0], " "
+            assert B.shape[0] == A.shape[0], "shapes of system does not match A-B matrices"
             assert B.shape[2] == hB.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hB >= 0.0), "only positive delays possible"
+            assert np.all(hB >= 0.0), "only non-negative delays possible"
         
-        # TODO perform checks for C, hC, D, hD
-
-
+        if C is not None or hC is not None:
+            # output matrices are defined
+            assert isinstance(C, np.ndarray) and isinstance(hC, np.ndarray), "both ndarrays"
+            assert C.ndim == 3 and hC.ndim == 1, "dimensions check 1"
+            assert C.shape[1] == A.shape[1], "shapes of system does not match A-C matrices "
+            assert C.shape[2] == hC.shape[0], "number of delays hB does not match number of matrices Bi"
+            assert np.all(hC >= 0.0), "only non-negative delays possible"
+        
+        if D is not None or hD is not None:
+            # feed-through matrices are defined
+            assert isinstance(C, np.ndarray), "C, hC needs to be defined to define D, hD"
+            assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray), "both ndarrays"
+            assert D.ndim == 3 and hD.ndim == 1, "dimensions check 1"
+            assert D.shape[0] == C.shape[0], "shapes of system does not match C-D matrices "
+            assert D.shape[2] == hD.shape[0], "number of delays hB does not match number of matrices Bi"
+            assert np.all(hD >= 0.0), "only non-negative delays possible"
+        
         # --- ARGS ---
         self._E = E
         self._uE = uE
@@ -222,7 +244,7 @@ class DDAE(TDSBase):
     
     @property
     def is_real(self) -> bool:
-        """ Checks if DDAE uses complex storage for any of defining matrices """
+        """ Checks if DDAE uses complex storage for any of defining arrays """
         fields_to_check = ["_E", "_uE", "_vE", "_A", "_hA", "_B", "_hB",
                            "_C", "_hC", "_D", "_hD"]
         for field in fields_to_check:
@@ -354,7 +376,7 @@ class DDAE(TDSBase):
 
         """
         if self.is_logical:
-            raise ValueError(f"Can't form delay difference equation from logical TDS")
+            raise ValueError(f"Can't form delay difference equation from logical DDAE")
                 
         uE = self.uE # dynamic property -> calc it once and store into mem
         vE = self.vE # dynamic property -> calc it once and store into mem
@@ -379,17 +401,37 @@ class DDAE(TDSBase):
     def to_asymptotic_transfer_function(self, **kwargs) -> 'DDAE':
         raise NotImplementedError("Not implemented yet")
     
-    def sort(self, inplace=False):
-        """ Sorts delays (mainly hA) into ascending order """
-        delay_index = np.argsort(self.hA)
+    def sort(self, inplace=False) -> 'DDAE':
+        """ Sorts arrays containing matrices and delays (ascending order) """
+        
+        A, hA = sort_matrices_delays(self.A, self.hA)
 
-        # TODO also solve input matrices, output matrices
+        if self.B is None or self.hB is None:
+            B, hB = self.B, self.hB
+        else:
+            B, hB = sort_matrices_delays(self.B, self.hB)
+        
+        if self.C is None or self.hC is None:
+            C, hC = self.C, self.hC
+        else:
+            C, hC = sort_matrices_delays(self.C, self.hC)
+        
+        if self.D is None or self.hD is None:
+            D, hD = self.D, self.hD
+        else:
+            D, hD = sort_matrices_delays(self.D, self.hD)
 
         if inplace:
-            self._A = self.A[:,:, delay_index]
-            self._hA = self.hA[delay_index]
+            self._A = A
+            self._hA = hA
+            self._B = B
+            self._hB = hB
+            self._C = C
+            self._hC = hC
+            self._D = D
+            self._hD = hD
         else:
-            return DDAE(A=self.A[:,:, delay_index], hA=self.hA[delay_index])
+            return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     def compress(self, inplace=False, rtol=1e-5, atol=1e-8):
         """ Removes delay duplicates, sorts delays into ascending order

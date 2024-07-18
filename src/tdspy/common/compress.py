@@ -1,39 +1,46 @@
 """
+Set of function for representation compressions
+-----------------------------------------------
 
+compression := obtaining minimal sorted representation of "something"
 
+TODO:
+    ---
+
+Notes:
+    ---
 """
+
 import numpy as np
 import numpy.typing as npt
 
-
 def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e-8):
-    """ Removes delay duplicates, sorts delays into ascending order
-
-    Converts:
-
-        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])
+    """ Compresses matrices - delays representation
     
-    into:
+    Removes delay duplicates, sorts delays into ascending order and removes
+    matrices close to zero, i.e. converts the representation (A, hA):
 
-        A
-
-    Such that no duplicates in 
+        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])                           (1)
+    
+    into representation (A*, hA*), where:
+        1. matrices A*[i] are NOT close to zero
+        1. hA* does not contain duplicates
 
     Args:
-        A: array TODO
-        hA: array TODO 
+        A: (array): 3D array of stacked matrics (axis 2)
+        hA: (array): 1D array (vector) of delays
         rtol (float): relative tolerance for determining matrix element is
             zero, default 1e-5
         atol (float): absolute tolerance for determining matrix element is 
             zero, default 1e-8
     
     Returns:
-        - TODO
+        tuple containing:
 
-        - compressed_A
-        - compressed_hA
+            - compressed_A (array): compressed representation of A
+            - compressed_hA (array): compressed vector of delays
     """
-    # TODO perform tests
+    # Consider adding tests here - TODO
 
     unique_hA = np.unique(hA) # sorted in ascending order
     compressed_A = np.zeros(shape=(A.shape[0], A.shape[1], unique_hA.shape[0]))
@@ -50,5 +57,33 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
 
     return compressed_A, compressed_hA
 
+def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
+    """ Sorts matrices - delays representation (ascending order by delays)
+    
+    Sorts delays into ascending order, i.e. changes the representation (A, hA):
+
+        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])                           (1)
+    
+    into representation (A*, hA*), where:
+        1. hA* is now in ascending order
+        2. shapes are preserved
+
+    Args:
+        A: (array): 3D array of stacked matrics (axis 2)
+        hA: (array): 1D array (vector) of delays
+    
+    Returns:
+        tuple containing:
+
+            - compressed_A (array): compressed representation of A
+            - compressed_hA (array): compressed vector of delays
+    
+    Notes:
+        1. the sort is "stable" (see numpy.argsort implementation)
+    """
+    # Consider adding tests here - TODO
+    sorted_index = np.argsort(hA, kind="stable")
+    return A[:,:,sorted_index], hA[sorted_index]
+
 def compress_ddae():
-    raise NotImplementedError
+    raise NotImplementedError(".")

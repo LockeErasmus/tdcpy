@@ -1,6 +1,10 @@
 """
-Computation of gamma(r, TDS)
-----------------------------
+Computation of gamma(r, DIFF)
+-----------------------------
+
+DIFF - delay difference equation represented via matrices (3D array)
+and delays (1D array)
+
 TODO:
     ---
 
@@ -58,8 +62,8 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         1. shape of `jac` (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
             n_diff ... dimension of the state vector of the delay-difference equation
     """
-    n_diff = DD.shape[0] # TODO this could be calculated in advance
-    n_opt = DD.shape[2] - 1 # TODO this could be calculated in advance
+    n_diff = DD.shape[0] 
+    n_opt = DD.shape[2] - 1
 
     # unpack opt. variables x -> u, v, lambda, theta
     v = x[:n_diff] + 1j*x[n_diff:2*n_diff]
@@ -178,7 +182,7 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
             difference equation and normalizing)
         hDD (array): delays represented by 1D array shaped (m,), note that delay
             0 is omitted
-        r (float): TODO
+        r (float): point from complex plane
 
         kwargs:
             n_theta (int): theta discretization, has to be > 0, default 10
@@ -197,8 +201,9 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     
     Returns:
         tuple containing:
-            gamma (float): TODO
-            info (GammaInfo): TODO
+            
+            - gamma (float): quantity gamma(r, DD, hDD)
+            - info (GammaInfo): gamma metadata
 
     Notes:
         1. for all kwargs starting with 'scipy_*' check the following documentation
@@ -320,7 +325,6 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     ## Optimization process
     x0 = np.r_[np.real(v_s), np.imag(v_s), np.real(u_s), np.imag(u_s),
                np.real(eig_v), np.imag(eig_v), th_v]
-    # return lambda x: func(x, DD, hDD, r, v_s), x0 # TODO delete
 
     # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_'    
     sol = optimize.root(
@@ -384,10 +388,41 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
 
 
 def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
-    """ Computes gamma(r) of delay difference equation
+    """ Computes gamma(r) of delay difference equation (DIFF)
+
+    Delay difference equation takes form
+        0 = D[0]*x(t) + D[1] * x(t-hD[1]) + ... + DD[m-1]*x(t-hDD[m-1]),   (1)
+    where m == len(DD) == len(hDD).
+
+    quantity gamma(r; D, hD) is then:
+        1. gamma(r; D, hD) = 0 IF number of delays (vector hD) is less then 2
+        2. obtained via predictor corrector approach, i.e.
+            2a. normalize DIFF (multiply equation (1) by inverse of D[0]) and
+                omit first delay = 0 and first normalized matrix = identity
+            2b. call `gamma_diff_normalized`
     
-    TODO 
+    Args:
+        D (array): coefficient matrices packed into 3D array shaped (n,n,m)
+        hDD (array): delays represented by 1D array shaped (m,)
+        r (float): point from complex plane
+        **kwargs: kwargs passed into `gamma_diff_normalized` function
+    
+    Returns:
+        tuple containing:
+            
+            - gamma (float): quantity gamma(r, D, hD)
+            - info (GammaInfo): gamma metadata
+    
+    Notes:
+        1. if compressed version of DIFF contains 2 or more delays,
+            invertibility of D[0] is assumed.
+        2. DIFF representation (D, hD) can be emtpy, result will be
+            gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
+        3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
+            see implementation of `gamma_diff_normalized`
     """
+    # Perform necessary tests - TODO
+    assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray)
 
     # perform compression
     D, hD = compress_matrices_delays(D, hD)
