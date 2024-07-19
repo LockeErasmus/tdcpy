@@ -5,22 +5,24 @@ Project structure and hierarchy
 TDSpy package
 -------------------------------
 
+
+
 * `docs`
     * `coming_from_matlab.md`
 * `examples`
 * `src`
-    * `tdspy`
-        * `common`
+    * [`tdspy`](#tdspy)
+        * [`common`](#common)
             * `init`
             * `closed_loop`
             * `composition`
             * `compress`
             * `delay_difference_equation`
             * `discretization`
-        * `plot`
+        * [`plot`](#plot)
             * `init`
             * `eigenvalues`
-        * `stability`
+        * [`stability`](#stability)
             * `init`
             * `bounds`
             * `characteristic_roots`
@@ -28,19 +30,19 @@ TDSpy package
             * `gamma_r`
             * `newton`
             * `spectral_abscissa`
-        * `stabopt`
+        * [`stabopt`](#stabopt)
             * `init`
         * `init` 
-        * `base`         Abstract parent class for RDDE, NDDE and DDAE
-        * `controller` 
-        * `dae`          Differential algebraic equation
-        * `ddae`     DDAE impementation
-        * `gamma`    implementation of the function tds_gamma_r
-        * `ndde`     neutral delay differential equation
-        * `rdde`     retarded delay differential equation
-        * `roots`    implementation of the function tds_roots
-        * `zeros`    functionalities for computing the transmission zeros
-        * `spectral_abscissa`
+        * [`base`](#base)
+        * [`controller`](#controller)
+        * [`dae`](#dae)          
+        * [`ddae`](#ddae)
+        * [`gamma`](#gamma)    
+        * [`ndde`](#ndde)
+        * [`rdde`](#rdde)     
+        * [`roots`](#roots)    
+        * [`zeros`](#zeros)    
+        * [`spectral_abscissa`](#spectral_abscissa)
 * `test`
 * `.gitignore`
 * `LICENSE`
@@ -76,26 +78,49 @@ TDSpy package
 - `discretization_heuristic`: 
     function to compute N
 - `characteristic_roots`:
-    set of functionalities connected to computation of characteristic roots of a DDAE. 
-- `compute_n_rect`: 
-- `gamma_r`
+    set of functionalities connected to computation of characteristic roots of a DDAE
+- `compute_n_rect`:
+- `gamma_r`:
+    computation of gamma(r,tds)
+- `newton`:
+    newton method for increasing the precision of roots
+- `spectral_abscissa`:
+
+##### `stabopt`:
+
+- `stabopt`
+- `gradient_sa`
+- `gradient_gamma0`
+- `gradient_CD`
+- `fg_stab`
+- `fg_gamma0`
 
 
+##### `base`
+Abstract parent class for RDDE, NDDE and DDAE
 
-.
-├───src
-    ├───common
-    ├───plot
-    ├───stability
-    └───stabopt
-├───examples <- examples for usage
-├───docs <- documentation
-├───test <- pytest
-│
-│
-├───README.md
-├───.gitignore
-├───requirements.txt
-├───pyproject.toml
-└─── ...
+##### `controller`
 
+##### `dae`
+Differential algebraic equation
+
+##### `ddae`
+DDAE impementation
+
+##### `gamma`
+implementation of the function tds_gamma_r
+
+##### `ndde`
+neutral delay differential equation
+
+##### `rdde`
+retarded delay differential equation
+
+##### `roots`
+implementation of the function `tds_roots`. The function computes the characteristic roots of a given delay-differential equation or time-delay system in a specified right half-plane or rectangular 
+
+
+##### `spectral_abscissa`
+
+##### `zeros`
+functionalities for computing the transmission zeros
