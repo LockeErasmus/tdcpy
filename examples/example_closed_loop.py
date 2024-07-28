@@ -1,80 +1,106 @@
 """
-Example 3.1 from TDS-CONTROL manal               
+Example: Create closed-loop for the vibration control setup, interconnected by a static feedback controller of gain K
+
 """
 
 import numpy as np
 import tdspy as tds
+import tdspy.controller
 import tdspy.plot
 
-def generate_example01() -> tds.NDDE:
-    """ generates example from TDS MATLAB manual (page 23)
-    x'(t) = A0 x(t) + A1 x(t-\tau_1) + H1 \dot{x}(t-\tau_1) + H_2 \dot{x}(t-\tau_2)
+def generate_system() -> tds.RDDE:
+    """ generates rdde for the system described in the article
+    x'(t) = A x(t) + B2 f(t) + B1 u(t-tau)
+    y(t) = C2 x(t)
+    z(t) = C1 x(t)
+
     with 
-    \tau_1 = 1, \tau_2 = 2 and
-    A_0 = 1/4,  A_1 = 1/3
-    H_1 = 3/4,  H_2 = -1/2."""
+    A = [   0   1   0   0   0   0   0   0;
+            -2156.6 -6  637.4   0.7 320.9   0   346.4;  
+            0   0   0   1   0   0   0   0;
+            1483.2  1.7 -2891.1 -5.3    1407.9;
+            0   0   0   0   0   1   0   0;
+            517.1   0   975.3   2.5 -2795.6 -9.3    0;  
+            0   0   0   0   0   0   0   1;
+            782.7   3.5 0   0   0   0   0   -782.7      ]
+    
+    B = [   0   0   0   0   0   1.3717  0   0   ]'
+
+    C = [   0   0   1   0   0   0   0   0   ]
+
+    D = 0
+
+    B1  = [  0   -0.8511 0   0   0   0   0   1.9231  ]'
+
+    C1  = [ 1   0   0   0   0   0   0   0   
+            0   1   0   0   0   0   0   0
+            0   0   0   0   1   0   0   0
+            0   0   0   0   0   1   0   0
+            0   0   0   0   0   0   1   0
+            0   0   0   0   0   0   0   1   ]
+
+    """
+    
+    A0 = np.array([[    0,      1,  0,      0,      0,      0,   0,         0           ],
+                    [   -2156.6,-6, 637.4,  0.7,    320.9,  0,   346.4,     1.5         ],
+                    [   0,      0,   0,     1,      0,      0,   0,         0           ],
+                    [   1483.2,  1.7, -2891.1, -5.3,    1407.9,     3.7,    0,  0       ],
+                    [   0,   0,   0,   0,   0,   1,   0,   0                            ],
+                    [   517.1,   0,   975.3,   2.5, -2795.6, -9.3,    0,    0           ],
+                    [   0,   0,   0,   0,   0,   0,   0,   1                            ],
+                    [   782.7,   3.5,   0,   0,   0,   0,   -782.7, -3.5                ]])
+    A = np.stack([A0], axis=2)
+
+    hA = np.array([0])
 
 
-    # PLant parameters
-    # Th = 14; Ta = 3; Td = 3; Tc = 25;
+    B2 =  np.array([[   0,   0,   0,   0,   0,   1.3717,  0,   0   ]]).T
+    hB2 = np.array([[0]])
 
-    # Kb = 0.24; Ka = 1; Kd = 0.94; Kc = 0.81; Ku = 0.39;
-    # nh = 6.5; tb = 40; te = 13; td = 18;
-    # tc = 2.8; nc = 9.2; u = 13.2;
 
-    # dA = np.array([0,nh,tb,te,td,tc,nc]); dB = tu;
+    B1 =  np.array([[   0,   -0.8511,   0,   0,   0,   0,     0,   1.9231   ]]).T
+    hB1 = np.array([[0]])
 
-    A = np.stack([
-        np.array([[1]]),
-        np.array([[2]]),
-    ], axis=2)
 
-    hA = np.array([0, 1.])
+    # B = np.stack([B2, B1],axis=2)
 
-    B = np.stack([
-        np.array([[3]]),
-    ], axis=2)
+    # hB = np.array([0.0019,0])
 
-    hB = np.array([2])
 
-    C = np.stack([
-        np.array([[4]]),
-    ], axis=2)
+    C2 = np.array([[ 0,   0,   1,   0,   0,   0,   0,   0   ]])
 
-    hC = np.array([0])
+    hC2 = np.array([[0]])
+    
+    C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
+                   [ 0,   1,    0,   0,   0,   0,   0,  0   ],
+                   [ 0,   0,   0,   0,   1,   0,   0,   0   ],
+                   [ 0,   0,   0,   0,   0,   1,   0,   0   ],
+                   [ 0,   0,   0,   0,   0,   0,   1,   0   ],
+                   [ 0,   0,   0,   0,   0,   0,   0,   1   ]])
 
-    ddae = tdspy.DDAE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
+    hC1 = np.array([[0]])
 
-    return ddae
+    # C = np.stack([C2, C1], axis=2)      # cannot stack arrays of different sizes
 
-def generate_example02() -> tds.DDAE:
-    """ generates example from TDS MATLAB manual (help tds_create_ddae)
-    6 x'(t) =  x(t) + 2 x(t-1) + 3 u(t-2)
-    with 
-    y(t)    = 4 x(t)   """
+    # hC = np.array([0,0])
 
-    E = np.array([[6]])
+    D = np.array([[0]])
 
-    A = np.stack([
-        np.array([[1]]),
-        np.array([[2]]),
-    ], axis=2)
+    hD = np.array([[0]])
 
-    hA = np.array([0, 1.])
+    rdde = tdspy.RDDE(A=A, hA=hA, B1=B1, hB1=hB1, C1=C1, hC1=hC1, B2=B2, hB2=hB2)
+    # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
 
-    B = np.stack([
-        np.array([[3]]),
-    ], axis=2)
+    return rdde
 
-    hB = np.array([2])
+def generate_controller() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    Dc = [  ]
+    """
 
-    C = np.stack([
-        np.array([[4]]),
-    ], axis=2)
+    Dc = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
 
-    hC = np.array([0])
-
-    ddae = tdspy.DDAE(E=E,A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
+    ddae = tdspy.DDAE(D=Dc)
 
     return ddae
 
@@ -90,12 +116,6 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    rdde = generate_system()
 
-    ddae = generate_example02()
-
-    cr, cr0 = tdspy.roots(ddae, r=-0.7)
-
-    import matplotlib.pyplot as plt
-    tdspy.plot.eigen_plot(cr)
-    plt.show()
-
+    cont = generate_controller()
