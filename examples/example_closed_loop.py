@@ -51,44 +51,26 @@ def generate_system() -> tds.RDDE:
                     [   782.7,   3.5,   0,   0,   0,   0,   -782.7, -3.5                ]])
     A = np.stack([A0], axis=2)
 
-    hA = np.array([0])
+    hA = np.array([0.])
 
 
-    B2 =  np.array([[   0,   0,   0,   0,   0,   1.3717,  0,   0   ]]).T
-    hB2 = np.array([[0]])
-
-
+    B2 =  np.array([[   0,   0,   0,   0,   0,   1.3717,  0,   0   ]]).T    
     B1 =  np.array([[   0,   -0.8511,   0,   0,   0,   0,     0,   1.9231   ]]).T
-    hB1 = np.array([[0]])
-
-
-    # B = np.stack([B2, B1],axis=2)
-
-    # hB = np.array([0.0019,0])
-
-
-    C2 = np.array([[ 0,   0,   1,   0,   0,   0,   0,   0   ]])
-
-    hC2 = np.array([[0]])
-    
+    B = np.stack([B1, B2], axis=1)
+    hB = np.array([0.0])
     C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
-                   [ 0,   1,    0,   0,   0,   0,   0,  0   ],
+                   [ 0,   1,   0,   0,   0,   0,   0,  0    ],
                    [ 0,   0,   0,   0,   1,   0,   0,   0   ],
                    [ 0,   0,   0,   0,   0,   1,   0,   0   ],
                    [ 0,   0,   0,   0,   0,   0,   1,   0   ],
-                   [ 0,   0,   0,   0,   0,   0,   0,   1   ]])
+                   [ 0,   0,   0,   0,   0,   0,   0,   1   ],
+                   [ 0,   0,   1,   0,   0,   0,   0,   0   ]]) # the last row is z
+    C = np.stack([C1], axis=2)
+    hC = np.array([0])
+    D = np.zeros(shape=(7,2,1), dtype=float)
+    hD = np.array([0.])
 
-    hC1 = np.array([[0]])
-
-    # C = np.stack([C2, C1], axis=2)      # cannot stack arrays of different sizes
-
-    # hC = np.array([0,0])
-
-    D = np.array([[0]])
-
-    hD = np.array([[0]])
-
-    rdde = tdspy.RDDE(A=A, hA=hA, B1=B1, hB1=hB1, C1=C1, hC1=hC1, B2=B2, hB2=hB2)
+    rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
 
     return rdde
@@ -97,10 +79,17 @@ def generate_controller() -> tds.DDAE:
     """ generates static output feedback controller according to the paper
     Dc = [  ]
     """
+    A = np.zeros(shape=(1,1,0))
+    hA = np.zeros(shape=(0,))
+    B = np.zeros(shape=(1,6,0))
+    hB = np.zeros(shape=(0,))
+    C = np.zeros(shape=(1,1,0))
+    hC = np.zeros(shape=(0,))
+    D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
+    D = np.stack([D], axis=2)
+    hD = np.array([0.])
 
-    Dc = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
-
-    ddae = tdspy.DDAE(D=Dc)
+    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     return ddae
 
@@ -118,4 +107,6 @@ if __name__ == "__main__":
 
     rdde = generate_system()
 
+    # zeros = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
+    
     cont = generate_controller()
