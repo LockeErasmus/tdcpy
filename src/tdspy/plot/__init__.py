@@ -5,3 +5,4 @@ except ImportError as e:
     raise e
 
 from .eigenvalues import eigen_plot
+from .discretization_animation import discretization_animation

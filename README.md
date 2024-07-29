@@ -1,5 +1,7 @@
 # Time-Delay Systems python package
 
+Adrian loves this animation, I have to put it here as of now
+![Alt Text](./docs/discretization_animation.gif)
 
 ## Getting started
 
