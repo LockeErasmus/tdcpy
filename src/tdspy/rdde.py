@@ -74,9 +74,9 @@ class RDDE(TDSBase):
 
         # --- ARGS ---
         ## dynamics
-        self._E = np.eye(A.shape[2])    # check this - is there a better implementation?
-        self._uE = np.eye(A.shape[2])   # check this - is there a better implementation?
-        self._vE = np.eye(A.shape[2])   # check this - is there a better implementation?
+        self._E = None
+        self._uE = None
+        self._vE = None
         self._A = A
         self._hA = hA
         self._B = B
@@ -92,12 +92,9 @@ class RDDE(TDSBase):
         self.dtype = kwargs.get("dtype", np.float64)
         self.tol_singular = kwargs.get("tol_singular", 1e-12)
 
-
         super().__init__()
 
-        # TODO perform checks
-        assert len(A) > 0, "TODO"
-        
+        # TODO perform checks        
         # TODO rest of the system description
 
     @property
@@ -121,7 +118,10 @@ class RDDE(TDSBase):
     
     @property
     def E(self) -> npt.NDArray:
-        return np.eye(self.n, dtype=self.dtype)
+        if self._E is None:
+            return np.eye(self.n, dtype=self.dtype)
+        else:
+            return self._E
     
     @property
     def A(self) -> list[npt.NDArray]:
@@ -314,8 +314,7 @@ class RDDE(TDSBase):
         Returns:
             M (array): characteristic matrix M evaluated at s
         """
-        I = np.eye(self.n)
-        return I*s - np.sum(self.A * np.exp(-s*self.hA), axis=2)
+        return self.E*s - np.sum(self.A * np.exp(-s*self.hA), axis=2)
 
     def eval_char_matrix_derivative(self, s: complex) -> npt.NDArray:
         """ Derivative of characteristic matrix with respect to s evaluated at s
@@ -328,5 +327,5 @@ class RDDE(TDSBase):
         Returns:
             dM (array): derivative of characteristic matrix M evaluated at s
         """
-        return np.eye(self.n) + np.sum(self.A * self.hA * np.exp(-s*self.hA), axis=2)
+        return self.E + np.sum(self.A * self.hA * np.exp(-s*self.hA), axis=2)
 
