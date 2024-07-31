@@ -10,11 +10,11 @@ import numpy.typing as npt
 from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
-from .common.delay_difference_equation import normalize_diff
 from .common.compress import compress_matrices_delays
+from .common.composition import concatenate_2x2_by_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
-def zeros(tds: RDDE | NDDE | DDAE, r, input_index: int=0, output_index: int=0, **kwargs):
+def zeros(tds: RDDE | NDDE | DDAE, r: list, input_index: int=0, output_index: int=0, **kwargs)->tuple[npt.NDArray, RootsInfo]:
     """ Computes transmission zeros of a SISO time-delay system
 
     Args:
@@ -31,48 +31,42 @@ def zeros(tds: RDDE | NDDE | DDAE, r, input_index: int=0, output_index: int=0, *
             basic_delay (float): define if delays are commensurate, default
                 None, used in discretization heuristic case `rhp`
     
+    Returns:
+            tuple containing
+
+                - roots (array): array of found roots
+                - metadata (RootsInfo): named tuple consisting of usefull
+                    metadata
     """
-    # perform checks TODO
-    
-    ## validate tds
     
     ## validate region
+    assert isinstance(r, (list, tuple, npt.NDArray)), "incorrect region type"
+    assert len(r) == 4, "region has to be defined in form [a,b,c,d]"
+    assert r[0] < r[1] and r[2] < r[3], "region has to be defined as [a,b,c,d], a<b, c<d"
+    assert np.all(~np.isinf(r)), "region has to be finite rectangle"
 
     ## assert at least one input and one output
-
+    assert tds.n_iputs > 0, "tds has to have at least one input"
+    assert tds.n_outputs > 0, "tds has to have at least one output"
+    
     ## validate input output index
+    assert input_index < tds.n_iputs, "provided input index has to be valid"
+    assert output_index < tds.n_outputs, "provided output index has to be valid"
     
     # type of TDS, RDDE and DDAE -> OK, NDDE -> convert to DDAE
     if isinstance(tds, NDDE):
         tds = tds.to_ddae()
     
-    # form new DDAE
-    nrows = tds.A.shape[0] + 1
-    ncols = tds.A.shape[1] + 1
-    ndelays = tds.mA + tds.mB + tds.mC + tds.mD
+    # form new DDAE representing transmission zeros problem
+    E, A, hA = concatenate_2x2_by_delays(
+        tds.E, tds.A, tds.B[:, [input_index], :], tds.C[[output_index], :, :],
+        tds.D[[output_index], [input_index], :], tds.hA, tds.hB, tds.hC, tds.hD,
+    )        
 
-    E = np.zeros(shape=(nrows, ncols), dtype=tds.E.dtype)
-    A = np.zeros(shape=(nrows, ncols, ndelays), dtype=tds.A.dtype)
-    
-    hA = np.r_[tds.hA, tds.hB, tds.hC, tds.hD]
-    E[:-1, :-1] = tds.E
-    A[:-1, :-1, :tds.mA] = tds.A
-    A[:-1, -1, tds.mA:tds.mA+tds.mB] = tds.B[:, input_index, :]
-    A[-1, :-1, tds.mA+tds.mB: tds.mA+tds.mB+tds.mC] = tds.C[output_index, :, :]
-    A[-1, -1, tds.mA+tds.mB+tds.mC:] = tds.D[output_index, input_index, :]
-
-    
-
-
-    # compress
+    # compress - TODO consider as kwarg? or always do compression?
     compressed_A, compressed_hA = compress_matrices_delays(A, hA)
 
-    print(compressed_hA)
-    print(E)
-    for i in range(compressed_A.shape[2]):
-        print(compressed_A[:,:,i])
+    # roots of new DDAE (E, A, hA) <=> transmission zeros
+    cr, cr_info = roots_ddae(E, compressed_A, compressed_hA, r=r, **kwargs)
 
-    # obtain roots of new (E, A, hA) <=> transmission zeros
-    cr, cr_info = roots_ddae(E, compressed_A, compressed_hA, r=r)
-
-    return cr
+    return cr, cr_info

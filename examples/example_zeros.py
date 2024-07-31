@@ -50,8 +50,6 @@ for i, omega in enumerate(omega_vector):
     b[2*i + 1] = rhs_im
 
 gains_vector = np.ravel(np.linalg.pinv(A)@ b[:, np.newaxis])
-print(f"{A=}")
-print(f"{b=}")
 
 # create system dynamics
 Ag = np.array([[0, 1, 0, 0],
@@ -87,7 +85,6 @@ hB = np.array([0.])
 C = np.zeros(shape=(2, 5, 1))
 C[0, 0, 0] = 1 # xp(t)
 C[1, 2, 0] = 1 # xa(t)
-print(C)
 hC = np.array([0.])
 
 D = np.zeros(shape=(2,1,1))
@@ -98,7 +95,7 @@ ddae = tds.DDAE(A, hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
 # compute zeros in given region
 
-zr = tds.zeros(ddae, r=[-10, 10, 0.0, 100])
+zr, zr_info = tds.zeros(ddae, r=[-10, 10, 0.0, 100])
 
 print(zr)
 

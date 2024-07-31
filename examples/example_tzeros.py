@@ -54,7 +54,7 @@ hD = np.array([0.])
 ddae = tds.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
 
 # compute zeros in given region
-zr = tds.zeros(ddae, r=[-4, 4, -50, 50])
+zr, zr_info = tds.zeros(ddae, r=[-4, 4, -50, 50])
 
 print(zr)
 
