@@ -15,6 +15,7 @@ import numpy.typing as npt
 from .rdde import RDDE
 from .ndde import NDDE
 from .ddae import DDAE
+from .common.composition import concatenate_2x2_by_delays
 
 
 logger = logging.getLogger(__name__)
@@ -76,53 +77,16 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     
     nrows = A1.shape[0] + len_u1 + len_y1 + A2.shape[0] + len_u2 + len_y2
     ncols = A1.shape[1] + len_u1 + len_y1 + A2.shape[1] + len_u2 + len_y2
+    ndelays = (hA1.shape[0] + hB1.shape[0] + hC1.shape[0] + hD1.shape[0]
+               + hA2.shape[0] + hB2.shape[0] + hC2.shape[0] + hD2.shape[0])
 
-    # E matrix
+    # initialize E, A, hA
     E = np.zeros(shape=(nrows, ncols), dtype=E1.dtype)
-    E[:E1.shape[0], :E1.shape[1]] = E1
-    E2_start_rows = A1.shape[0] + len_u1 + len_y1
-    E2_start_cols = A1.shape[1] + len_u1 + len_y1
-    E[E2_start_rows : E2_start_rows + E2.shape[0], E2_start_cols : E2_start_cols+E2.shape[1]] = E2
+    hA = np.zeros(shape=(ndelays,), dtype=hA1.dtype)
+    A = np.zeros(shape=(nrows, ncols, ndelays), dtype=A1.dtype)
 
-    # hA delays, A matrix
-    # ndelaysA = sum(block.shape[2] for block in (A1, B1, C1, D1, A2, B2, C2, D2)) # TODO DELETE
-    hA = np.concatenate([hA1, hB1, hC1, hD1, hA2, hB2, hC2, hD2], axis=0)
-
-    A = np.zeros(shape=(nrows, ncols, hA.shape[0]), dtype=A1.dtype)
-    
-    
-    blocks1 = (A1, B1[:,u1_indices,:], C1[y1_indices,:,:], D1[y1_indices,u1_indices,:]) # A1, B1u, C1y, D1u->y
-    blocks2 = (A2, B2[:,u2_indices,:], C2[y2_indices,:,:], D2[y2_indices, u2_indices,:]) # A2, B2u, C2y, D2u->y
-    blocks1_indices = ((0, A1.shape[0], 0, A1.shape[1]), # A1
-                      (0, B1.shape[0], A1.shape[1], A1.shape[1]+B1.shape[1]), # B1
-                      (A1.shape[0], A1.shape[0]+C1.shape[0], 0, C1.shape[1]), # C1
-                      (A1.shape[0], A1.shape[0]+C1.shape[0], 0, C1.shape[1])) # D1
-                      
-    
-    start_index = 0
-    end_index = None
-
-
-
-    for block, indices in blocks, blocks_indices:
-        # TODO if block.shape[2] == 0
-
-        rs, re, cs, ce = indices # unpack indices
-        end_index = start_index + block.shape[2] # obtain correct end
-        A[rs:re, cs:ce, start_index : end_index] = block # put block
-        start_index = end_index # update start
-        pass
-
-
-    
-
-
-
-
-    
-
-
-
+    #
+    concatenate_2x2_by_delays(E1, A1, B1, C1, D1, hA1, hB1, hC1, hC2, hD2)
 
 def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     """ Creates new TDS object representing closed-loop interconnection of the
