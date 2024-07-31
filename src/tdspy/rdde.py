@@ -74,9 +74,6 @@ class RDDE(TDSBase):
 
         # --- ARGS ---
         ## dynamics
-        self._E = None
-        self._uE = None
-        self._vE = None
         self._A = A
         self._hA = hA
         self._B = B
@@ -118,11 +115,8 @@ class RDDE(TDSBase):
     
     @property
     def E(self) -> npt.NDArray:
-        if self._E is None:
-            return np.eye(self.n, dtype=self.dtype)
-        else:
-            return self._E
-    
+        return np.eye(self.n, dtype=self.dtype)
+        
     @property
     def A(self) -> list[npt.NDArray]:
         """ dynamics matrices """
@@ -188,6 +182,16 @@ class RDDE(TDSBase):
         if self._hD is None:
             return 0
         return self.hD.shape[0]
+
+    @property
+    def uE(self) -> npt.NDArray:
+        """ orthonormal basis for left null space of E """
+        return np.zeros(shape=(self.n, 0))
+    
+    @property
+    def vE(self) -> npt.NDArray:
+        """ orthonormal basis for right null space of E """
+        return np.zeros(shape=(self.n, 0))
 
     @property
     def is_logical(self) -> bool:
