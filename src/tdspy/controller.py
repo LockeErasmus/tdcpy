@@ -65,7 +65,8 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     z2_indices = [i for i in range(D2.shape[0]) if i not in y2_indices]
 
     # TODO log interconection indices
-    logger.debug(f"Mapping TDS1 outputs {3} to TDS2 inputs {3}")
+    logger.debug(f"Mapping TDS1 outputs {y1_indices} to TDS2 inputs {u2_indices}")
+    logger.debug(f"Mapping TDS2 outputs {y2_indices} to TDS1 inputs {u1_indices}")
 
     # interconnection algorithm
     # TODO: separate function on matrices
@@ -74,11 +75,13 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     len_y1, len_z1 = len(y1_indices), len(z1_indices)
     len_u2, len_w2 = len(u2_indices), len(w2_indices)
     len_y2, len_z2 = len(y2_indices), len(z2_indices)
-    
+
+    # TODO: for now, log table
     nrows = A1.shape[0] + len_u1 + len_y1 + A2.shape[0] + len_u2 + len_y2
     ncols = A1.shape[1] + len_u1 + len_y1 + A2.shape[1] + len_u2 + len_y2
-    ndelays = (hA1.shape[0] + hB1.shape[0] + hC1.shape[0] + hD1.shape[0]
-               + hA2.shape[0] + hB2.shape[0] + hC2.shape[0] + hD2.shape[0])
+    ndelays1 = hA1.shape[0] + hB1.shape[0] + hC1.shape[0] + hD1.shape[0]
+    ndelays2 = hA2.shape[0] + hB2.shape[0] + hC2.shape[0] + hD2.shape[0]
+    ndelays = ndelays1 + ndelays2
 
     # initialize E, A, hA
     E = np.zeros(shape=(nrows, ncols), dtype=E1.dtype)
@@ -86,7 +89,22 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     A = np.zeros(shape=(nrows, ncols, ndelays), dtype=A1.dtype)
 
     #
-    concatenate_2x2_by_delays(E1, A1, B1, C1, D1, hA1, hB1, hC1, hC2, hD2)
+    concatenate_2x2_by_delays(
+        E1, A1, B1[:,u1_indices,:], C1[y1_indices, :, :],
+        D1[y1_indices, u1_indices, :], hA1, hB1, hC1, hD1,
+        EE = E[:A1.shape[0]+len_y1,:A1.shape[1]+len_u1],
+        AA = A[:A1.shape[0]+len_y1,:A1.shape[1]+len_u1, :ndelays1],
+        hAA= hA[:ndelays1],
+    )
+
+    E222, A222, hA222 = concatenate_2x2_by_delays(E2, A2, B2, C2, D2, hA2, hB2, hC2, hD2)
+    
+    
+    
+    print(E)
+    print(A[:,:,0])
+    print(A[:,:,1])
+    print(hA)
 
 def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     """ Creates new TDS object representing closed-loop interconnection of the

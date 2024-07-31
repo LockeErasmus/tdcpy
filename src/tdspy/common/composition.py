@@ -38,7 +38,7 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
                             [C, 0]
         A*[:,:,n+m+p:] = [0, 0]
                          [0, D]
-    
+    ssssssssssssss
     Args:
         TODO
     
@@ -69,7 +69,7 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
 
     # EE - LHS matrix
     if EE is None:
-        EE = np.zeros(shape=(nrows, ncols), dtype=E.dtype)
+        EE = np.zeros(shape=(nrows, nrows), dtype=E.dtype)
     EE[:E.shape[0], :E.shape[1]] = E
 
     # AA - RHS array

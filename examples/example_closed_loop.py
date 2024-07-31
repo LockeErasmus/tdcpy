@@ -79,17 +79,33 @@ def generate_controller() -> tds.DDAE:
     """ generates static output feedback controller according to the paper
     Dc = [  ]
     """
-    A = np.zeros(shape=(1,1,0))
+    A = np.zeros(shape=(0,0,0))
     hA = np.zeros(shape=(0,))
-    B = np.zeros(shape=(1,6,0))
+    B = np.zeros(shape=(0,6,0))
     hB = np.zeros(shape=(0,))
-    C = np.zeros(shape=(1,1,0))
+    C = np.zeros(shape=(1,0,0))
     hC = np.zeros(shape=(0,))
     D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
     D = np.stack([D], axis=2)
     hD = np.array([0.])
 
     ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+
+    # E = np.array([[0.]])
+    # A = np.array([[[-1.]]])
+    # np.array([0.])
+    # C = np.array([[[1.]]])
+    # np.array([0.])
+    # hA = np.zeros(shape=(0,))
+    # B = np.zeros(shape=(1,6,0))
+    # hB = np.zeros(shape=(0,))
+    # C = np.zeros(shape=(1,1,0))
+    # hC = np.zeros(shape=(0,))
+    # D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
+    # D = np.stack([D], axis=2)
+    # hD = np.array([0.])
+
+    # ddae = tdspy.DDAE(E=E, A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     return ddae
 
@@ -110,3 +126,5 @@ if __name__ == "__main__":
     # zeros = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
     
     cont = generate_controller()
+
+    tdspy.controller.interconnect(rdde, cont)
