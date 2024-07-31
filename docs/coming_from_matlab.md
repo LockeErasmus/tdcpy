@@ -97,7 +97,12 @@ TDSpy package
 
 
 ##### `base`
-Abstract parent class for RDDE, NDDE and DDAE
+Abstract parent class for RDDE, NDDE and DDAE.
+Contains the fields:
+- mA: number of state delays
+- A: state matrices
+- hA: state delays
+- n: system order
 
 ##### `controller`
 
@@ -105,7 +110,9 @@ Abstract parent class for RDDE, NDDE and DDAE
 Differential algebraic equation
 
 ##### `ddae`
-DDAE impementation
+Class defining the DDAE impementation.
+
+
 
 ##### `gamma`
 implementation of the function tds_gamma_r
