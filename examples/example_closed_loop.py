@@ -139,7 +139,7 @@ def generate_system() -> tds.RDDE:
                     [   a81,   a82,     a83,    a84,    a85,    a86,   a87,     a88        ]])
     A = np.stack([A0], axis=2)
 
-    hA = np.array([0.002])
+    hA = np.array([0.0])
 
 
     B2 =  np.array([[   0,   0,   0,   0,   0,   1/m2,  0,   0   ]]).T    
@@ -148,12 +148,14 @@ def generate_system() -> tds.RDDE:
     hB = np.array([0.002])
     C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
                    [ 0,   1,   0,   0,   0,   0,   0,  0    ],
+                   [ 0,   0,   0,   0,   1,   0,   0,   0   ],
+                   [ 0,   0,   0,   0,   0,   1,   0,   0   ],
                    [ 0,   0,   0,   0,   0,   0,   1,   0   ],
                    [ 0,   0,   0,   0,   0,   0,   0,   1   ],
                    [ 0,   0,   1,   0,   0,   0,   0,   0   ]]) # the last row is z
     C = np.stack([C1], axis=2)
     hC = np.array([0])
-    D = np.zeros(shape=(5,2,1), dtype=float)
+    D = np.zeros(shape=(C.shape[0],B.shape[1],1), dtype=float)
     hD = np.array([0.])
 
     rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
@@ -255,5 +257,7 @@ if __name__ == "__main__":
     cont02 = generate_controller02()        # multi-input controller
 
     cont03 = generate_dynamic_controller01()  # dynamic controller with fixed delays
+
+    system = tdspy.controller.interconnect(rdde, cont01)
 
     print(cont03)
