@@ -6,11 +6,17 @@ Notes:
     1. As of now, only A and hA, rest of the implementation will follow
 """
 
+import logging
+
 import numpy as np
 import numpy.typing as npt
+from scipy import linalg
 
+from .common.compress import compress_matrices_delays, sort_matrices_delays
 from .base import TDSBase
 from .ddae import DDAE
+
+logger = logging.getLogger(__name__)
 
 class NDDE(TDSBase):
     """ Neutral Delay Differential Equaton
@@ -22,9 +28,8 @@ class NDDE(TDSBase):
 
     """
     def __init__(self, A: npt.NDArray, hA: npt.NDArray, H: npt.NDArray, hH: npt.NDArray,
-                 B1=None, hB1=None, C1=None, hC1=None, D1=None, hD11=None,
-                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None,
-                 D21=None, hD21=None, D22=None, hD22=None) -> None:
+                 B: npt.NDArray=None, hB: npt.NDArray=None, C: npt.NDArray=None, hC: npt.NDArray=None,
+                 D: npt.NDArray=None, hD: npt.NDArray=None, **kwargs) -> None:
         super().__init__()
 
         # TODO perform checks
@@ -32,8 +37,16 @@ class NDDE(TDSBase):
         # TODO make sure hA[0] == 0
 
         # TODO assert nonempty H and non-empty A
-        assert np.all(hA >= 0)
-        assert np.all(hH > 0) # no 0 delays allowed in hH
+
+        # A, hA
+        assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
+        assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
+        assert A.shape[2] == hA.shape[0], "number of delays hA does not match number of matrices Ai"
+        assert np.all(hA >= 0), "only non-negative delays possible"
+        assert np.all(hH > 0), "only non-negative delays possible"
+        if not np.any(hA == 0): # if necessary, add 0 delay term
+            hA = np.r_[0.0, hA]
+            A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
         
         ## dynamics
         self._A = A

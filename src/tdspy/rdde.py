@@ -105,7 +105,7 @@ class RDDE(TDSBase):
         if self.B is None:
             return 0
         return self.B.shape[1]
-    
+         
     @property
     def n_outputs(self) -> int:
         """ number of outputs """
