@@ -63,12 +63,11 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
         result = linalg.eig(A[:,:,0], E, left=False, right=False)
         if case == "rhp":
             mask = np.isfinite(result) & (np.real(result)>=r)
-            return result[mask]
         else: # case == "rect"
             mask = (np.isfinite(result) & (np.real(result)>=r[0]) 
                     & (np.real(result)<=r[1]) & (np.imag(result)>=r[2])
                     & (np.imag(result)<=r[3]))
-            return result[mask]
+        return result[mask], None # TODO add metadata also
 
     # CASE 2:
     mA = hA.shape[0] # number of delay terms

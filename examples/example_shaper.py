@@ -72,7 +72,7 @@ hD = np.array([0.])
 
 ddae = tds.DDAE(A, hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
-z = tds.zeros(ddae, r=[-10, 5, 0, 50])
+z, _ = tds.zeros(ddae, r=[-10, 5, 0, 50])
 print(z)
 
 import matplotlib.pyplot as plt
