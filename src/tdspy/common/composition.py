@@ -75,6 +75,7 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
     # AA - RHS array
     if AA is None:
         AA = np.zeros(shape=(nrows, ncols, hAA.shape[0]), dtype=A.dtype)
+
     AA[:A.shape[0],:A.shape[1],:n] = A
     AA[:A.shape[0],A.shape[1]:,n:n+m] = B
     AA[A.shape[0]:,:C.shape[1],n+m:n+m+p] = C

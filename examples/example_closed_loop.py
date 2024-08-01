@@ -87,7 +87,7 @@ def generate_controller() -> tds.DDAE:
     hC = np.zeros(shape=(0,))
     D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
     D = np.stack([D], axis=2)
-    hD = np.array([0.])
+    hD = np.array([0.0])
 
     ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
@@ -127,4 +127,7 @@ if __name__ == "__main__":
     
     cont = generate_controller()
 
-    tdspy.controller.interconnect(rdde, cont)
+    system = tdspy.controller.interconnect(rdde, cont)
+
+    cr, cr_info = tdspy.roots(system, r=-2.5)
+    print(cr)
