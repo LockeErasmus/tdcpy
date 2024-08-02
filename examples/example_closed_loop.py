@@ -54,10 +54,12 @@ def generate_system() -> tds.RDDE:
     hA = np.array([0.])
 
 
-    B2 =  np.array([[   0,   0,   0,   0,   0,   1.3717,  0,   0   ]]).T    
-    B1 =  np.array([[   0,   -0.8511,   0,   0,   0,   0,     0,   1.9231   ]]).T
-    B = np.stack([B1, B2], axis=1)
-    hB = np.array([0.0])
+    B1 =  np.array([[   0,   0,   0,   0,   0,   0,     0,   0  ],
+                    [   0,   0,   0,   0,   0,   1.3717,  0,   0   ]]).T    
+    B2 =  np.array([[   0,   -0.8511,   0,   0,   0,   0,     0,   1.9231   ],
+                    [   0,   0,   0,   0,   0,   0,     0,   0  ]]).T
+    B = np.stack([B1, B2], axis=2)
+    hB = np.array([0.0, 0.0019])
     C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
                    [ 0,   1,   0,   0,   0,   0,   0,  0    ],
                    [ 0,   0,   0,   0,   1,   0,   0,   0   ],
@@ -85,7 +87,8 @@ def generate_controller() -> tds.DDAE:
     hB = np.zeros(shape=(0,))
     C = np.zeros(shape=(1,0,0))
     hC = np.zeros(shape=(0,))
-    D = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73 ]])
+    #D = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    D = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     D = np.stack([D], axis=2)
     hD = np.array([0.0])
 
@@ -129,5 +132,20 @@ if __name__ == "__main__":
 
     system = tdspy.controller.interconnect(rdde, cont)
 
-    cr, cr_info = tdspy.roots(system, r=-6)
+    cr, cr_info = tdspy.roots(system, r=-100)
+    
     print(cr)
+
+    zr, zr_info = tdspy.zeros(system, r=[-100,10,0,1000])
+
+    print(zr)
+
+
+    import tdspy.plot
+    import matplotlib.pyplot as plt
+
+
+    tdspy.plot.eigen_plot(cr)
+    plt.show()
+    tdspy.plot.eigen_plot(zr)
+    plt.show()

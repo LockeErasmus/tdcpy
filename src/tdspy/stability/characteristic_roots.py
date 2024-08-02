@@ -103,7 +103,6 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
                 ...
             else:
                 D, hD = ddae_to_diff(E, A, hA)
-                print(D, hD)
                 if hD.size != 0: # delay difference equation exists (E is singular)
                     # DD, hDD = normalize_diff(D, hD)
                     if hD[0] != 0 or False: # TODO
