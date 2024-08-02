@@ -116,9 +116,11 @@ def generate_system() -> tds.RDDE:
     hA = np.array([0.])
 
     B1 =  np.array([[   0,   0,   0,   0,   0,   0,     0,   0   ],
+                    [   0,   0,   0,   0,   0,   0,     0,   0   ],
                     [   0,   0,   0,   0,   0,   1/m2,  0,   0   ]]).T    
-    B2 =  np.array([[   0,   -1/m0,   0,   0,   0,   0,     0,   1/ma   ],
-                    [   0,   1/m0,   0,   0,   0,   0,     0,   0  ]]).T
+    B2 =  np.array([[   0,   -1/m0,   0,   0,   0,   0,     0,   1/ma], # u1 column
+                    [   0,   1/m0,   0,   0,   0,   0,     0,   0  ], # u2 column
+                    [   0,   0,   0,   0,   0,   0,     0,   0   ]]).T # d column
                     
     B = np.stack([B1, B2], axis=2)
     hB = np.array([0.0, 0.0019])
@@ -131,13 +133,24 @@ def generate_system() -> tds.RDDE:
                    [ 0,   0,   1,   0,   0,   0,   0,   0   ]]) # the last row is z
     C = np.stack([C1], axis=2)
     hC = np.array([0])
-    D = np.zeros(shape=(7,2,1), dtype=float)
+    D = np.zeros(shape=(7,3,1), dtype=float)
     hD = np.array([0.])
 
     rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
 
     return rdde
+
+def generate_controller1() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    Dc = [  ]
+    """
+
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    )
+
+    return controller
 
 def generate_controller() -> tds.DDAE:
     """ generates static output feedback controller according to the paper
@@ -206,22 +219,22 @@ if __name__ == "__main__":
 
     rdde = generate_system()
 
-    zeros = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
+    zeros, zeros_info = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
     
-    cont = generate_controller()
+    # cont = generate_controller()
+    # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
 
-    system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
+    cont = generate_controller1()
+    system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
 
     cr, cr_info = tdspy.roots(rdde, r=-10)
     print(f"rightmost root of the ol is {np.max(np.real(cr))}")
 
-    cr, cr_info = tdspy.roots(system, r=-100, input_index=1, output_index=6)
+    cr, cr_info = tdspy.roots(system, r=-100)
     print(f"rightmost root of the cl is {np.max(np.real(cr))}")
-
     print(cr)
 
-    zr, zr_info = tdspy.zeros(system, r=[-100,10,0,1000])
-
+    zr, zr_info = tdspy.zeros(system, r=[-100,10,0,1000], input_index=-1, output_index=-1)
     print(zr)
 
 
