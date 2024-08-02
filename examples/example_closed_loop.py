@@ -143,37 +143,16 @@ def generate_controller() -> tds.DDAE:
     """ generates static output feedback controller according to the paper
     Dc = [  ]
     """
-    A = np.zeros(shape=(0,0,0))
-    hA = np.zeros(shape=(0,))
-    B = np.zeros(shape=(0,6,0))
-    hB = np.zeros(shape=(0,))
-    C = np.zeros(shape=(1,0,0))
-    hC = np.zeros(shape=(0,))
-    D = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])      # delay 0.0019
-    # D = np.array([[461.53, -1.46, -235.33, 0.175, -1.19, -0.002]])      # delay 0.1
-    # D = np.array([[239.61, -2.52, -336, -0.532, 42.27, 0.027]])         # delay 0.5
-    D = np.stack([D], axis=2)
-    hD = np.array([0.0])
 
-    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    )
+    return controller
 
-    # E = np.array([[0.]])
-    # A = np.array([[[-1.]]])
-    # np.array([0.])
-    # C = np.array([[[1.]]])
-    # np.array([0.])
-    # hA = np.zeros(shape=(0,))
-    # B = np.zeros(shape=(1,6,0))
-    # hB = np.zeros(shape=(0,))
-    # C = np.zeros(shape=(1,1,0))
-    # hC = np.zeros(shape=(0,))
-    # D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
-    # D = np.stack([D], axis=2)
-    # hD = np.array([0.])
+def generate_controller_2() -> tdspy.DDAE:
 
-    # ddae = tdspy.DDAE(E=E, A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
-
-    return ddae
+    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # return controller
 
 
 
@@ -193,7 +172,7 @@ if __name__ == "__main__":
     
     cont = generate_controller()
 
-    system = tdspy.controller.interconnect(rdde, cont)
+    system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
 
     cr, cr_info = tdspy.roots(rdde, r=-10)
     print(f"rightmost root of the ol is {np.max(np.real(cr))}")

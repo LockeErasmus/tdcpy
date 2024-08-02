@@ -22,12 +22,53 @@ from .common.compress import compress_matrices_delays
 logger = logging.getLogger(__name__)
 
 
-def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
+def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list = None,
+                 y2_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
     """ Creates and interconnected system
-            _______
-        ----> |       |
-            | TDS 1 |
-            |_______|
+
+    Args:
+        tds1 (TDS): system 1
+        tds2 (TDS): system 2
+        y1_indices (list): list of indices (outputs of system 1), if not defined,
+            [0] is assumed
+        u2_indices (list): list of indices (inputs of system 2), if not defined,
+            [0] is assumed
+        y2_indices (list): list of indices (outputs of system 2), if not defined,
+            [0] is assumed
+        u1_indices (list): list of indices (inputs of system 1), if not defined,
+            [0] is assumed
+        **kwargs:
+            compress (bool): perform compression of resulting system, default
+                True
+
+    Assume we have two systems:
+
+        E1 dx1dt = SUM A1[i] x1(t-hA1[i]) + SUM B1[j] u1(t-hB1[j])
+              y1 = SUM C1[k] x1(t-hC1[k]) + SUM D1[l] u1(t-hD1[l])
+
+        E2 dx2dt = SUM A2[i] x2(t-hA2[i]) + SUM B2[j] u2(t-hB2[j])
+              y2 = SUM C2[k] x2(t-hC2[k]) + SUM D2[l] u2(t-hD2[l])
+        
+    And interconnection defined via indices mapping, then the final system can
+    be discribed via TODO
+
+
+    x* = [x1, u1, y1, x2, u2, y2]
+
+        E1, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    E =  0, 0, 0,  0, 0, 0
+         0, 0, 0, E2, 0, 0
+         0, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    
+
+        E1, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    E =  0, 0, 0,  0, 0, 0
+         0, 0, 0, E2, 0, 0
+         0, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
     
     TODO create scheme and maybe even equations
 
@@ -53,19 +94,30 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     # TODO argument names and make sure it is list
     # indices all are constructed as 1D arrays and axes are added later to leverage
     # broadcasting, it is necessary to have indices as dtype=int (alternatively as boolean mask)
+    
+    # First, handle defaults
+    if y1_indices is None:
+        y1_indices = [0]
+    if u2_indices is None:
+        u2_indices = [0]
+    if y2_indices is None:
+        y2_indices = [0]
+    if u1_indices is None:
+        u1_indices = [0]
+    
     ## System 1
-    u1_indices = np.array([0], dtype=int)# THIS IS INPUT - TODO arg
+    u1_indices = np.array(u1_indices, dtype=int)
     w1_indices = np.array([i for i in range(B1.shape[1]) if i not in u1_indices], dtype=int)
-    y1_indices = np.array([0,1,2,3,4,5], dtype=int) # THIS IS INPUT - TODO arg
+    y1_indices = np.array(y1_indices, dtype=int)
     z1_indices = np.array([i for i in range(D1.shape[0]) if i not in y1_indices], dtype=int)
 
     ## System 2
-    u2_indices = np.array([0,1,2,3,4,5], dtype=int) # THIS IS INPUT - TODO arg
+    u2_indices = np.array(u2_indices, dtype=int)
     w2_indices = np.array([i for i in range(B2.shape[1]) if i not in u2_indices], dtype=int)
-    y2_indices = np.array([0], dtype=int) # THIS IS INPUT - TODO arg
+    y2_indices = np.array(y2_indices, dtype=int)
     z2_indices = np.array([i for i in range(D2.shape[0]) if i not in y2_indices], dtype=int)
 
-    # TODO log interconection indices
+    # log interconection indices
     logger.debug(f"Mapping TDS1 outputs {y1_indices} to TDS2 inputs {u2_indices}")
     logger.debug(f"Mapping TDS2 outputs {y2_indices} to TDS1 inputs {u1_indices}")
 
@@ -171,38 +223,88 @@ def interconnect(tds1: DDAE, tds2: DDAE, ) -> DDAE:
     hD[:m] = hD1
     hD[m:] = hD2
 
-    # TODO compressions ???
-    A, hA = compress_matrices_delays(A, hA)
-    B, hB = compress_matrices_delays(B, hB)
-    C, hC = compress_matrices_delays(C, hC)
-    D, hD = compress_matrices_delays(D, hD)
-
-    np.set_printoptions(suppress=True, linewidth=100000)
-    print(f"E")
-    print("----------------------------")
-    print(E)
-    
-    for i in range(A.shape[2]):
-        print(f"A[:,:,{i}] = delay={hA[i]}")
-        print("----------------------------")
-        print(A[:,:,i])
-
-    for i in range(B.shape[2]):
-        print(f"B[:,:,{i}] = delay={hB[i]}")
-        print("----------------------------")
-        print(B[:,:,i])
-    
-    for i in range(C.shape[2]):
-        print(f"C[:,:,{i}] = delay={hC[i]}")
-        print("----------------------------")
-        print(C[:,:,i])
-    
-    for i in range(D.shape[2]):
-        print(f"D[:,:,{i}] = delay={hD[i]}")
-        print("----------------------------")
-        print(D[:,:,i])
+    if kwargs.get("compress", True):
+        A, hA = compress_matrices_delays(A, hA)
+        B, hB = compress_matrices_delays(B, hB)
+        C, hC = compress_matrices_delays(C, hC)
+        D, hD = compress_matrices_delays(D, hD)
 
     return DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+
+
+def create_static_controller(K: npt.NDArray) -> DDAE:
+    """ Creates static controller from the matrix of coefficients 
+    
+    Static controller is assumed to be of a form
+        y = K*u,
+    but is constructed as DDAE with all delay equal to 0.0 and matrices A, B, C
+    empty, i.e.
+
+        I dxdt = A*x + B*u
+             y = C*x + K*u
+    
+    Args:
+        K (array): 1D or 2D array representing static controller gains
+    """
+
+    assert isinstance(K, np.ndarray), "K is assumed to be array"
+    assert K.size > 0, "K is assumed not to be empty"
+    assert K.ndim == 1 or K.ndim == 2, "K has to be 2D array"
+    
+    if K.ndim == 1:
+        logger.warning(f"Provided K is 1D vector, I will assume you wanted to create controller with n inputs (len of K) and 1 output.")
+        K = K[np.newaxis, :]
+    
+    n, m = K.shape # 
+
+    A, B = np.zeros(shape=(0, 0, 0)), np.zeros(shape=(0, m, 0))
+    C, D = np.zeros(shape=(n, 0, 0)), np.stack([K], axis=2)
+
+    hA, hB = np.zeros(shape=(0,)), np.zeros(shape=(0,))
+    hC, hD = np.zeros(shape=(0,)), np.array([0.0])
+
+    return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+
+def create_dynamic_controller(A: npt.NDArray, B: npt.NDArray, C: npt.NDArray,
+                              D: npt.NDArray) -> DDAE:
+    """ Creates dynamic controller from state space representation
+
+    The form is assumed to be
+
+        I dxdt = A*x + B*u
+             y = C*x + K*u
+    
+    Args:
+        K (array): 1D or 2D array representing static controller gains
+    """
+
+    assert isinstance(A, np.ndarray), "A is assumed to be array"
+    assert A.size > 0, "A is assumed not to be empty"
+    assert A.ndim == 2, "A has to be 2D array"
+    assert isinstance(B, np.ndarray), "B is assumed to be array"
+    assert B.size > 0, "B is assumed not to be empty"
+    assert B.ndim == 2, "B has to be 2D array"
+    assert isinstance(C, np.ndarray), "A is assumed to be array"
+    assert C.size > 0, "C is assumed not to be empty"
+    assert C.ndim == 2, "C has to be 2D array"
+    assert isinstance(D, np.ndarray), "A is assumed to be array"
+    assert D.size > 0, "D is assumed not to be empty"
+    assert D.ndim == 2, "D has to be 2D array"
+
+    # dimension check is performed in DDAE constructor
+    # assert A.shape[0] == B.shape[0]
+    # assert A.shape[1] == C.shape[1]
+    # assert C.shape[0] == D.shape[0]
+    # assert B.shape[1] == D.shape[1]
+
+    controller = DDAE(
+        A=A[:,:,np.newaxis], hA=np.array([0.0]),
+        B=B[:,:,np.newaxis], hB=np.array([0.0]),
+        C=C[:,:,np.newaxis], hC=np.array([0.0]),
+        D=D[:,:,np.newaxis], hD=np.array([0.0]),
+    )
+
+    return controller
 
 def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     """ Creates new TDS object representing closed-loop interconnection of the
@@ -222,11 +324,7 @@ def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     """
 
     compress: bool = kwargs.get("compress", True)
-
-
-    # TODO assert statemets
-
-    # 
+    raise NotImplementedError("Not implementer")
 
     logger.debug(f"Plant: num inputs = {plant.n_iputs}, num outputs = {plant.n_outputs}")
     logger.debug(f"Controller: num inputs = {controller.n_iputs}, num outputs = {controller.n_outputs}")
