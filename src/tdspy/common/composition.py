@@ -38,7 +38,7 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
                             [C, 0]
         A*[:,:,n+m+p:] = [0, 0]
                          [0, D]
-    ssssssssssssss
+
     Args:
         TODO
     

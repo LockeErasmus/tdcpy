@@ -21,6 +21,34 @@ from .common.compress import compress_matrices_delays
 
 logger = logging.getLogger(__name__)
 
+class Controller:
+    """ Controller representation """
+
+    def __init__(self):
+        
+        self._n = 1
+        self._n_inputs = 6
+        self._n_outputs = 1
+        self._hA = np.array([0.0])
+
+    @property
+    def n(self) -> int:
+        """ number of variables """
+        return self._n
+    
+    @property
+    def n_iputs(self) -> int:
+        """ number of inputs """
+        return self._n_inputs
+
+    @property
+    def n_outputs(self) -> int:
+        """ number of outputs """
+        return self._n_outputs
+    
+
+
+
 
 def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list = None,
                  y2_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
@@ -167,6 +195,251 @@ def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list 
     )
 
     # place second system
+    rows_start2 = A1.shape[0] + len_y1 + len_u2 # equations
+    rows_end2 = rows_start2 + A2.shape[0] + len_y2
+    cols_start2 =  A1.shape[1] + len_u1 + len_y1 # variables
+    cols_end2 = cols_start2 + A2.shape[1] + len_u2
+    concatenate_2x2_by_delays(
+        E2, A2, 
+        B2[np.ix_(range(B2.shape[0]), u2_indices, range(B2.shape[2]))],
+        C2[np.ix_(y2_indices, range(C2.shape[1]), range(C2.shape[2]))],
+        D2[np.ix_(y2_indices, u2_indices, range(D2.shape[2]))],
+        hA2, hB2, hC2, hD2,
+        EE = E[rows_start2:rows_end2,cols_start2:cols_end2],
+        AA = A[rows_start2:rows_end2,cols_start2:cols_end2, ndelays1:],
+        hAA= hA[ndelays1:],
+    )
+
+    # interconnect systems
+    # here I assume that hA[0], other approach would be to concatenate
+    assert hA[0] == 0
+    A[A1.shape[0]:A1.shape[0]+len_y1, cols_end1:cols_end1+len_y1,0] = -np.eye(len_y1) # equation 0 = C1 @ x1 + D1 @ u1 - I @ y1
+    A[rows_end1:rows_end1+len_y1, cols_end1:cols_end1+len_y1,0] = np.eye(len_y1) # equation 0 = I @ y1 - I @ u2 - PART y1
+    A[rows_end1:rows_end1+len_y1, cols_start2+A2.shape[1]:cols_start2+A2.shape[1]+len_u2,0] = -np.eye(len_u2) # equation 0 = I @ y1 - I @ u2 - PART u2
+    A[rows_start2+A2.shape[0]:rows_start2+A2.shape[0]+len_y2, cols_end2:cols_end2+len_y2,0] = -np.eye(len_y2) # equation 0 = C2 @ x2 + D2 @ u2 - I @ y2
+    A[rows_end2:rows_end2+len_y2, cols_end2:cols_end2+len_y2,0] = np.eye(len_y2) # equation 0 = I @ y2 - I @ u1 - PART y2
+    A[rows_end2:rows_end2+len_u1, A1.shape[1]:A1.shape[1]+len_u1,0] = -np.eye(len_u1) # equation 0 = I @ y2 - I @ u1 - PART u1
+
+    # Populate B, hB
+    n, m, p, q = hB1.shape[0], hD1.shape[0], hB2.shape[0], hD2.shape[0]
+    B[:B1.shape[0], :len_w1, :n] = B1[np.ix_(range(B1.shape[0]), w1_indices, range(B1.shape[2]))] # B1: w1 -> x1
+    B[B1.shape[0]: B1.shape[0]+len_y1, :len_w1, n:n+m] = D1[np.ix_(y1_indices, w1_indices, range(D1.shape[2]))] # D1: w1 -> y1
+    B[rows_start2:rows_start2+B2.shape[0], len_w1:,n+m:n+m+p] = B2[np.ix_(range(B2.shape[0]), w2_indices, range(B2.shape[2]))] # B2: w2 -> x2
+    B[rows_start2+B2.shape[0]:rows_start2+B2.shape[0]+len_y2, len_w1:,n+m+p:] = D2[np.ix_(y2_indices, w2_indices, range(D2.shape[2]))] # D2: w2 -> y2
+    
+    hB[:n] = hB1
+    hB[n:n+m] = hD1
+    hB[n+m:n+m+p] = hB2
+    hB[n+m+p:] = hD2
+
+    # Populate C, hC
+    n, m, p, q = hC1.shape[0], hD1.shape[0], hC2.shape[0], hD2.shape[0]
+    C[:len_z1, :C1.shape[1], :n] = C1[np.ix_(z1_indices, range(C1.shape[1]), range(C1.shape[2]))] # C1: x1 -> z1
+    C[:len_z1, C1.shape[1]:C1.shape[1]+len_u1, n:n+m] = D1[np.ix_(z1_indices, u1_indices, range(D1.shape[2]))] # D1: u1 -> z1
+    C[len_z1:, cols_start1:cols_start1+C2.shape[1], n+m:n+m+p] = C1[np.ix_(z2_indices, range(C2.shape[1]), range(C2.shape[2]))] # C2: x2 -> z2
+    C[len_z1:, cols_start1+C2.shape[1]:cols_start1+C2.shape[1]+len_u2, n+m+p:] = D2[np.ix_(z2_indices, u2_indices, range(D2.shape[2]))] # D2: u2 -> z2
+    
+    hC[:n] = hC1
+    hC[n:n+m] = hD1
+    hC[n+m:n+m+p] = hC2
+    hC[n+m+p:] = hD2
+
+    # Populate D, hD
+    # m, q reused from before: m=hD1.shape[0], q=hD2.shape[0]
+    D[:len_z1, :len_w1, :m] = D1[np.ix_(z1_indices, w1_indices, range(D1.shape[2]))] # D1: w1 -> z1
+    D[len_z1:, len_w1:, m:] = D2[np.ix_(z2_indices, w2_indices, range(D2.shape[2]))] # D2: w2 -> z2
+    hD[:m] = hD1
+    hD[m:] = hD2
+
+    if kwargs.get("compress", True):
+        A, hA = compress_matrices_delays(A, hA)
+        B, hB = compress_matrices_delays(B, hB)
+        C, hC = compress_matrices_delays(C, hC)
+        D, hD = compress_matrices_delays(D, hD)
+
+    return DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+
+
+def create_static_controller(K: npt.NDArray) -> DDAE:
+    """ Creates static controller from the matrix of coefficients 
+    
+    Static controller is assumed to be of a form
+        y = K*u,
+    but is constructed as DDAE with all delay equal to 0.0 and matrices A, B, C
+    empty, i.e.
+
+        I dxdt = A*x + B*u
+             y = C*x + K*u
+    
+    Args:
+        K (array): 1D or 2D array representing static controller gains
+    """
+
+    assert isinstance(K, np.ndarray), "K is assumed to be array"
+    assert K.size > 0, "K is assumed not to be empty"
+    assert K.ndim == 1 or K.ndim == 2, "K has to be 2D array"
+    
+    if K.ndim == 1:
+        logger.warning(f"Provided K is 1D vector, I will assume you wanted to create controller with n inputs (len of K) and 1 output.")
+        K = K[np.newaxis, :]
+    
+    n, m = K.shape # 
+
+    A, B = np.zeros(shape=(0, 0, 0)), np.zeros(shape=(0, m, 0))
+    C, D = np.zeros(shape=(n, 0, 0)), np.stack([K], axis=2)
+
+    hA, hB = np.zeros(shape=(0,)), np.zeros(shape=(0,))
+    hC, hD = np.zeros(shape=(0,)), np.array([0.0])
+
+    return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+
+def create_dynamic_controller(A: npt.NDArray, B: npt.NDArray, C: npt.NDArray,
+                              D: npt.NDArray) -> DDAE:
+    """ Creates dynamic controller from state space representation
+
+    The form is assumed to be
+
+        I dxdt = A*x + B*u
+             y = C*x + K*u
+    
+    Args:
+        K (array): 1D or 2D array representing static controller gains
+    """
+
+    assert isinstance(A, np.ndarray), "A is assumed to be array"
+    assert A.size > 0, "A is assumed not to be empty"
+    assert A.ndim == 2, "A has to be 2D array"
+    assert isinstance(B, np.ndarray), "B is assumed to be array"
+    assert B.size > 0, "B is assumed not to be empty"
+    assert B.ndim == 2, "B has to be 2D array"
+    assert isinstance(C, np.ndarray), "A is assumed to be array"
+    assert C.size > 0, "C is assumed not to be empty"
+    assert C.ndim == 2, "C has to be 2D array"
+    assert isinstance(D, np.ndarray), "A is assumed to be array"
+    assert D.size > 0, "D is assumed not to be empty"
+    assert D.ndim == 2, "D has to be 2D array"
+
+    # dimension check is performed in DDAE constructor
+    # assert A.shape[0] == B.shape[0]
+    # assert A.shape[1] == C.shape[1]
+    # assert C.shape[0] == D.shape[0]
+    # assert B.shape[1] == D.shape[1]
+
+    controller = DDAE(
+        A=A[:,:,np.newaxis], hA=np.array([0.0]),
+        B=B[:,:,np.newaxis], hB=np.array([0.0]),
+        C=C[:,:,np.newaxis], hC=np.array([0.0]),
+        D=D[:,:,np.newaxis], hD=np.array([0.0]),
+    )
+
+    return controller
+
+def interconnect2(tds1: DDAE, y1_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
+    """ Creates and interconnected system ready for stabilitzation
+
+    Args:
+        tds1 (TDS): system 1 to be interconnected
+        tds2 (TDS): system 2 to be interconnected
+
+    Returns:
+        interconnected system (DDAE)
+    """
+    # perform checks
+
+    # all IO matrices defined
+    # correct and possible shapes
+
+    # First, handle defaults
+    if y1_indices is None:
+        y1_indices = [0]
+    if u1_indices is None:
+        u1_indices = [0]
+
+    # controller packed into TODO
+    n_controller = 0 # order of controller, 0, 1, ..., inf
+    n_inputs = len(y1_indices) # assumed to be at least 1
+    n_outputs = len(u1_indices) # assumed to be at least 1
+    nk, mk = n_controller + n_inputs, n_controller + n_inputs
+
+    E2 = np.eye(n_controller)
+    A2 = np.zeros(shape=(n_controller, n_controller, 1 if n_controller else 0))
+    B2 = np.zeros(shape=(n_controller, n_inputs, 1 if n_controller else 0))
+    C2 = np.zeros(shape=(n_outputs, n_controller, 1 if n_controller else 0))
+    D2 = np.zeros(shape=(n_outputs, n_inputs, 1))
+
+    hA2, hB2 = np.zeros(shape=(1 if n_controller else 0,)), np.zeros(shape=(1 if n_controller else 0,))
+    hC2, hD2 = np.zeros(shape=(1 if n_controller else 0,)), np.array([0.0])
+
+    # Extract matrices and delays of a system
+    E1, A1, B1, C1, D1 = tds1.E, tds1.A, tds1.B, tds1.C, tds1.D
+    hA1, hB1, hC1, hD1 = tds1.hA, tds1.hB, tds1.hC, tds1.hD    
+    
+    # TODO argument names and make sure it is list
+    # indices all are constructed as 1D arrays and axes are added later to leverage
+    # broadcasting, it is necessary to have indices as dtype=int (alternatively as boolean mask)
+    
+    ## System 1
+    u1_indices = np.array(u1_indices, dtype=int)
+    w1_indices = np.array([i for i in range(B1.shape[1]) if i not in u1_indices], dtype=int)
+    y1_indices = np.array(y1_indices, dtype=int)
+    z1_indices = np.array([i for i in range(D1.shape[0]) if i not in y1_indices], dtype=int)
+
+    ## System 2
+    u2_indices = np.array([i for i in range(n_inputs)], dtype=int)
+    w2_indices = np.array([], dtype=int)
+    y2_indices = np.array([i for i in range(n_outputs)], dtype=int)
+    z2_indices = np.array([], dtype=int)
+
+    # log interconection indices
+    logger.debug(f"Mapping system outputs {y1_indices} to controller inputs {u2_indices}")
+    logger.debug(f"Mapping controller outputs {y2_indices} to system inputs {u1_indices}")
+
+    # interconnection algorithm
+    # TODO: separate function on matrices
+    # For now assume NO MATRICES are empty
+    len_u1, len_w1 = len(u1_indices), len(w1_indices)
+    len_y1, len_z1 = len(y1_indices), len(z1_indices)
+    len_u2, len_w2 = len(u2_indices), len(w2_indices)
+    len_y2, len_z2 = len(y2_indices), len(z2_indices)
+
+    # TODO: for now, log table
+    nrows = A1.shape[0] + len_u1 + len_y1 + A2.shape[0] + len_u2 + len_y2
+    ncols = A1.shape[1] + len_u1 + len_y1 + A2.shape[1] + len_u2 + len_y2
+    ndelays1 = hA1.shape[0] + hB1.shape[0] + hC1.shape[0] + hD1.shape[0]
+    ndelays2 = hA2.shape[0] + hB2.shape[0] + hC2.shape[0] + hD2.shape[0]
+    ndelays = ndelays1 + ndelays2 # TODO rename to ndelaysA
+    ndelaysB = hB1.shape[0] + hD1.shape[0] + hB2.shape[0] + hD2.shape[0]
+    ndelaysC = hC1.shape[0] + hD1.shape[0] + hC2.shape[0] + hD2.shape[0]
+    ndelaysD = hD1.shape[0] + hD2.shape[0]
+
+    # initialize E, A, hA, B, hB
+    E = np.zeros(shape=(nrows, ncols), dtype=E1.dtype)
+    A = np.zeros(shape=(nrows, ncols, ndelays), dtype=A1.dtype)
+    hA = np.zeros(shape=(ndelays,), dtype=hA1.dtype)
+    B = np.zeros(shape=(nrows, len_w1 + len_w2, ndelaysB), dtype=B1.dtype)
+    hB = np.zeros(shape=(ndelaysB,), dtype=hB1.dtype)
+    C = np.zeros(shape=(len_z1 + len_z2, ncols, ndelaysC), dtype=C1.dtype)
+    hC = np.zeros(shape=(ndelaysC,), dtype=hC1.dtype)
+    D = np.zeros(shape=(len_z1 + len_z2, len_w1 + len_w2, ndelaysD), dtype=D1.dtype)
+    hD = np.zeros(shape=(ndelaysD,), dtype=hD1.dtype)
+
+    # place first system
+    rows_start1 = 0 # equations
+    rows_end1 = rows_start1 + A1.shape[0] + len_y1
+    cols_start1 =  0 # variables
+    cols_end1 = cols_start1 + A1.shape[1] + len_u1
+    concatenate_2x2_by_delays(
+        E1, A1,
+        B1[np.ix_(range(B1.shape[0]), u1_indices, range(B1.shape[2]))],
+        C1[np.ix_(y1_indices, range(C1.shape[1]), range(C1.shape[2]))],
+        D1[np.ix_(y1_indices, u1_indices, range(D1.shape[2]))],
+        hA1, hB1, hC1, hD1,
+        EE = E[rows_start1:rows_end1, cols_start1:cols_end1],
+        AA = A[rows_start1:rows_end1, cols_start1:cols_end1, :ndelays1],
+        hAA= hA[:ndelays1],
+    )
+
+    # place Controller system
     rows_start2 = A1.shape[0] + len_y1 + len_u2 # equations
     rows_end2 = rows_start2 + A2.shape[0] + len_y2
     cols_start2 =  A1.shape[1] + len_u1 + len_y1 # variables
