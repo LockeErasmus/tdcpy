@@ -123,7 +123,7 @@ def generate_system() -> tds.RDDE:
                     [   0,   0,   0,   0,   0,   0,     0,   0   ]]).T # d column
                     
     B = np.stack([B1, B2], axis=2)
-    hB = np.array([0.0, 0.0019])
+    hB = np.array([0.0, 0.002])
     C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
                    [ 0,   1,   0,   0,   0,   0,   0,  0    ],
                    [ 0,   0,   0,   0,   1,   0,   0,   0   ],
