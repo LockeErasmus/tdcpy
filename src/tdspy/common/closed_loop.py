@@ -9,7 +9,7 @@ import numpy.typing as npt
 import logging
 
 from .composition import concatenate_2x2_by_delays
-from .compress import compress_bool_matrices_delays
+from .compress import compress_matrices_delays, compress_bool_matrices_delays
 
 logger = logging.getLogger(__name__)
 

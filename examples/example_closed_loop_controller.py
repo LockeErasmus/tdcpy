@@ -8,6 +8,9 @@ import tdspy as tds
 import tdspy.controller
 import tdspy.plot
 
+from tdspy.common.composition import concatenate_2x2_by_delays
+from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+
  # Masses
 
 m0 = 1.1750
@@ -206,6 +209,27 @@ def generate_controller_2() -> tdspy.DDAE:
     # return controller
 
 
+def print_ddae(ddae: tds.DDAE):
+    with np.printoptions(precision=4, linewidth=1000, suppress=True):
+        print(f"E 2x2 matrix")
+        print(ddae.E)
+        print("-"*50)
+        for i in range(ddae.mA):
+            print(f"A[:,:,{i} - tau={ddae.hA[i]}")
+            print(ddae.A[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mB):
+            print(f"B[:,:,{i} - tau={ddae.hB[i]}")
+            print(ddae.B[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mC):
+            print(f"C[:,:,{i} - tau={ddae.hC[i]}")
+            print(ddae.C[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mD):
+            print(f"D[:,:,{i} - tau={ddae.hD[i]}")
+            print(ddae.D[:,:,i])
+            print("-"*50)
 
 if __name__ == "__main__":
     # Set up logging
@@ -218,5 +242,64 @@ if __name__ == "__main__":
     logger.addHandler(handler)
 
     rdde = generate_system()
+    system_orig, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
+    system, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
+    cont = generate_controller_2()
 
-    system = tdspy.controller.interconnect2(rdde, [0,1,2,3,4,5], [0])
+    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+   
+
+    print_ddae(cont)
+    print_ddae(tds.DDAE(K, hK, E))
+
+    print_ddae(system)
+
+    print(f"\n\n\n\n")
+    # replace dynamics
+    system._A = np.concatenate([system.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
+    system._hA = np.r_[system.hA, hK]
+    system.compress(inplace=True)
+    
+    print_ddae(system)
+
+    # cr, cr_info = tds.roots(system,r=-10)
+
+    evolution = []
+    for i in range(10):
+        system._A = np.concatenate([system_orig.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
+        system._hA = np.r_[system_orig.hA, hK]
+        system.compress(inplace=True)
+
+        rstar, info = rightmost_root(system.E, system.A, system.hA, r=0)
+        evolution.append(rstar)
+
+        u = info.u[:, np.newaxis]
+        v = info.v[:,np.newaxis]
+
+        M = system.eval_char_matrix_derivative(rstar)
+        coef = np.conj(u).T @ M @ v
+
+        gradient = np.real(coef * (np.conj(u).T @ BB).T @ (CC @ v).T)
+
+        K[:,:,0] = K[:,:,0] - 10000000 * gradient
+    
+    print(np.real(evolution))
+    
+
+
+
+
+
+
+    
+
+    
+
+
+
+
+    # import tdspy.plot
+    # import matplotlib.pyplot as plt
+
+    # tdspy.plot.eigen_plot(cr, )
+    # plt.show()

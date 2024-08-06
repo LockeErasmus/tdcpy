@@ -479,6 +479,165 @@ def interconnect2(tds1: DDAE, y1_indices: list=None, u1_indices:list = None,
 
     return DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
+def interconnect3(system: DDAE, y_indices: list=None, u_indices:list = None, 
+                  hA2: npt.NDArray = None, hB2: npt.NDArray = None, 
+                  hC2: npt.NDArray = None, hD2: npt.NDArray = None,
+                  **kwargs) -> DDAE:
+    """ Creates Closed Loop representation """
+    # perform checks
+
+    # all IO matrices defined
+    # correct and possible shapes
+
+    # First, handle defaults
+    if y_indices is None:
+        y_indices = [0]
+    if u_indices is None:
+        u_indices = [0]
+    
+    y1_indices = y_indices
+    u1_indices = u_indices
+
+    # controller packed into TODO
+    n_controller = 1 # order of controller, 0, 1, ..., inf
+    n_inputs = len(y1_indices) # assumed to be at least 1
+    n_outputs = len(u1_indices) # assumed to be at least 1
+    E2, K, hK = controller_reprezentation(order=n_controller, n_inputs=n_inputs, n_outputs=n_outputs)
+
+    nk, mk = n_controller + n_inputs, n_controller + n_inputs
+
+    # Extract matrices and delays of a system
+    E1, A1, B1, C1, D1 = system.E, system.A, system.B, system.C, system.D
+    hA1, hB1, hC1, hD1 = system.hA, system.hB, system.hC, system.hD
+
+    # TODO argument names and make sure it is list
+    # indices all are constructed as 1D arrays and axes are added later to leverage
+    # broadcasting, it is necessary to have indices as dtype=int (alternatively as boolean mask)
+    
+    ## System 1
+    u1_indices = np.array(u1_indices, dtype=int)
+    w1_indices = np.array([i for i in range(B1.shape[1]) if i not in u1_indices], dtype=int)
+    y1_indices = np.array(y1_indices, dtype=int)
+    z1_indices = np.array([i for i in range(C1.shape[0]) if i not in y1_indices], dtype=int)
+
+    ## Controller
+    u2_indices = np.array([i for i in range(n_inputs)], dtype=int)
+    w2_indices = np.array([], dtype=int) # empty by definition
+    y2_indices = np.array([i for i in range(n_outputs)], dtype=int)
+    z2_indices = np.array([], dtype=int) # empty by definiiton
+
+    # log interconection indices
+    logger.debug(f"Mapping system outputs {y1_indices} to controller inputs {u2_indices}")
+    logger.debug(f"Mapping controller outputs {y2_indices} to system inputs {u1_indices}")
+
+    # interconnection algorithm
+    # TODO: separate function on matrices
+    # For now assume NO MATRICES are empty
+    len_u1, len_w1 = len(u1_indices), len(w1_indices)
+    len_y1, len_z1 = len(y1_indices), len(z1_indices)
+    len_u2, len_w2 = len(u2_indices), len(w2_indices)
+    len_y2, len_z2 = len(y2_indices), len(z2_indices)
+
+    # TODO: for now, log table
+    nrows = A1.shape[0] + len_u1 + len_w1 + len_z1 + n_controller + len_y1
+    ncols = A1.shape[1] + len_u1 + len_w1 + len_z1 + n_controller + len_y1
+    
+    ndelays1 = hA1.shape[0] + hB1.shape[0] + hC1.shape[0] + hD1.shape[0]
+    ndelays2 = hK.shape[0]
+    ndelaysA = ndelays1 + ndelays2
+    ndelaysB = 1
+    ndelaysC = 1
+    ndelaysD = 1
+
+    # initialize E, A, hA, B, hB
+    # we assume the vector of variables to be
+    # x* = [x, @u, @w, @z, xc, @y]
+    # and equations TODO
+    E = np.zeros(shape=(nrows, ncols), dtype=E1.dtype)
+    A = np.zeros(shape=(nrows, ncols, ndelaysA), dtype=A1.dtype)
+    hA = np.zeros(shape=(ndelaysA,), dtype=hA1.dtype)
+    B = np.zeros(shape=(nrows, len_w1 + len_w2, ndelaysB), dtype=B1.dtype)
+    hB = np.zeros(shape=(ndelaysB,), dtype=hB1.dtype)
+    C = np.zeros(shape=(len_z1 + len_z2, ncols, ndelaysC), dtype=C1.dtype)
+    hC = np.zeros(shape=(ndelaysC,), dtype=hC1.dtype)
+    D = np.zeros(shape=(len_z1 + len_z2, len_w1 + len_w2, ndelaysD), dtype=D1.dtype)
+    hD = np.zeros(shape=(ndelaysD,), dtype=hD1.dtype)
+
+    # system
+    rows_start1 = 0 # equations
+    rows_end1 = rows_start1 + A1.shape[0] + len_y1 + len_z1
+    cols_start1 =  0 # variables
+    cols_end1 = cols_start1 + A1.shape[1] + len_u1 + len_w1
+    concatenate_2x2_by_delays(
+        E1, A1,
+        B1[np.ix_(range(B1.shape[0]), np.r_[u1_indices, w1_indices], range(B1.shape[2]))],
+        C1[np.ix_(np.r_[y1_indices, z1_indices], range(C1.shape[1]), range(C1.shape[2]))],
+        D1[np.ix_(np.r_[y1_indices, z1_indices], np.r_[u1_indices, w1_indices], range(D1.shape[2]))],
+        hA1, hB1, hC1, hD1,
+        EE = E[rows_start1:rows_end1, cols_start1:cols_end1],
+        AA = A[rows_start1:rows_end1, cols_start1:cols_end1, :ndelays1],
+        hAA= hA[:ndelays1],
+    )
+
+    # interconnect system and controller
+    # here I assume that hA[0], other approach would be to concatenate
+    assert hA[0] == 0
+    n_auxiliary = len_u1 + len_w1 + len_z1 + len_y1 # number of auxiliary variables
+    indices = np.array([i for i in range(A1.shape[0], A1.shape[0]+n_auxiliary)], dtype=int)
+    A[indices, indices[::-1], 0] = -1
+
+    # BB and CC matrix, such that A[:,:,i] = P[:,:,i] + BB @ K[:,:,i] @ CC
+    BB = np.zeros(shape=(nrows, n_controller+len_u1), dtype=np.float64)
+    BB[-n_controller-len_u1:,:] = np.eye(n_controller+len_u1)[::-1,:]
+    CC = np.zeros(shape=(n_controller+len_y1, ncols), dtype=np.float64)
+    CC[:,-n_controller-len_y1:] = np.eye(n_controller+len_y1)[::-1,:]
+
+    # add controller LHS
+    E = E + BB @ E2 @ CC # this also tests dimensions
+
+    # prepare B, C, D matrices
+    B = np.zeros(shape=(nrows, len_w1, 1), dtype=np.float64)
+    B[A1.shape[0] + len_y1 + len_z1:A1.shape[0] + len_y1 + len_z1+len_w1, :, 0] = np.eye(len_w1)
+    C = np.zeros(shape=(len_z1, ncols, 1), dtype=np.float64)
+    C[:, A1.shape[1] + len_u1 + len_w1:A1.shape[1] + len_u1 + len_w1+len_z1,0] = np.eye(len_z1)
+    D = np.zeros(shape=(len_z1, len_w1, 1), dtype=np.float64)
+
+    hB = np.array([0.0])
+    hC = np.array([0.0])
+    hD = np.array([0.0])
+
+    # # Populate B, hB
+    # n, m = hB1.shape[0], hD1.shape[0]
+    # B[:B1.shape[0], :len_w1, :n] = B1[np.ix_(range(B1.shape[0]), w1_indices, range(B1.shape[2]))] # B1: w1 -> x1
+    # B[B1.shape[0]: B1.shape[0]+len_y1, :len_w1, n:n+m] = D1[np.ix_(y1_indices, w1_indices, range(D1.shape[2]))] # D1: w1 -> y1
+    
+    # hB[:n] = hB1
+    # hB[n:n+m] = hD1
+
+    # # Populate C, hC
+    # n, m = hC1.shape[0], hD1.shape[0]
+    # C[:len_z1, :C1.shape[1], :n] = C1[np.ix_(z1_indices, range(C1.shape[1]), range(C1.shape[2]))] # C1: x1 -> z1
+    # C[:len_z1, C1.shape[1]:C1.shape[1]+len_u1, n:n+m] = D1[np.ix_(z1_indices, u1_indices, range(D1.shape[2]))] # D1: u1 -> z1
+    
+    # hC[:n] = hC1
+    # hC[n:n+m] = hD1
+
+    # # Populate D, hD
+    # # m, q reused from before: m=hD1.shape[0], q=hD2.shape[0]
+    # D[:len_z1, :len_w1, :m] = D1[np.ix_(z1_indices, w1_indices, range(D1.shape[2]))] # D1: w1 -> z1
+    # hD[:m] = hD1
+
+    A, hA = compress_matrices_delays(A, hA)
+    B, hB = compress_matrices_delays(B, hB)
+    C, hC = compress_matrices_delays(C, hC)
+    D, hD = compress_matrices_delays(D, hD)
+
+    return DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD), BB, CC
+
+
+
+# def close_loop_reprezentation(E1, A1, B1, C1, D1, hA1, hB1, hC1, hD1):
+
 def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     """ Creates new TDS object representing closed-loop interconnection of the
     provided plant and controller
