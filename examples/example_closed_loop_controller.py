@@ -235,7 +235,7 @@ if __name__ == "__main__":
     # Set up logging
     import logging
     logger = logging.getLogger("tdspy")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.ERROR)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
@@ -243,11 +243,13 @@ if __name__ == "__main__":
 
     rdde = generate_system()
     system_orig, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
+    
     system, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
+    
     cont = generate_controller_2()
 
     E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
-   
+    #K = np.random.rand(*K.shape)
 
     print_ddae(cont)
     print_ddae(tds.DDAE(K, hK, E))
@@ -259,35 +261,103 @@ if __name__ == "__main__":
     system._A = np.concatenate([system.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
     system._hA = np.r_[system.hA, hK]
     system.compress(inplace=True)
-    
-    print_ddae(system)
 
     # cr, cr_info = tds.roots(system,r=-10)
 
-    evolution = []
-    for i in range(10):
-        system._A = np.concatenate([system_orig.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
-        system._hA = np.r_[system_orig.hA, hK]
-        system.compress(inplace=True)
+    # evolution = []
+    # for i in range(100):
+    #     system._A = np.concatenate([system_orig.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
+    #     system._hA = np.r_[system_orig.hA, hK]
+    #     system.compress(inplace=True)
 
-        rstar, info = rightmost_root(system.E, system.A, system.hA, r=0)
-        evolution.append(rstar)
+    #     rstar, info = rightmost_root(system.E, system.A, system.hA, r=0)
+    #     evolution.append(rstar)
 
-        u = info.u[:, np.newaxis]
-        v = info.v[:,np.newaxis]
+    #     u = info.u[:, np.newaxis]
+    #     v = info.v[:,np.newaxis]
 
-        M = system.eval_char_matrix_derivative(rstar)
-        coef = np.conj(u).T @ M @ v
+    #     M = system.eval_char_matrix_derivative(rstar)
+    #     coef = np.conj(u).T @ M @ v
 
-        gradient = np.real(coef * (np.conj(u).T @ BB).T @ (CC @ v).T)
+    #     #gradient = np.real(coef * (np.conj(u).T @ BB).T @ (CC @ v).T)
 
-        K[:,:,0] = K[:,:,0] - 10000000 * gradient
+    #     Kmask = np.full_like(K, fill_value=1, dtype=bool)
+    #     matrix = (np.conj(u).T @ BB).T @ (CC @ v).T # (u* B).T (C v).T
+    #     gradient = np.real((Kmask * hK) * matrix[:,:,np.newaxis])
+    #     K = K - gradient
     
-    print(np.real(evolution))
+    # print(np.real(evolution))
     
+    # print_ddae(tds.DDAE(K, hK, E))
 
     # import tdspy.plot
     # import matplotlib.pyplot as plt
-
-    # tdspy.plot.eigen_plot(cr, )
+    # plt.plot(evolution, "-o")
     # plt.show()
+
+    cl = tds.ClosedLoop(rdde, 1, [0,1,4,5], [0], K0=K, hK=hK)
+
+    print_ddae(cl)
+
+    np.random.seed(10)
+    E = cl.E
+    P = cl._A
+    hP = cl._hA
+    K0 = np.random.rand(*cl.K.shape)
+    hK = cl.hK
+    B = cl.BB
+    C = cl.CC
+
+    Kmask = np.full_like(K0, fill_value=1, dtype=bool)
+    Kshape = K0.shape
+
+    from tdspy.stabopt.controller_bfgs import design_bfgs, func
+
+    K = np.copy(K0)
+    for i in range(10):
+        alpha, jac = func(K.reshape(-1), E, P, hP, hK, Kshape, Kmask, B, C)
+        #print(jac)
+        #print("---------")
+        print(alpha)
+        K = K - 0.5*jac.reshape(K0.shape)
+
+    #print(np.allclose(K0 - K0.reshape(-1).reshape(K0.shape), 0.0))
+    
+    #sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"maxiter": 10, "disp": True, "gtol": 1e-5})
+    #print(sol)
+
+    A0 = np.concatenate(
+        [
+            P,
+            np.stack([B @ K0[:,:,i] @ C for i in range(K0.shape[2])], axis=2)
+        ],
+        axis=2,
+    )
+    A = np.concatenate(
+        [
+            P,
+            np.stack([B @ K[:,:,i] @ C for i in range(K.shape[2])], axis=2)
+        ],
+        axis=2,
+    )
+    hA = np.r_[hP, hK]
+
+
+    import tdspy.plot
+    import matplotlib.pyplot as plt
+
+    cr0, _ = tds.roots(tds.DDAE(A0, hA, E), r=-10)
+    cr, _ = tds.roots(tds.DDAE(A, hA, E), r=-10)
+    
+
+    plt.figure()
+    print(cr0)
+    print(cr)
+    plt.scatter(np.real(cr0), np.imag(cr0), marker="x")
+    plt.scatter(np.real(cr), np.imag(cr), marker="+")
+
+    plt.show()
+    
+    
+    
+

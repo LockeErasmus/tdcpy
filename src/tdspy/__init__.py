@@ -6,6 +6,7 @@ logger.addHandler(logging.NullHandler())
 from .ddae import DDAE
 from .rdde import RDDE
 from .ndde import NDDE
+from .closed_loop import ClosedLoop
 
 from .roots import roots
 from .zeros import zeros

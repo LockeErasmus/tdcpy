@@ -25,12 +25,33 @@ logger = logging.getLogger(__name__)
 class ClosedLoop:
     """ Controller representation """
 
-    def __init__(self, system1, system2, ):
+    def __init__(self, system, system2, ):
         
         self._n = 1
         self._n_inputs = 6
         self._n_outputs = 1
         self._hA = np.array([0.0])
+
+        self._system = system
+    
+    @property
+    def B(self) -> npt.NDArray:
+        ...
+    
+    @property
+    def C(self) -> npt.NDArray:
+        ...
+    
+    @property
+    def system(self) -> DDAE:
+        return self._system
+    
+    def todo1(self, K, deep_copy=True) -> DDAE:
+        """ Returns closed loop with different K """
+
+
+
+
 
     @property
     def n(self) -> int:
