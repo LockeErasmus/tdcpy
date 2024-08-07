@@ -286,18 +286,6 @@ if __name__ == "__main__":
     print(np.real(evolution))
     
 
-
-
-
-
-
-    
-
-    
-
-
-
-
     # import tdspy.plot
     # import matplotlib.pyplot as plt
 
