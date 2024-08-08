@@ -168,6 +168,44 @@ def generate_controller() -> tds.DDAE:
 
     return controller
 
+def generate_controller_0() -> tdspy.DDAE:
+    """ generates dynamic controller of 0 order using output feedback single-input controller
+    according to the article TDS2024
+    xc'(t)  = Ac xc(t) + Bc1 y(t-tau1) + Bc2 y(t-tau2) + Bc3 y(t-tau3) + Bc4 y(t-tau4)
+    u(t)    = Cc xc(t) + Dc1 y(t-tau1) + Dc2 y(t-tau2) + Dc3 y(t-tau3) + Dc4 y(t-tau4)
+
+    Here,
+    K       =   [           |                                   ]
+                    -----------------------------------------
+                [           |   Dc1     Dc2     Dc3     Dc4     ]
+    """
+
+
+    Ac = np.zeros(shape=(1,1,0))
+    hA = np.array([])
+
+    Bc = np.zeros(shape=(1,4,0))
+    hB = np.array([])
+
+    Cc = np.zeros(shape=(1,1,0))
+    hC = np.array([])
+
+    Dc1 = np.array([[-0.2313, -0.9674, -0.000, -863.274]])
+    Dc2 = np.array([[0., -66.3, -0.1, 1008.3]])
+    Dc3 = np.array([[0., -6.5,0.,1853.5]])
+    Dc4 = np.array([[-0., -228.3, -0.1, 2776.6]])
+
+    D = np.stack([Dc1,Dc2,Dc3,Dc4],axis=2)
+    hD = np.array([0.05, 0.10, 0.15, 0.20])
+
+    ddae = tdspy.DDAE(A=Ac, hA=hA, B=Bc, hB=hB, C=Cc, hC=hC, D=D, hD=hD)
+
+    return ddae
+
+    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # return controller
+
+
 def generate_controller_2() -> tdspy.DDAE:
     """ generates dynamic controller of first order using output feedback single-input controller
     according to the article TDS2024
@@ -185,10 +223,10 @@ def generate_controller_2() -> tdspy.DDAE:
     A = np.stack([Ac], axis=2)
     hA = np.array([0.])
 
-    Bc1 = np.array([[0., -0., -0.0966, 0.0096]])
-    Bc2 = np.array([[0., -0., -0.0971, 0.0097]])
-    Bc3 = np.array([[-0., 0.001, -0.0975, 0.0063]])
-    Bc4 = np.array([[0.001, -0.0036, -0.0980, 0.0151]])
+    Bc1 = np.array([[0.000011871026690,  -0.000001633967929,  -0.096619515615447, 0.009609940786724]])
+    Bc2 = np.array([[0.000012655720309,  -0.000001745203638,  -0.097102568003455, 0.009658695494486]])
+    Bc3 = np.array([[-0.000008124456882,   0.000969071451097,  -0.097528596846931, 0.006345809570310]])
+    Bc4 = np.array([[0.000079469623068,  -0.003649620510399,  -0.098032218002247,  0.015131687528009]])
     
     B = np.stack([Bc1,Bc2,Bc3,Bc4], axis=2)
     hB = np.array([0.05, 0.10, 0.15, 0.20])
@@ -196,10 +234,10 @@ def generate_controller_2() -> tdspy.DDAE:
     C = np.stack([np.array([[0.9674]])],axis=2)
     hC = np.array([0.])
 
-    Dc1 = np.array([[-963.3, -66.3, -1008.4, -6.5]])
-    Dc2 = np.array([[1853.5, -228.3, 2776.6, -93.6]])
-    Dc3 = np.array([[-2073.6, -327.3, -566.8, -164.7]])
-    Dc4 = np.array([[-4101, -87.8, -2813, -53.6]])
+    Dc1 = np.array([[-863.276410540652,  -66.322974500701,   1008.250387805891, -6.515309874083]])
+    Dc2 = np.array([[1853.498088494986,  -228.288496302348,   2776.561842823067, -93.571222552822]])
+    Dc3 = np.array([[ -2073.565017148369,  -327.260607372574,  -566.810081824136, -164.661906556694]])
+    Dc4 = np.array([[-4100.968918319806,  -87.763270193528,  -2812.964755539708, -53.638395252897]])
 
     D = np.stack([Dc1,Dc2,Dc3,Dc4], axis=2)
     hD = np.array([0.05, 0.10, 0.15, 0.20])
@@ -240,11 +278,12 @@ if __name__ == "__main__":
     cr, cr_info = tdspy.roots(rdde, r=-10)
     print(f"rightmost root of the ol is {np.max(np.real(cr))}")
 
+    system.is_essentially_retarded 
     cr, cr_info = tdspy.roots(system, r=-10)
     print(f"rightmost root of the cl is {np.max(np.real(cr))}")
     print(cr)
 
-    zr, zr_info = tdspy.zeros(system, r=[-100,10,0,1000], input_index=-1, output_index=-1)
+    zr, zr_info = tdspy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
     print(zr)
 
 
@@ -252,7 +291,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
 
-    tdspy.plot.eigen_plot(cr)
-    plt.show()
+    # tdspy.plot.eigen_plot(cr)
+    # plt.show()
     tdspy.plot.eigen_plot(zr)
     plt.show()
