@@ -56,12 +56,12 @@ class DDAE(TDSBase):
             assert isinstance(uE, np.ndarray)
             if uE.size > 0:
                 assert uE.ndim == 2, "ndim of nullspace has to be 2"
-                assert uE.shape[0] == A[0], "uE^T @ Ai has to be possible (dimensions has to match)"
+                assert uE.shape[0] == A.shape[0], "uE^T @ Ai has to be possible (dimensions has to match)"
         if vE is not None:
             assert isinstance(vE, np.ndarray)
             if vE.size > 0:
                 assert vE.ndim == 2, "ndim of nullspace has to be 2"
-                assert vE.shape[0] == A[1], "Ai @ vE has to be possible (dimensions has to match)"
+                assert vE.shape[0] == A.shape[1], "Ai @ vE has to be possible (dimensions has to match)"
 
         # I/O matrices
         # TODO: tests are (somewhat) repeating, consider function?
