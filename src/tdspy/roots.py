@@ -17,7 +17,7 @@ from .stability.newton import newton_correction
 from .common.discretization import discretize
 from .gamma import gamma
 
-
+from .common.compress import compress_matrices_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
 logger = logging.getLogger(__name__)
@@ -31,17 +31,31 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
         r (int or list): region, specify r as number on real axis or rectangular
             region via 4 coordinates [Re_min, Re_max, Im_min, Im_max], default r=0.0
         kwargs:
-            max_size_evp (int): TODO, default 600
-            discretization (int): discretization, if None heuristic is envoked,
-                default None, keep default if you don't know, has to be > 1
-            basic_delay (float): define if delays are commensurate, default
-                None, used in discretization heuristic case `rhp`
+            discretization (int): discretization for discretizing DDAE into DAE,
+                optional, default None, if not specified, heuristic will be used
+                to obtain sufficient discretization
+            max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
+                optional, default 600
+            basic_delay (float): base delay in case delays are commensurate,
+                optional, default None, used in discretization heuristic
     
     Returns:
-            tuple containing
+        tuple containing
 
-                - roots (array): array of found roots
-                - metadata (RootsInfo): named tuple consisting of TODO
+            - cr (array): vector of obtained roots
+            - roots_info (RootsInfo): RMR metadata containing:
+                discretization (int): discretization used for obtaining EVP
+                gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
+                index_exceeds_one (bool): flag that index exceeds one
+                discretization_eigenvalues (array): eigenvalues of EVP
+                max_size_evp_enforced (bool): flag if maximum size of EVP was
+                    enforced
+                newton_inital_guesses (array): roots before newton corrections
+                newton_final_values (array): roots after newton corrections
+                newton_residuals (array): newton residuals
+                newton_unconverged_initial_guesses (array): mask of unconverged
+                    newton initial guesses
+                newton_large_corrections (array): mask of "large" corrections
     """
     # kwargs TODO
 
@@ -64,9 +78,6 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
     if isinstance(tds, NDDE):
         tds = tds.to_ddae()
 
-	# compress tds (this also sorts)
-    tds = tds.compress()
-
     # unpack TDS object
     n = tds.n
     E = tds.E
@@ -80,7 +91,10 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
     else:
         hA = tds.hA
         A = tds.A
-
+    
+    # compress representation (this also sorts by delays ascending order)
+    A, hA = compress_matrices_delays(A, hA)
+    
     # find all roots via discretization
     cr, cr_info = roots_ddae(E, A, hA, r, **kwargs)
 

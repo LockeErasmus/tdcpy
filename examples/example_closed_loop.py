@@ -9,6 +9,31 @@ import numpy as np
 import tdspy as tds
 import tdspy.controller
 import tdspy.plot
+from tdspy.common.composition import concatenate_2x2_by_delays
+from tdspy.common.compress import compress_matrices_delays
+
+ # Masses
+
+m0 = 1.1750
+m1 = 0.5050
+m2 = 0.7290
+ma = 0.5200
+
+# Stiffness
+k0 = 1001
+k1 = 749
+k2 = 711
+k3 = 950
+ka = 407
+k4 = 377
+
+# Damping
+ca = 1.8000
+c0 = 4.3500
+c1 = 0.8500
+c2 = 1.8500
+c3 = 4.9500
+c4 = 0
 
  # Masses
 
@@ -67,29 +92,6 @@ def generate_system() -> tds.RDDE:
 
     """
     
-    # # Masses
-
-    # m0 = 1.1750
-    # m1 = 0.5050
-    # m2 = 0.7290
-    # ma = 0.5200
-
-    # # Stiffness
-    # k0 = 1001
-    # k1 = 749
-    # k2 = 711
-    # k3 = 950
-    # ka = 407
-    # k4 = 377
-
-    # # Damping
-    # ca = 1.8000
-    # c0 = 4.3500
-    # c1 = 0.8500
-    # c2 = 1.8500
-    # c3 = 4.9500
-    # c4 = 0
-
     # Entering matrix entries
 
     a21 = -(k0+k1+ka+k4)/m0
@@ -141,11 +143,15 @@ def generate_system() -> tds.RDDE:
 
     hA = np.array([0.0])
 
-
-    B2 =  np.array([[   0,   0,   0,   0,   0,   1/m2,  0,   0   ]]).T    
-    B1 =  np.array([[   0,   -1/m0,   0,   0,   0,   0,     0,   1/ma   ]]).T
-    B = np.stack([B1, B2], axis=1)
-    hB = np.array([0.002])
+    B1 =  np.array([[   0,   0,   0,   0,   0,   0,     0,   0   ],
+                    [   0,   0,   0,   0,   0,   0,     0,   0   ],
+                    [   0,   0,   0,   0,   0,   1/m2,  0,   0   ]]).T    
+    B2 =  np.array([[   0,   -1/m0,   0,   0,   0,   0,     0,   1/ma], # u1 column
+                    [   0,   1/m0,   0,   0,   0,   0,     0,   0  ], # u2 column
+                    [   0,   0,   0,   0,   0,   0,     0,   0   ]]).T # d column
+                    
+    B = np.stack([B1, B2], axis=2)
+    hB = np.array([0.0, 0.002])
     C1 = np.array([[ 1,   0,   0,   0,   0,   0,   0,   0   ],
                    [ 0,   1,   0,   0,   0,   0,   0,  0    ],
                    [ 0,   0,   0,   0,   1,   0,   0,   0   ],
@@ -155,7 +161,7 @@ def generate_system() -> tds.RDDE:
                    [ 0,   0,   1,   0,   0,   0,   0,   0   ]]) # the last row is z
     C = np.stack([C1], axis=2)
     hC = np.array([0])
-    D = np.zeros(shape=(C.shape[0],B.shape[1],1), dtype=float)
+    D = np.zeros(shape=(7,3,1), dtype=float)
     hD = np.array([0.])
 
     rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
@@ -163,60 +169,92 @@ def generate_system() -> tds.RDDE:
 
     return rdde
 
-def generate_controller01() -> tds.DDAE:
-    """ generates static output feedback single-input controller according to the paper
-    Dc = [  144.06  -7.73   617.88  -8.61   -523.5  9.93    ]
+def generate_controller1() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    Dc = [  ]
     """
-    A = np.zeros(shape=(1,1,0))
-    hA = np.zeros(shape=(0,))
-    B = np.zeros(shape=(1,6,0))
-    hB = np.zeros(shape=(0,))
-    C = np.zeros(shape=(1,1,0))
-    hC = np.zeros(shape=(0,))
-    D = np.array([[144.06, -7.73, 617.88, -8.61, -523.50, 9.93]])
-    D = np.stack([D], axis=2)
-    hD = np.array([0.])
 
-    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    )
+
+    return controller
+
+def generate_controller() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    Dc = [  ]
+    """
+
+    # controller = tdspy.controller.create_static_controller(
+    #     K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    # )
+
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[ -1.031,     25.11,      0.898,      4.73,       -348.19,    -7.69   ],
+                      [ 0.542,      -23.02,     -.0798,     -52.14,     1.88,       -15.50 ]])
+    )
+
+    return controller
+
+def generate_controller_0() -> tdspy.DDAE:
+    """ generates dynamic controller of 0 order using output feedback single-input controller
+    according to the article TDS2024
+    xc'(t)  = Ac xc(t) + Bc1 y(t-tau1) + Bc2 y(t-tau2) + Bc3 y(t-tau3) + Bc4 y(t-tau4)
+    u(t)    = Cc xc(t) + Dc1 y(t-tau1) + Dc2 y(t-tau2) + Dc3 y(t-tau3) + Dc4 y(t-tau4)
+
+    Here,
+    K       =   [           |                                   ]
+                    -----------------------------------------
+                [           |   Dc1     Dc2     Dc3     Dc4     ]
+    """
+
+
+    Ac = np.zeros(shape=(1,1,0))
+    hA = np.array([])
+
+    Bc = np.zeros(shape=(1,4,0))
+    hB = np.array([])
+
+    Cc = np.zeros(shape=(1,1,0))
+    hC = np.array([])
+
+    Dc1 = np.array([[-0.2313, -0.9674, -0.000, -863.274]])
+    Dc2 = np.array([[0., -66.3, -0.1, 1008.3]])
+    Dc3 = np.array([[0., -6.5,0.,1853.5]])
+    Dc4 = np.array([[-0., -228.3, -0.1, 2776.6]])
+
+    D = np.stack([Dc1,Dc2,Dc3,Dc4],axis=2)
+    hD = np.array([0.05, 0.10, 0.15, 0.20])
+
+    ddae = tdspy.DDAE(A=Ac, hA=hA, B=Bc, hB=hB, C=Cc, hC=hC, D=D, hD=hD)
 
     return ddae
 
-def generate_controller02() -> tds.DDAE:
-    """ generates static output feedback multi-input controller according to the paper
-    Dc =    [  -348.19  -7.69   0.898   4.73    -1.031  25.11       ]
-            [   1.88    -15.50  -0.798  -52.14  0.542   -23.02      ]
-    """
-    A   = np.zeros(shape=(1,1,0))
-    hA  = np.zeros(shape=(0,))
-    B   = np.zeros(shape=(1,6,0))
-    hB  = np.zeros(shape=(0,))
-    C   = np.zeros(shape=(2,1,0))
-    hC  = np.zeros(shape=(0,))
-    D   = np.array([[     -348.19,    -7.69,      0.898,      4.73,       -1.031,     25.11       ],
-                  [     1.88,       -15.50,     -0.798,     -52.14,     0.542,      -23.02      ]])
-    D   = np.stack([D], axis=2)
-    hD  = np.array([0.])
-
-    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
-
-    return ddae
+    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # return controller
 
 
-def generate_dynamic_controller01() -> tds.DDAE:
+def generate_controller_2() -> tdspy.DDAE:
     """ generates dynamic controller of first order using output feedback single-input controller
-    x'(t)   = Ac x(t) + Bc y(t)
-    u(t)    = Cc x(t) + Dc y(t)
+    according to the article TDS2024
+    xc'(t)  = Ac xc(t) + Bc1 y(t-tau1) + Bc2 y(t-tau2) + Bc3 y(t-tau3) + Bc4 y(t-tau4)
+    u(t)    = Cc xc(t) + Dc1 y(t-tau1) + Dc2 y(t-tau2) + Dc3 y(t-tau3) + Dc4 y(t-tau4)
+
+    Here,
+    K       =   [       Ac  |   Bc1     Bc2     Bc3     Bc4     ]
+                    -----------------------------------------
+                [       Cc  |   Dc1     Dc2     Dc3     Dc4     ]
     """
+
 
     Ac = np.array([[-0.2313]])
     A = np.stack([Ac], axis=2)
     hA = np.array([0.])
 
-    Bc1 = np.array([[0., -0., -0.0966, 0.0096]])
-    Bc2 = np.array([[0., -0., -0.0971, 0.0097]])
-    Bc3 = np.array([[-0., 0.001, -0.0975, 0.0063]])
-    Bc4 = np.array([[0.001, -0.0036, -0.0980, 0.0151]])
-    # Bc = np.array([[0.,  -0., -0.0966,    0.0096, 0.0, -0.0,  -0.0971,    0.0097,     -0.0,   0.001,  -0.0975,    0.0063,     0.0001,     -0.0036,    -0.098, 0.0151  ]])
+    Bc1 = np.array([[0.000011871026690,  -0.000001633967929,  -0.096619515615447, 0.009609940786724]])
+    Bc2 = np.array([[0.000012655720309,  -0.000001745203638,  -0.097102568003455, 0.009658695494486]])
+    Bc3 = np.array([[-0.000008124456882,   0.000969071451097,  -0.097528596846931, 0.006345809570310]])
+    Bc4 = np.array([[0.000079469623068,  -0.003649620510399,  -0.098032218002247,  0.015131687528009]])
     
     B = np.stack([Bc1,Bc2,Bc3,Bc4], axis=2)
     hB = np.array([0.05, 0.10, 0.15, 0.20])
@@ -224,17 +262,23 @@ def generate_dynamic_controller01() -> tds.DDAE:
     C = np.stack([np.array([[0.9674]])],axis=2)
     hC = np.array([0.])
 
-    Dc1 = np.array([[-963.3, -66.3, -1008.4, -6.5]])
-    Dc2 = np.array([[1853.5, -228.3, 2776.6, -93.6]])
-    Dc3 = np.array([[-2073.6, -327.3, -566.8, -164.7]])
-    Dc4 = np.array([[-4101, -87.8, -2813, -53.6]])
+    Dc1 = np.array([[-863.276410540652,  -66.322974500701,   1008.250387805891, -6.515309874083]])
+    Dc2 = np.array([[1853.498088494986,  -228.288496302348,   2776.561842823067, -93.571222552822]])
+    Dc3 = np.array([[ -2073.565017148369,  -327.260607372574,  -566.810081824136, -164.661906556694]])
+    Dc4 = np.array([[-4100.968918319806,  -87.763270193528,  -2812.964755539708, -53.638395252897]])
 
-    D = np.stack([Dc1,Dc2,Dc3,Dc4],axis=2)
+    D = np.stack([Dc1,Dc2,Dc3,Dc4], axis=2)
     hD = np.array([0.05, 0.10, 0.15, 0.20])
 
     ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
-    return ddae
+    _, K, hK = concatenate_2x2_by_delays(np.eye(1), A, B, C, D, hA, hB, hC, hD)
+    K, hK = compress_matrices_delays(K, hK)
+
+    return ddae, K, hK
+
+    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # return controller
 
 
 
@@ -248,16 +292,64 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    rdde = generate_system()
+    rdde = generate_system() # system we want to stabilitze
 
-    zeros = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=4)
+    # create closed loop representation
+    controller, K, hK = generate_controller_2()
+    cl = tdspy.ClosedLoop(rdde, 1, [0,1,4,5], [0], K0=K, hK=np.array([0.0, 0.05, 0.10, 0.15, 0.20]))
+
+    # roots of original system, controller and closed loop
+    cr_system, _ = tdspy.roots(cl.system, r=-10)
+    cr_controller, _ = tdspy.roots(cl.controller, r=-30)
+    cr_cl, _ = tdspy.roots(cl, r=-10)
+
+    # zeros closed loop
+    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=0, output_index=0)
+
+    import tdspy.plot
+    import matplotlib.pyplot as plt
+
+    # tdspy.plot.eigen_plot(cr)
+    # plt.show()
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
     
-    cont01 = generate_controller01()        # single-input controller
+    ax1.set_title("system")
+    tdspy.plot.eigen_plot(cr_system, ax=ax1)
 
-    cont02 = generate_controller02()        # multi-input controller
+    ax2.set_title("closed loop")
+    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
 
-    cont03 = generate_dynamic_controller01()  # dynamic controller with fixed delays
+    ax3.set_title("controller")
+    tdspy.plot.eigen_plot(cr_controller, ax=ax3)
 
-    system = tdspy.controller.interconnect(rdde, cont01)
+    ax4.set_title("closed loop zeros")
+    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    
+    plt.show()
 
-    print(cont03)
+
+    # zeros, zeros_info = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
+    
+    # # cont = generate_controller()
+    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
+
+    # # cont = generate_controller1()
+    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
+
+    # cont = generate_controller_2()
+    # system = tdspy.controller.interconnect(rdde, cont, [0,1,4,5], [0,1,2,3], [0], [0])
+
+
+    # cr, cr_info = tdspy.roots(rdde, r=-10)
+    # print(f"rightmost root of the ol is {np.max(np.real(cr))}")
+
+    # system.is_essentially_retarded 
+    # cr, cr_info = tdspy.roots(system, r=-10)
+    # print(f"rightmost root of the cl is {np.max(np.real(cr))}")
+    # print(cr)
+
+    # zr, zr_info = tdspy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
+    # print(zr)
+
+
+    

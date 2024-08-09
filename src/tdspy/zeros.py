@@ -46,11 +46,11 @@ def zeros(tds: RDDE | NDDE | DDAE, r: list, input_index: int=0, output_index: in
     assert np.all(~np.isinf(r)), "region has to be finite rectangle"
 
     ## assert at least one input and one output
-    assert tds.n_iputs > 0, "tds has to have at least one input"
+    assert tds.n_inputs > 0, "tds has to have at least one input"
     assert tds.n_outputs > 0, "tds has to have at least one output"
     
     ## validate input output index
-    assert input_index < tds.n_iputs, "provided input index has to be valid"
+    assert input_index < tds.n_inputs, "provided input index has to be valid"
     assert output_index < tds.n_outputs, "provided output index has to be valid"
     
     # type of TDS, RDDE and DDAE -> OK, NDDE -> convert to DDAE

@@ -11,6 +11,7 @@ import numpy as np
 from scipy import linalg
 
 from tdspy.common.compress import compress_matrices_delays
+from tdspy.common.closed_loop import controller_reprezentation
 
 
 def test_compression_empty():
@@ -69,3 +70,58 @@ def test_sort_01():
     assert hA.shape == sorted_hA.shape
     assert np.allclose(sorted_hA, np.array([0.05, 0.1, 0.2, 0.8, 1.5]))
     assert np.allclose(sorted_A, A[:,:,[2, 0, 3, 4, 1]])
+
+def test_static_controller_01():
+    """ Tests creation of static controller """
+
+    # static, 3 measurements, 1 controller output
+    E, K, hK  = controller_reprezentation(0, n_inputs=3, n_outputs=1)
+    assert E.shape == (1,1)
+    assert np.all(E == 0)
+    assert K.shape == (1,3,1)
+    assert np.all(K == 1)
+    assert hK.shape == (1,)
+    assert hK[0] == 0
+
+    print(E)
+    for i in range(K.shape[2]):
+        print(f"K[:,:,{i}], tau={hK[i]}")
+        print(K[:,:,i])
+
+def test_dynamic_controller_01():
+    
+    # order 1, 3 measurements, 1 controller output
+    E, K, hK  = controller_reprezentation(1, n_inputs=3, n_outputs=1)
+
+    Ec = np.array([[1,0],[0,0]], dtype=bool)
+    Kc = np.ones(shape=(1+1, 3+1, 1), dtype=bool)
+
+    assert E.shape == (2,2)
+    assert np.all(E == Ec)
+    assert K.shape == (2,4,1)
+    assert np.all(K == Kc)
+    assert hK.shape == (1,)
+    assert hK[0] == 0
+
+def test_dynamic_controller_02():
+    
+    # order 1, 3 measurements, 1 controller output
+    E, K, hK  = controller_reprezentation(order=2, n_inputs=1, n_outputs=3, hB=np.array([0.1, 0.2]), hC=np.array([0.2]))
+
+    Ec = np.array([[1,0],[0,0]], dtype=bool)
+    Kc = np.ones(shape=(2+1, 2+2, 3), dtype=bool)
+
+    # assert E.shape == (2,2)
+    # assert np.all(E == Ec)
+    # assert K.shape == (2,4,1)
+    # assert np.all(K == Kc)
+    # assert hK.shape == (1,)
+    # assert hK[0] == 0
+    print("   ")
+    print(E)
+    for i in range(K.shape[2]):
+        print(f"K[:,:,{i}], tau={hK[i]}")
+        print(K[:,:,i])
+    
+
+

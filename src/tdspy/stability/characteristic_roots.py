@@ -7,6 +7,9 @@ Implemented functions:
     1. roots_ddae -> characteristic roots of DDAE
     1. rightmost_root -> right most root and necessary things for gradient
 
+TODO:
+    1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
+        higher logic into high level API (tdspy.roots)
 """
 
 from collections import namedtuple
@@ -33,9 +36,57 @@ RootsInfo = namedtuple("RootsInfo", ["discretization", "gamma_r_exceeds_one", "i
 
 RightmostRootInfo = namedtuple("RightmostRootInfo", ["M", "DM", "u", "v", "found", "max_size_evp_enforced"])
 
-def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwargs):
+def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,  **kwargs):
+    """ Computes the roots of DDAE represented via E, A, hA in region r
+
+    TDS is assumed to be defined via E, A, hA as
+
+        E dxdt(t) = SUM A[k] x(t-hA[k])
     
-    # TODO asserts
+    region is defined either by (1) r is float:
+        region = {z \in C: Re(z) >= r && Im(z) >= 0}
+    or r is list of 4 floats  [Re_min, Re_max, Im_min, Im_max]
+        region = {z \in C: Re(z) \in [Re_min, Re_max] and
+                           Im(z) \in [Im_min, Im_max]}
+
+    Args:
+        E (array): 2d array defining LHS of DDAE
+        A (array): 3d array defining the Ai matrices on the RHS
+        hA (array): 1d array defining delays associated with A
+        r (float): definition of region, either float (half-plane) or list of 
+            4 floats (rectangle)
+        **kwargs:
+            discretization (int): discretization for discretizing DDAE into DAE,
+                optional, default None, if not specified, heuristic will be used
+                to obtain sufficient discretization
+            max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
+                optional, default 600
+            basic_delay (float): base delay in case delays are commensurate,
+                optional, default None, used in discretization heuristic
+
+    Returns:
+        tuple containing:
+        
+            - cr (array): vector of obtained roots
+            - roots_info (RootsInfo): RMR metadata containing:
+                discretization (int): discretization used for obtaining EVP
+                gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
+                index_exceeds_one (bool): flag that index exceeds one
+                discretization_eigenvalues (array): eigenvalues of EVP
+                max_size_evp_enforced (bool): flag if maximum size of EVP was
+                    enforced
+                newton_inital_guesses (array): roots before newton corrections
+                newton_final_values (array): roots after newton corrections
+                newton_residuals (array): newton residuals
+                newton_unconverged_initial_guesses (array): mask of unconverged
+                    newton initial guesses
+                newton_large_corrections (array): mask of "large" corrections
+    """
+    # TODO perform checks? This is internal functions -> just list them as
+    # comments and implement if necessary
+    # 1. non-empty E, A, hA
+    # 2. real E, A, hA
+    # 3. dimensions E.shape[:2] == A.shape[:2] and A.shape[2] == hA.shape[0]
 
     # checks for region definition
     if isinstance(r, (int, float)):
@@ -60,14 +111,29 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
     if hA.shape[0] == 1:
         logger.debug("CASE: ODE or DAE -> finite number of roots")
         # just use eig and filter based on rhp or region
-        result = linalg.eig(A[:,:,0], E, left=False, right=False)
+        roots = linalg.eig(A[:,:,0], E, left=False, right=False)
+        roots = roots[np.isfinite(roots)] # get rid of inf and NaN
         if case == "rhp":
-            mask = np.isfinite(result) & (np.real(result)>=r)
+            mask = np.isfinite(roots) & (np.real(roots)>=r)
         else: # case == "rect"
-            mask = (np.isfinite(result) & (np.real(result)>=r[0]) 
-                    & (np.real(result)<=r[1]) & (np.imag(result)>=r[2])
-                    & (np.imag(result)<=r[3]))
-        return result[mask], None # TODO add metadata also
+            mask = (np.isfinite(roots) & (np.real(roots)>=r[0]) 
+                    & (np.real(roots)<=r[1]) & (np.imag(roots)>=r[2])
+                    & (np.imag(roots)<=r[3]))
+        
+        roots = roots[mask]
+        roots_info = RootsInfo(
+            discretization=None,
+            gamma_r_exceeds_one=False,
+            index_exceeds_one=False,
+            discretization_eigenvalues=np.zeros((0,), dtype=np.complex128),
+            max_size_evp_enforced=False,
+            newton_inital_guesses=np.zeros((0,), dtype=np.complex128),
+            newton_final_values=np.zeros((0,), dtype=np.complex128),
+            newton_residuals=np.zeros((0,), dtype=np.float64),
+            newton_unconverged_initial_guesses = np.zeros((0,), dtype=bool),
+            newton_large_corrections = np.zeros((0,), dtype=bool),
+        )
+        return roots, roots_info
 
     # CASE 2:
     mA = hA.shape[0] # number of delay terms
@@ -103,7 +169,6 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
                 ...
             else:
                 D, hD = ddae_to_diff(E, A, hA)
-                print(D, hD)
                 if hD.size != 0: # delay difference equation exists (E is singular)
                     # DD, hDD = normalize_diff(D, hD)
                     if hD[0] != 0 or False: # TODO
@@ -247,30 +312,50 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwa
             logger.warning(f"No characteristic roots found in rectangular region {r}")
 
     # prepare RootsInfo TODO - fix gamma_r and index bools
-    info = RootsInfo(discretization, False, False, raw_roots, max_size_evp_enforced, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
+    roots_info = RootsInfo(discretization, False, False, raw_roots, max_size_evp_enforced, newton_roots0, newton_roots, residuals, converged_mask, correction_large_mask)
 
-    return roots, info
+    return roots, roots_info
 
-def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  **kwargs):
-    """ Computes the rightmost root of compressed DDAE represented via E, A, hA
-    in {z \in C: Re(z) >= r && Im(z) >= 0}.
+def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float=0.0,  **kwargs) -> tuple[complex, RightmostRootInfo]:
+    """ Find the rightmost root (RMR) of DDAE represented via E, A, hA
+
+    TDS is assumed to be defined via E, A, hA as
+
+        E dxdt(t) = SUM A[k] x(t-hA[k])
 
     Args:
-        E (array): TODO
-        A (array): TODO
-        hA (array): TODO
-        r (float): TODO
-        **kwargs: TODO
-    
+        E (array): 2d array defining LHS of DDAE
+        A (array): 3d array defining the Ai matrices on the RHS
+        hA (array): 1d array defining delays associated with A
+        r (float): definition of complex half-plane, also discretization is
+            performed around this point, optional, default 0.0
+        **kwargs:
+            residual_max (float): roots with norm=||M(s) @ v|| bellow this
+                threshold will be considered as correct solutions, default 1e-6
+
     Returns:
-        rightmost_root (complex)
-        --- do not forget to also return M, dM, u, v -> gradient computation
+        tuple containing:
+        
+            - root_star (complex): rightmost root
+            - root_info (RightmostRootInfo): RMR metadata containing:
+                M (array): characteristic matrix evaluated at `root_star`
+                DM (array): derivative of characteristic matrix evaluated at
+                    `root_star`
+                u (array): left eigenvector associated with `root_star`
+                v (array): right eigenvector associated with `root_star`
+                found (bool): flag if RMR succesfully found
+                max_size_evp_enforced (bool): flag if maximum size of EVP was
+                    enforced
     """
-
-    # TODO unpack kwargs
-
-    # TODO assert
-    # TODO assert all real values in E, A, hA
+    # unpack kwargs
+    residual_max = kwargs.get("residual_max", 1e-6)
+    
+    # TODO perform checks? This is internal functions -> just list them as
+    # comments and implement if necessary
+    # 1. non-empty E, A, hA
+    # 2. real E, A, hA
+    # 3. dimensions E.shape[:2] == A.shape[:2] and A.shape[2] == hA.shape[0]
+    # 4. residual_max is positive float
 
     # find all roots via discretization
     cr, cr_info = roots_ddae(E, A, hA, r)
@@ -281,21 +366,23 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
 
     # CASE 1: roots cr are empty
     if cr.size == 0:
+        logger.debug(f"No roots in RHP Re(z) >= {r}, using eigenvalues obtained via discretization")
         # try to use eigenvalues of discretized DDAE
         u = np.sort_complex(cr_info.discretization_eigenvalues) # in ascending order
 
         # check whether the approximations obtained using spectraldiscretisation
         # make the characteristic matrix sufficiently close to being singular.
-        for r in u[::-1]: # iterate from r with largest Re(r)
+        for root in u[::-1]: # iterate from root with largest Re(root)
             # evaluate characteristic matrix
-            M = r*E + np.sum(A * np.exp(-hA*r), axis=2)
+            M = root*E + np.sum(A * np.exp(-hA*root), axis=2)
 
             # perform SVD and check what is the smallest eigen value
             U, s, Vh = linalg.svd(M, compute_uv=True) # sorted in non-increasing order
             v0 = np.conj(Vh[-1]) # eigen vector associated to smallest eigenvalue
             residual = linalg.norm(M @ v0[:, np.newaxis], ord=None, axis=None) # 2-norm of np.ravel(.) is returned
-
-            if residual <= 1e-6: # i.e. eigenvalue is sufficiently close to 0.0, TODO kwargs
+            
+            # if residual ||M(s) @ v0|| sufficiently close to 0 -> RMR found
+            if residual <= residual_max:
                 root_star = s[-1]
                 root_star_found = True
                 break
@@ -304,12 +391,14 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
             u_smaller_r = u[np.real(u) < r]
             if u_smaller_r.size == 0: # worst case scenario, rutrn fallback value
                 root_star = r + 0j
+                logger.warning(f"No RMR found, returning {root_star=} (=r) as a fallback value")
             else: # take the rightmost root to the left of r
                 root_star = u_smaller_r[-1] # already sorted, take last element
 
     # CASE 2: the rightmost point in cr lies significantly to the left of
     # the rightmost point eigen value from discretization
     elif np.max(np.real(cr)) <= lower_bound(np.max(np.real(cr_info.discretization_eigenvalues)), 0.05, 1.e-3):
+        logger.debug(f"RMR lies significantly to the left od RMR of discretization EVP solution.")
         cr_discretization = cr_info.discretization_eigenvalues
         imax = np.argmax(np.real(cr_discretization))
         root_star1 = cr_discretization[imax]
@@ -320,16 +409,17 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float,  *
 
         # check whether the approximations obtained using spectraldiscretisation
         # make the characteristic matrix sufficiently close to being singular.
-        for r in u[::-1]: # iterate from r with largest Re(r)
+        for root in u[::-1]: # iterate from root with largest Re(root)
             # evaluate characteristic matrix
-            M = r*E + np.sum(A * np.exp(-hA*r), axis=2)
+            M = root*E + np.sum(A * np.exp(-hA*root), axis=2)
 
             # perform SVD and check what is the smallest eigen value
             U, s, Vh = linalg.svd(M, compute_uv=True) # sorted in non-increasing order
             v0 = np.conj(Vh[-1]) # eigen vector associated to smallest eigenvalue
             residual = linalg.norm(M @ v0[:, np.newaxis], ord=None, axis=None) # 2-norm of np.ravel(.) is returned
 
-            if residual <= 1e-6: # i.e. eigenvalue is sufficiently close to 0.0, TODO kwargs
+            # if residual ||M(s) @ v0|| sufficiently close to 0 -> RMR found
+            if residual <= residual_max:
                 root_star = s[-1]
                 root_star_found = True
                 break
