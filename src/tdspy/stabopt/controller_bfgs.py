@@ -12,7 +12,7 @@ from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootIn
 
 logger = logging.getLogger("__name__")
 
-def func(x: npt.NDArray, E, P, hP, hK, Kshape, Kmask, B, C):
+def func(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray):
         """
         
         The system is defined as
@@ -39,12 +39,16 @@ def func(x: npt.NDArray, E, P, hP, hK, Kshape, Kmask, B, C):
                 - jac (array): jacobian        
         """
 
-        
-        K = x.reshape(Kshape) # K = Vec(x) -> inverse operation
+        # K = Vec(x) -> inverse operation
+        K = x.reshape((B.shape[1], C.shape[0], hK.shape[0]))
         A = np.concatenate(
             [
                 P,
-                np.stack([B @ K[:,:,i] @ C for i in range(K.shape[2])], axis=2)
+                np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C
+                    'ijk,jn->ink',
+                    np.einsum('ni,ijk->njk', B, K),
+                    C,
+                )
             ],
             axis=2,
         )
@@ -71,36 +75,12 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
     """
 
     Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
-    Kshape = K0.shape
-
-    def func(x: npt.NDArray):
-        
-        K = x.reshape(Kshape)
-        A = np.concatenate(
-            [
-                P,
-                np.stack([B @ K[:,:,i] @ C for i in range(K.shape[2])], axis=2)
-            ],
-            axis=2,
-        )
-        hA = np.r_[hP, hK]
-        rmr, rmr_info = rightmost_root(E, A, hA, r=0)
-
-        conj_u_T = np.conj(rmr_info.u[np.newaxis,:])
-        v = rmr_info.v[:,np.newaxis]
-        dM = E + np.sum(A * hA * np.exp(-rmr*hA), axis=2)
-        coef = conj_u_T @ dM @ v
-
-        matrix = (conj_u_T @ B).T @ (C @ v).T
-        gradient = np.real(1/coef * (Kmask * hK) * matrix[:,:,np.newaxis])
-        
-        return np.real(rmr), gradient.reshape(-1)
-    
     sol = optimize.minimize(
         func,
         K0.reshape(-1),
+        args=(E, P, hP, hK, Kmask, B, C),
         jac=True,
-        method="bfgs",
+        method="BFGS",
         options=kwargs.get("options", {}),
     )
     return sol
