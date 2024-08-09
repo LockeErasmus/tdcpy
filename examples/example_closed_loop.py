@@ -278,7 +278,7 @@ if __name__ == "__main__":
     cr_cl, _ = tdspy.roots(cl, r=-10)
 
     # zeros closed loop
-    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=-1, output_index=-1)
+    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=0, output_index=0)
 
     import tdspy.plot
     import matplotlib.pyplot as plt
