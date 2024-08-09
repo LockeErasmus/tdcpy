@@ -7,6 +7,8 @@ import numpy as np
 import tdspy as tds
 import tdspy.controller
 import tdspy.plot
+from tdspy.common.composition import concatenate_2x2_by_delays
+from tdspy.common.compress import compress_matrices_delays
 
  # Masses
 
@@ -244,7 +246,10 @@ def generate_controller_2() -> tdspy.DDAE:
 
     ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
-    return ddae
+    _, K, hK = concatenate_2x2_by_delays(np.eye(1), A, B, C, D, hA, hB, hC, hD)
+    K, hK = compress_matrices_delays(K, hK)
+
+    return ddae, K, hK
 
     # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
     # return controller
@@ -261,37 +266,64 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    rdde = generate_system()
+    rdde = generate_system() # system we want to stabilitze
 
-    zeros, zeros_info = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
-    
-    # cont = generate_controller()
-    # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
+    # create closed loop representation
+    controller, K, hK = generate_controller_2()
+    cl = tdspy.ClosedLoop(rdde, 1, [0,1,4,5], [0], K0=K, hK=np.array([0.0, 0.05, 0.10, 0.15, 0.20]))
 
-    # cont = generate_controller1()
-    # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
+    # roots of original system, controller and closed loop
+    cr_system, _ = tdspy.roots(cl.system, r=-10)
+    cr_controller, _ = tdspy.roots(cl.controller, r=-30)
+    cr_cl, _ = tdspy.roots(cl, r=-10)
 
-    cont = generate_controller_2()
-    system = tdspy.controller.interconnect(rdde, cont, [0,1,4,5], [0,1,2,3], [0], [0])
-
-
-    cr, cr_info = tdspy.roots(rdde, r=-10)
-    print(f"rightmost root of the ol is {np.max(np.real(cr))}")
-
-    system.is_essentially_retarded 
-    cr, cr_info = tdspy.roots(system, r=-10)
-    print(f"rightmost root of the cl is {np.max(np.real(cr))}")
-    print(cr)
-
-    zr, zr_info = tdspy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
-    print(zr)
-
+    # zeros closed loop
+    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=-1, output_index=-1)
 
     import tdspy.plot
     import matplotlib.pyplot as plt
 
-
     # tdspy.plot.eigen_plot(cr)
     # plt.show()
-    tdspy.plot.eigen_plot(zr)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
+    
+    ax1.set_title("system")
+    tdspy.plot.eigen_plot(cr_system, ax=ax1)
+
+    ax2.set_title("closed loop")
+    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+
+    ax3.set_title("controller")
+    tdspy.plot.eigen_plot(cr_controller, ax=ax3)
+
+    ax4.set_title("closed loop zeros")
+    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    
     plt.show()
+
+
+    # zeros, zeros_info = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
+    
+    # # cont = generate_controller()
+    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
+
+    # # cont = generate_controller1()
+    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
+
+    # cont = generate_controller_2()
+    # system = tdspy.controller.interconnect(rdde, cont, [0,1,4,5], [0,1,2,3], [0], [0])
+
+
+    # cr, cr_info = tdspy.roots(rdde, r=-10)
+    # print(f"rightmost root of the ol is {np.max(np.real(cr))}")
+
+    # system.is_essentially_retarded 
+    # cr, cr_info = tdspy.roots(system, r=-10)
+    # print(f"rightmost root of the cl is {np.max(np.real(cr))}")
+    # print(cr)
+
+    # zr, zr_info = tdspy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
+    # print(zr)
+
+
+    

@@ -299,7 +299,8 @@ if __name__ == "__main__":
 
     print_ddae(cl)
 
-    np.random.seed(10)
+    # np.random.seed(10)
+    
     E = cl.E
     P = cl._A
     hP = cl._hA
@@ -314,17 +315,17 @@ if __name__ == "__main__":
     from tdspy.stabopt.controller_bfgs import design_bfgs, func
 
     K = np.copy(K0)
-    for i in range(10):
+    for i in range(50):
         alpha, jac = func(K.reshape(-1), E, P, hP, hK, Kshape, Kmask, B, C)
         #print(jac)
         #print("---------")
-        print(alpha)
-        K = K - 0.5*jac.reshape(K0.shape)
+        print(f"STEP {i} {alpha}")
+        K = K - 0.1*jac.reshape(K0.shape)
 
     #print(np.allclose(K0 - K0.reshape(-1).reshape(K0.shape), 0.0))
     
-    #sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"maxiter": 10, "disp": True, "gtol": 1e-5})
-    #print(sol)
+    sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"maxiter": 10, "disp": True, "gtol": 1e-5})
+    print(sol)
 
     A0 = np.concatenate(
         [

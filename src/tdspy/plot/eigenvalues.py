@@ -26,8 +26,6 @@ def eigen_plot(roots1, roots0=None, ax=None, **kwargs):
     if ax is None:
         ax_was_none = True
         fig, ax = plt.subplots()
-    else:
-        raise NotImplementedError("...")
     
     ax.axhline(0.0, linestyle="-.", linewidth=1, color="k")
     ax.axvline(0.0, linestyle="-.", linewidth=1, color="k")

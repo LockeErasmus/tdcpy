@@ -10,12 +10,37 @@ from scipy import linalg, optimize
 
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 
-
 logger = logging.getLogger("__name__")
 
 def func(x: npt.NDArray, E, P, hP, hK, Kshape, Kmask, B, C):
+        """
         
-        K = x.reshape(Kshape)
+        The system is defined as
+
+        E dxdt(t) = SUM P[i] x(t-hP[i]) + SUM B * K[j] * C x(t-hK[j])
+
+        where K = x.reshape(Kshape)
+
+        Args: TODO
+            x
+            E
+            P
+            hP
+            hK
+            Kshape
+            Kmask
+            B
+            C
+
+        Returns:
+            tuple containing:
+
+                - alpha (float): spectral abscissa
+                - jac (array): jacobian        
+        """
+
+        
+        K = x.reshape(Kshape) # K = Vec(x) -> inverse operation
         A = np.concatenate(
             [
                 P,
@@ -26,15 +51,15 @@ def func(x: npt.NDArray, E, P, hP, hK, Kshape, Kmask, B, C):
         hA = np.r_[hP, hK]
         rmr, rmr_info = rightmost_root(E, A, hA, r=0)
 
-        conj_u_T = np.conj(rmr_info.u[np.newaxis,:])
-        v = rmr_info.v[:,np.newaxis]
-        dM = E + np.sum(A * hA * np.exp(-rmr*hA), axis=2)
-        coef = conj_u_T @ dM @ v
+        conj_u_T = np.conj(rmr_info.u[np.newaxis,:]) # u* with shape=(1,n)
+        v = rmr_info.v[:,np.newaxis] # v with shape=(n,1)
+        dM = E + np.sum(A * hA * np.exp(-rmr*hA), axis=2) # dM(s)/ds evaluated at s=rmr
+        den = conj_u_T @ dM @ v
 
         matrix = (conj_u_T @ B).T @ (C @ v).T
-        gradient = np.real(1/coef * (Kmask * hK) * matrix[:,:,np.newaxis])
+        gradient = np.real(1/den * (Kmask * hK) * matrix[:,:,np.newaxis])
         
-        return np.real(rmr), gradient.reshape(Kshape)
+        return np.real(rmr), gradient.reshape(-1)
 
 
 def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):

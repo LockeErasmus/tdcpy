@@ -17,7 +17,7 @@ from .stability.newton import newton_correction
 from .common.discretization import discretize
 from .gamma import gamma
 
-
+from .common.compress import compress_matrices_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
 logger = logging.getLogger(__name__)
@@ -78,9 +78,6 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
     if isinstance(tds, NDDE):
         tds = tds.to_ddae()
 
-	# compress tds (this also sorts)
-    tds = tds.compress()
-
     # unpack TDS object
     n = tds.n
     E = tds.E
@@ -94,7 +91,10 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
     else:
         hA = tds.hA
         A = tds.A
-
+    
+    # compress representation (this also sorts by delays ascending order)
+    A, hA = compress_matrices_delays(A, hA)
+    
     # find all roots via discretization
     cr, cr_info = roots_ddae(E, A, hA, r, **kwargs)
 

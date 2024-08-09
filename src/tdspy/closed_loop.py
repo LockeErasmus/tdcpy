@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 
 class ClosedLoop(TDSBase):
-    """ Class representing system -> controller connection
+    """ Class representing system - controller interconnection
 
     """
-    def __init__(self, system, order: int, y_indices: list=None, u_indices: list=None, K0: npt.NDArray=None, hK: npt.NDArray = None, **kwargs) -> None:
+    def __init__(self, system: DDAE, order: int, y_indices: list=None, u_indices: list=None, K0: npt.NDArray=None, hK: npt.NDArray = None, **kwargs) -> None:
         """ TODO
 
 
@@ -38,7 +38,6 @@ class ClosedLoop(TDSBase):
         assert isinstance(order, int)
         assert order >= 0
         
-
         self._system = system
         self._order = order # order of controller
         if y_indices is None:
@@ -226,7 +225,6 @@ class ClosedLoop(TDSBase):
         """ number of output delays """
         return self.hD.shape[0]
     
-    
     def get_delay_difference_equation(self):
         raise NotImplementedError(".")
     
@@ -262,6 +260,27 @@ class ClosedLoop(TDSBase):
         return [i for i in range(self.system.C.shape[0]) if i not in self.y_indices]
 
     # CONTROLER SPECIFIC
+    @property
+    def controller(self) -> DDAE:
+        """ Returns Controller as DDAE """
+
+        K = self.K
+        hK = self.hK
+        nc = self.controller_order
+        
+        ddae = DDAE(
+            E=np.eye(self.controller_order),
+            A=K[:nc,:nc,:],
+            hA=hK,
+            B=K[:nc,nc:,:],
+            hB=hK,
+            C=K[nc:,:nc,:],
+            hC=hK,
+            D=K[nc:,nc:,:],
+            hD=hK,
+        )
+        return ddae
+
     @property
     def n_controller_inputs(self) -> int:
         return len(self._y_indices)

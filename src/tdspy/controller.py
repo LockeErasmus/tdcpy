@@ -679,7 +679,7 @@ def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
     compress: bool = kwargs.get("compress", True)
     raise NotImplementedError("Not implementer")
 
-    logger.debug(f"Plant: num inputs = {plant.n_iputs}, num outputs = {plant.n_outputs}")
-    logger.debug(f"Controller: num inputs = {controller.n_iputs}, num outputs = {controller.n_outputs}")
+    logger.debug(f"Plant: num inputs = {plant.n_inputs}, num outputs = {plant.n_outputs}")
+    logger.debug(f"Controller: num inputs = {controller.n_inputs}, num outputs = {controller.n_outputs}")
 
 
