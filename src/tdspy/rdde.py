@@ -284,24 +284,62 @@ class RDDE(TDSBase):
             RDDE: compressed representation
             None: if inplace=True (current object is updated)
         """
-        unique_hA = np.unique(self.hA) # sorted in ascending order
-        newA = np.zeros(shape=(self.n, self.n, unique_hA.shape[0]))
+        unique_hA, unique_hB = np.unique(self.hA), np.unique(self.hB) # sorted in ascending order
+        unique_hC, unique_hD = np.unique(self.hC), np.unique(self.hD) # sorted in ascending order
+        
+        newA, newB = np.zeros(shape=(self.n, self.n, unique_hA.shape[0])), np.zeros(shape=(self.B.shape[0], self.B.shape[1], unique_hB.shape[0]))
+        newC, newD = np.zeros(shape=(self.C.shape[0], self.C.shape[1], unique_hC.shape[0])), np.zeros(shape=(self.D.shape[0], self.D.shape[1], unique_hD.shape[0]))
+
         for i in range(unique_hA.shape[0]):
             mask = self.hA == unique_hA[i] # create mask
             newA[:,:,i] = np.sum(self.A[:,:,mask], axis=2)
-        
+
         # perform elimination of newAi close to 0.0
         mask = np.all(np.isclose(newA, 0.0, rtol=rtol, atol=atol), axis=(0,1))
         A = newA[:,:,~mask]
         hA = unique_hA[~mask]
 
+
         # TODO also solve input matrices, output matrices
-        
+        for i in range(unique_hB.shape[0]):
+            mask = self.hB == unique_hB[i] # create mask
+            newB[:,:,i] = np.sum(self.B[:,:,mask], axis=2)
+
+        # perform elimination of newBi close to 0.0
+        mask = np.all(np.isclose(newB, 0.0, rtol=rtol, atol=atol), axis=(0,1))
+        B = newB[:,:,~mask]
+        hB = unique_hB[~mask]
+
+        for i in range(unique_hC.shape[0]):
+            mask = self.hC == unique_hC[i] # create mask
+            newC[:,:,i] = np.sum(self.C[:,:,mask], axis=2)
+
+        # perform elimination of newCi close to 0.0
+        mask = np.all(np.isclose(newC, 0.0, rtol=rtol, atol=atol), axis=(0,1))
+        C = newC[:,:,~mask]
+        hC = unique_hC[~mask]
+
+        for i in range(unique_hD.shape[0]):
+            mask = self.hD == unique_hD[i] # create mask
+            newD[:,:,i] = np.sum(self.D[:,:,mask], axis=2)
+
+        # perform elimination of newDi close to 0.0
+        mask = np.all(np.isclose(newD, 0.0, rtol=rtol, atol=atol), axis=(0,1))
+        D = newD[:,:,~mask]
+        hD = unique_hD[~mask]
+
+
         if inplace:
             self._A = A
             self._hA = hA
+            self._B = B
+            self._hB = hB
+            self._C = C
+            self._hC = hC
+            self._D = D
+            self._hD = hD
         else:
-            return RDDE(A=A, hA=hA)
+            return RDDE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     
     def get_delay_difference_equation(self) -> None:
         """ RDDE has no associated delay difference equation """

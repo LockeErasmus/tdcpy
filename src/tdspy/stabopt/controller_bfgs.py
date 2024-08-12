@@ -86,8 +86,9 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
     return sol
 
 
+# def gradient_test(func: function, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray):
+#     """ function to test the numerical accuracy of the computed gradient """      
 
-
-
-
-
+#     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
+#     Kshape = K0.shape
+#     x = np.random.rand(*Kmask.size)
