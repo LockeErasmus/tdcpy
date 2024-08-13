@@ -25,6 +25,7 @@ from .bounds import lower_bound, upper_bound
 from .gamma_r import gamma_normalized_diff, gamma_diff
 from .discretization_heuristic import compute_n_rhp, compute_n_rect
 from .newton import newton_correction
+from tdspy.common.compress import compress_matrices_delays
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,8 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
     if hA[0] > 0:
         hA = np.r_[0, hA] # prepend 0.0 delay
         A = np.concatenate([np.zeros(shape=(n,n,1), dtype=E.dtype), A], axis=2)
+
+    A, hA = compress_matrices_delays(A, hA)
 
     # CASE 1: ODE or DAE (no delays)
     if hA.shape[0] == 1:

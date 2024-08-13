@@ -181,26 +181,26 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
     n_grid = kwargs.get("n_grid", 20) # TODO assert ge 0
     mA = len(tau) # number of delays
 
-    is_commmensurate = False
+    is_commensurate = False
     if basic_delay is not None:
         # check that delays are indeed commensurate
         n_k = tau / basic_delay
         if np.any(np.abs(n_k - np.round(n_k)) >= 1e-10):
             raise ValueError(f"The provided delays are not commensurate with {basic_delay=}")
         n_k = n_k.astype(dtype=int)
-        is_commmensurate = True
+        is_commensurate = True
     elif mA > 4:
         logger.debug(f"More than three delays, delays will be approximated by commensurate delays with basic_delay=1/20")
         NN = 20
         n_k = np.round(tau*NN).astype(dtype=int)
-        is_commmensurate = True
+        is_commensurate = True
     else:
         pass # TODO maybe some log message
 
     #h=np.pi / n_grid # step size
     factor = 1.05*np.sin(np.pi/n_grid)
 
-    if is_commmensurate:
+    if is_commensurate:
         gk = commensurate_gk(E, B, C, n_k, grid_points=n_grid)
     else:
         # cases for 2, 3, 4 delays
@@ -227,7 +227,7 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
             N1 = np.max(N_gk)
 
         # matlab code - line 157 to 200
-        if is_commmensurate:
+        if is_commensurate:
             # commensurate delays
             gk = commensurate_gk2(E, B, C, tau, n_k, si, grid_points=n_grid)
         else:
