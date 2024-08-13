@@ -61,7 +61,7 @@ def func(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: np
         den = conj_u_T @ dM @ v
 
         matrix = (conj_u_T @ B).T @ (C @ v).T
-        gradient = np.real(1/den * (Kmask * hK) * matrix[:,:,np.newaxis])
+        gradient = np.real(1/den * (Kmask * hK) * matrix[:,:,np.newaxis])           # there's a bug here. 
         
         return np.real(rmr), gradient.reshape(-1)
 
@@ -86,9 +86,49 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
     return sol
 
 
-# def gradient_test(func: function, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray):
-#     """ function to test the numerical accuracy of the computed gradient """      
+def gradient_test(func, x, h=1e-4, tolerance = 1e-6, **kwargs):
+    """ function to test the numerical accuracy of the computed gradient using central differences
+    The method uses central differences for testing the numerical gradient.
+    
+    Args:
+        func:   cost function
+        h:      step size
+        E, P, hP, hK, Kmask, B, C:  arguments
+    """      
 
-#     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
-#     Kshape = K0.shape
-#     x = np.random.rand(*Kmask.size)
+    E = kwargs.get("E",np.eye(3))      
+    P = kwargs.get("P",np.random.randint(10,size=(3,3,1)))
+    hP = kwargs.get("hP",0.)
+    hK = kwargs.get("hK",0.)
+    Kmask = kwargs.get("Kmask",np.ones(shape=(1,1,1)))
+    B = kwargs.get("B",np.array([[1,0,0]]).T)
+    C = kwargs.get("C",np.array([[1,0,0]]))
+
+    
+    nvar = x.size
+
+    _, g_analytical = func(x, E, P, hP, hK, Kmask, B, C)
+    
+    g_numerical = np.zeros_like(x)   # 
+
+    for i in range(0,nvar):
+        x_forward = np.copy(x)
+        x_backward = np.copy(x)
+
+        x_forward[i] += h
+        x_backward[i] -= h
+
+        f_forward, _ = func(x_forward,E, P, hP, hK, Kmask, B, C)
+        f_backward, _ = func(x_backward,E, P, hP, hK, Kmask, B, C)
+
+        g_numerical[i] = (f_forward - f_backward)/(2*h)
+        
+    diff = np.linalg.norm(g_analytical - g_numerical)
+
+    if diff < tolerance:
+         print("Gradient test passed!")
+
+    else:
+         print(f"Gradient test failed. Difference: {diff}")
+         
+    return g_analytical, g_numerical
