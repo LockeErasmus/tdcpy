@@ -63,7 +63,7 @@ def func(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: np
         den = conj_u_T @ dM @ v
 
         matrix = (conj_u_T @ B).T @ (C @ v).T
-        gradient = np.real(1/den * (Kmask * (hK + (hK==0.))) * matrix[:,:,np.newaxis])
+        gradient = np.real(1/den * (Kmask * np.exp(-rmr*hK)) * matrix[:,:,np.newaxis])
         
         return np.real(rmr), gradient.reshape(-1)
 
