@@ -9,6 +9,7 @@ import numpy.typing as npt
 from scipy import linalg, optimize
 
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+from tdspy.common.compress import compress_matrices_delays
 
 logger = logging.getLogger("__name__")
 
@@ -53,6 +54,7 @@ def func(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: np
             axis=2,
         )
         hA = np.r_[hP, hK]
+        A, hA = compress_matrices_delays(A, hA)
         rmr, rmr_info = rightmost_root(E, A, hA, r=0)
 
         conj_u_T = np.conj(rmr_info.u[np.newaxis,:]) # u* with shape=(1,n)
@@ -61,7 +63,7 @@ def func(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: np
         den = conj_u_T @ dM @ v
 
         matrix = (conj_u_T @ B).T @ (C @ v).T
-        gradient = np.real(1/den * (Kmask * hK) * matrix[:,:,np.newaxis])           # there's a bug here. 
+        gradient = np.real(1/den * (Kmask * (hK + (hK==0.))) * matrix[:,:,np.newaxis])
         
         return np.real(rmr), gradient.reshape(-1)
 
