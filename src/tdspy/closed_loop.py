@@ -164,7 +164,11 @@ class ClosedLoop(TDSBase):
         A = np.concatenate(
             [
                 self._A,
-                np.stack([self.BB @ self.K[:,:,i] @ self.CC for i in range(self.K.shape[2])], axis=2)
+                np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C
+                    'ijk,jn->ink',
+                    np.einsum('ni,ijk->njk', self.BB, self.K),
+                    self.CC,
+                ),
             ],
             axis=2,
         )

@@ -238,7 +238,43 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    
+    # create closed loop representation
     rdde = generate_system()
+    cont = generate_controller()
+    print_ddae(cont)
+    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+    cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
+
+    # roots of original system, controller and closed loop
+    cr_system, _ = tdspy.roots(cl.system, r=-10)
+    cr_cl, _ = tdspy.roots(cl, r=-10)
+
+    # zeros closed loop
+    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=0, output_index=0)
+
+    import tdspy.plot
+    import matplotlib.pyplot as plt
+
+    # tdspy.plot.eigen_plot(cr)
+    # plt.show()
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
+    
+    ax1.set_title("system")
+    tdspy.plot.eigen_plot(cr_system, ax=ax1)
+
+    ax2.set_title("closed loop")
+    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+
+    ax3.set_title("controller")
+    #tdspy.plot.eigen_plot(cr_controller, ax=ax3)
+
+    ax4.set_title("closed loop zeros")
+    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    
+    plt.show()
+
+
     system_orig, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,2,3,4,5], [0,1])
     
     system, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,2,3,4,5], [0,1])
