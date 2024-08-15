@@ -1,7 +1,7 @@
 """
 Implementation of tds_roots
 """
-from collections import namedtuple
+
 import logging
 
 import numpy as np
@@ -11,18 +11,12 @@ from scipy import linalg
 from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
-from .stability.discretization_heuristic import compute_n_rhp, compute_n_rect
-from .stability.bounds import lower_bound, upper_bound
-from .stability.newton import newton_correction
-from .common.discretization import discretize
-from .gamma import gamma
-
 from .common.compress import compress_matrices_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
 logger = logging.getLogger(__name__)
 
-def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs):
+def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, RootsInfo]:
     """ Computes the characteristic roots of a time-delay system in a given
     right half-plane or rectangular region.
 
