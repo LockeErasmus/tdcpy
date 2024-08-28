@@ -8,8 +8,21 @@ https://gitlab.kuleuven.be/u0011378/tds-control/-/blob/main/tds-control/code/tds
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 import numpy as np
 import numpy.typing as npt
+
+
+def complex_scatter_axplot(roots: npt.NDArray, ax: Axes, *args, **kwargs) -> None:
+    """ Plots non-empty complex numbers, x: Re(z), y: Im(z)
+    
+    Args:
+        roots (array) array of complex numbers to visualize
+        ax (Axes): matplotlib.axes.Axes object to plot to
+        *args: see matplotlib .scatter function
+        *kwargs: see matplotlib .scatter function
+    """
+    ax.scatter(np.real(roots), np.imag(roots), *args, **kwargs)
 
 
 def eigen_plot(roots1, roots0=None, ax=None, **kwargs):
@@ -35,29 +48,32 @@ def eigen_plot(roots1, roots0=None, ax=None, **kwargs):
 
     mask_negative = roots1_real < -tol
     if np.any(mask_negative) > 0:
-        ax.scatter(roots1_real[mask_negative],
-                   roots1_imag[mask_negative],
-                   marker="x",
-                   color="g",
-                   linewidths=0.5,
+        complex_scatter_axplot(
+            roots1[mask_negative],
+            ax=ax,
+            marker="x",
+            color="g",
+            linewidths=0.5,
         )
     
     mask_positive = roots1_real > tol
     if np.any(mask_positive) > 0:
-        ax.scatter(roots1_real[mask_positive],
-                   roots1_imag[mask_positive],
-                   marker="x",
-                   color="r",
-                   linewidths=0.5,
+        complex_scatter_axplot(
+            roots1[mask_positive],
+            ax=ax,
+            marker="x",
+            color="r",
+            linewidths=0.5,
         )
 
     mask_zero = ~(mask_positive | mask_negative)
     if np.any(mask_zero) > 0:
-        ax.scatter(roots1_real[mask_zero],
-                   roots1_imag[mask_zero],
-                   marker="x",
-                   color="b",
-                   linewidths=0.5,
+        complex_scatter_axplot(
+            roots1[mask_zero],
+            ax=ax,
+            marker="x",
+            color="b",
+            linewidths=0.5,
         )
     
     ax.set_xlabel(r"$\Re (\lambda)$")

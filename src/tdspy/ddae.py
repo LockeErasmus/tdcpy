@@ -115,7 +115,7 @@ class DDAE(TDSBase):
         return self.A.shape[1]
     
     @property
-    def n_iputs(self) -> int:
+    def n_inputs(self) -> int:
         """ number of inputs """
         if self.B is None:
             return 0

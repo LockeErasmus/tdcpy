@@ -299,7 +299,7 @@ if __name__ == "__main__":
     E = cl.E
     P = cl._A
     hP = cl._hA
-    K0 = np.random.rand(*cl.K.shape)
+    K0 = 5*np.random.rand(*cl.K.shape)
     hK = cl.hK
     B = cl.BB
     C = cl.CC
@@ -307,7 +307,8 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+    from tdspy.stabopt.controller_bfgs import design_bfgs
+    from tdspy.stabopt.gradients import func_cd, func_sa, gradient_test
 
     K = np.copy(K0)
     # for i in range(50):
@@ -319,9 +320,7 @@ if __name__ == "__main__":
 
     #print(np.allclose(K0 - K0.reshape(-1).reshape(K0.shape), 0.0))
     
-    nvar = K.size
-    h = 0.0001          # step size
-    g_numerical, g_analytical = gradient_test(func, x=np.random.rand(nvar), h=0.001, E=E, P=P, hP=hP, hK=hK, Kmask=Kmask, B=B, C=C)
+    g_numerical, g_analytical = gradient_test(func_sa, x=np.random.rand(K0.size), args=(E, P, hP, hK, Kmask, B, C))
 
     sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
     K = sol.x.reshape(K.shape)
