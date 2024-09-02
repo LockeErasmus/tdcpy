@@ -73,7 +73,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     norm_null = max(norm_uE, norm_vE)
 
     # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape
-    D = np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C
+    D = np.einsum(# more efficient way to obtain uE.T @ A[:,:,i] @ vE
         'ijk,jn->ink',
         np.einsum('ni,ijk->njk', uE.T, A),
         vE,
