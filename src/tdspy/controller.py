@@ -22,52 +22,6 @@ from .common.closed_loop import controller_reprezentation
 
 logger = logging.getLogger(__name__)
 
-class ClosedLoop:
-    """ Controller representation """
-
-    def __init__(self, system, system2, ):
-        
-        self._n = 1
-        self._n_inputs = 6
-        self._n_outputs = 1
-        self._hA = np.array([0.0])
-
-        self._system = system
-    
-    @property
-    def B(self) -> npt.NDArray:
-        ...
-    
-    @property
-    def C(self) -> npt.NDArray:
-        ...
-    
-    @property
-    def system(self) -> DDAE:
-        return self._system
-    
-    def todo1(self, K, deep_copy=True) -> DDAE:
-        """ Returns closed loop with different K """
-
-
-
-
-
-    @property
-    def n(self) -> int:
-        """ number of variables """
-        return self._n
-    
-    @property
-    def n_iputs(self) -> int:
-        """ number of inputs """
-        return self._n_inputs
-
-    @property
-    def n_outputs(self) -> int:
-        """ number of outputs """
-        return self._n_outputs
-
 
 def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list = None,
                  y2_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
@@ -654,32 +608,3 @@ def interconnect3(system: DDAE, y_indices: list=None, u_indices:list = None,
     D, hD = compress_matrices_delays(D, hD)
 
     return DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD), BB, CC
-
-
-
-# def close_loop_reprezentation(E1, A1, B1, C1, D1, hA1, hB1, hC1, hD1):
-
-def create_closed_loop(plant: DDAE | RDDE | NDDE, controller: RDDE, **kwargs):
-    """ Creates new TDS object representing closed-loop interconnection of the
-    provided plant and controller
-    
-    Args:
-        plant
-        controller
-
-        **kwargs
-
-    Returns
-        tuple containing:
-            - closed_loop
-            - closed_loop_metadata
-
-    """
-
-    compress: bool = kwargs.get("compress", True)
-    raise NotImplementedError("Not implementer")
-
-    logger.debug(f"Plant: num inputs = {plant.n_inputs}, num outputs = {plant.n_outputs}")
-    logger.debug(f"Controller: num inputs = {controller.n_inputs}, num outputs = {controller.n_outputs}")
-
-

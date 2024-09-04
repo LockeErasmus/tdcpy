@@ -72,20 +72,18 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     norm_vE = linalg.norm(vE, ord=1, axis=None)
     norm_null = max(norm_uE, norm_vE)
 
-    # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
-    # D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
-    # TODO this operation should be done without using list and np.stack()
-    D = []
-    for i in range(A.shape[2]):
-        D.append(uE.T @ A[:,:,i] @ vE)
-    D = np.stack(D, axis=2)
+    # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape
+    D = np.einsum(# more efficient way to obtain uE.T @ A[:,:,i] @ vE
+        'ijk,jn->ink',
+        np.einsum('ni,ijk->njk', uE.T, A),
+        vE,
+    )
     
     # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
     mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
     D = D[:,:,mask]
     hD = hA[mask]
 
-    # TODO, what if empty or 1 delay
     return D, hD
 
 

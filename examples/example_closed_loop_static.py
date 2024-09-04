@@ -168,6 +168,23 @@ def generate_controller() -> tds.DDAE:
 
     return controller
 
+def generate_controller_delays() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    Dc = [  ]
+    """
+
+    # controller = tdspy.controller.create_static_controller(
+    #     K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
+    # )
+
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[-1.031, 25.11, 0.898, 4.73, -348.19, -7.69],
+                      [ 0.542, -23.02, -.0798, -52.14, 1.88, -15.50]])
+    )
+
+    return controller
+
+
 def generate_controller_2() -> tdspy.DDAE:
     """ generates dynamic controller of first order using output feedback single-input controller
     x'(t)   = Ac x(t) + Bc y(t)
@@ -238,70 +255,51 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    
+    # create closed loop representation
     rdde = generate_system()
-    system_orig, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,2,3,4,5], [0,1])
-    
-    system, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,2,3,4,5], [0,1])
-
     cont = generate_controller()
-
-    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
-    #K = np.random.rand(*K.shape)
-
     print_ddae(cont)
-    print_ddae(tds.DDAE(K, hK, E))
-
-    print_ddae(system)
-
-    print(f"\n\n\n\n")
-    # replace dynamics
-    system._A = np.concatenate([system.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
-    system._hA = np.r_[system.hA, hK]
-    system.compress(inplace=True)
-
-    # cr, cr_info = tds.roots(system,r=-10)
-
-    # evolution = []
-    # for i in range(100):
-    #     system._A = np.concatenate([system_orig.A, np.stack([BB @ K[:,:,i] @ CC for i in range(K.shape[2])], axis=2)], axis=2)
-    #     system._hA = np.r_[system_orig.hA, hK]
-    #     system.compress(inplace=True)
-
-    #     rstar, info = rightmost_root(system.E, system.A, system.hA, r=0)
-    #     evolution.append(rstar)
-
-    #     u = info.u[:, np.newaxis]
-    #     v = info.v[:,np.newaxis]
-
-    #     M = system.eval_char_matrix_derivative(rstar)
-    #     coef = np.conj(u).T @ M @ v
-
-    #     #gradient = np.real(coef * (np.conj(u).T @ BB).T @ (CC @ v).T)
-
-    #     Kmask = np.full_like(K, fill_value=1, dtype=bool)
-    #     matrix = (np.conj(u).T @ BB).T @ (CC @ v).T # (u* B).T (C v).T
-    #     gradient = np.real((Kmask * hK) * matrix[:,:,np.newaxis])
-    #     K = K - gradient
-    
-    # print(np.real(evolution))
-    
-    # print_ddae(tds.DDAE(K, hK, E))
-
-    # import tdspy.plot
-    # import matplotlib.pyplot as plt
-    # plt.plot(evolution, "-o")
-    # plt.show()
-
-    cl = tds.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
-
+    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+    cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
     print_ddae(cl)
+
+
+    # roots of original system, controller and closed loop
+    cr_system, _ = tdspy.roots(cl.system, r=-10)
+    cr_cl, _ = tdspy.roots(cl, r=-30)
+
+    # zeros closed loop
+    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=-1, output_index=-1)
+
+    import tdspy.plot
+    import matplotlib.pyplot as plt
+
+    # tdspy.plot.eigen_plot(cr)
+    # plt.show()
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
+    
+    ax1.set_title("system")
+    tdspy.plot.eigen_plot(cr_system, ax=ax1)
+
+    ax2.set_title("closed loop")
+    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+
+    ax3.set_title("controller")
+    #tdspy.plot.eigen_plot(cr_controller, ax=ax3)
+
+    ax4.set_title("closed loop zeros")
+    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    
+    plt.show()
+
 
     np.random.seed(10)
     
     E = cl.E
     P = cl._A
     hP = cl._hA
-    K0 = np.random.rand(*cl.K.shape)
+    K0 = 5*np.random.rand(*cl.K.shape)
     hK = cl.hK
     B = cl.BB
     C = cl.CC
@@ -309,7 +307,8 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+    from tdspy.stabopt.controller_bfgs import design_bfgs
+    from tdspy.stabopt.gradients import func_cd, func_sa, gradient_test
 
     K = np.copy(K0)
     # for i in range(50):
@@ -321,9 +320,7 @@ if __name__ == "__main__":
 
     #print(np.allclose(K0 - K0.reshape(-1).reshape(K0.shape), 0.0))
     
-    nvar = K.size
-    h = 0.0001          # step size
-    g_numerical, g_analytical = gradient_test(func, x=np.random.rand(nvar), h=0.001, E=E, P=P, hP=hP, hK=hK, Kmask=Kmask, B=B, C=C)
+    g_numerical, g_analytical = gradient_test(func_sa, x=np.random.rand(K0.size), args=(E, P, hP, hK, Kmask, B, C))
 
     sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
     K = sol.x.reshape(K.shape)

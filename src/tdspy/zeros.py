@@ -15,8 +15,8 @@ from .common.composition import concatenate_2x2_by_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
 def zeros(tds: RDDE | NDDE | DDAE, r: list, input_index: int=0, output_index: int=0, **kwargs)->tuple[npt.NDArray, RootsInfo]:
-    """ Computes transmission zeros of a SISO time-delay system
-
+    """ Computes transmission zeros of a time-delay system
+    
     Args:
         tds (TDS): instance of time-delay system, i.e., RDDE, NDDE or DDAE
         r (list): rectangular region defined via 4 coordinates 

@@ -35,30 +35,6 @@ c2 = 1.8500
 c3 = 4.9500
 c4 = 0
 
- # Masses
-
-m0 = 1.1750
-m1 = 0.5050
-m2 = 0.7290
-ma = 0.5200
-
-# Stiffness
-k0 = 1001
-k1 = 749
-k2 = 711
-k3 = 950
-ka = 407
-k4 = 377
-
-# Damping
-ca = 1.8000
-c0 = 4.3500
-c1 = 0.8500
-c2 = 1.8500
-c3 = 4.9500
-c4 = 0
-
-
 def generate_system() -> tds.RDDE:
     """ generates rdde for the system described in the article
     x'(t) = A x(t) + B2 f(t) + B1 u(t-tau)
@@ -141,7 +117,7 @@ def generate_system() -> tds.RDDE:
                     [   a81,   a82,     a83,    a84,    a85,    a86,   a87,     a88        ]])
     A = np.stack([A0], axis=2)
 
-    hA = np.array([0.0])
+    hA = np.array([0.])
 
     B1 =  np.array([[   0,   0,   0,   0,   0,   0,     0,   0   ],
                     [   0,   0,   0,   0,   0,   0,     0,   0   ],

@@ -115,7 +115,7 @@ class DDAE(TDSBase):
         return self.A.shape[1]
     
     @property
-    def n_iputs(self) -> int:
+    def n_inputs(self) -> int:
         """ number of inputs """
         if self.B is None:
             return 0
@@ -328,11 +328,11 @@ class DDAE(TDSBase):
         norm_null = max(norm_uE, norm_vE)
 
         # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
-        # D = np.transpose(np.transpose(np.transpose(uE) @ self.A) @ vE)
-        D = []
-        for i in range(self.A.shape[2]):
-            D.append(uE.T @ self.A[:,:,i] @ vE)
-        D = np.stack(D, axis=2)
+        D = np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C
+            'ijk,jn->ink',
+            np.einsum('ni,ijk->njk', uE.T, self.A),
+            vE,
+        )
         
         # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
         mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
