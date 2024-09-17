@@ -183,8 +183,9 @@ def strong_spectral_abscissa(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> float
     Returns:
         strong_sa (float): spectral abscissa
     """
-
-    raise NotImplementedError(".")
+    sa = spectral_abscissa(tds, r=r, **kwargs)
+    cd, cd_info = strong_spectral_abscissa(tds, r=r, **kwargs) # TODO fix info
+    return max(sa, cd)
 
 
 def sa(*args, **kwargs):

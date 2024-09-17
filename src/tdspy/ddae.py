@@ -15,6 +15,7 @@ import numpy.typing as npt
 from scipy import linalg
 
 from .common.compress import compress_matrices_delays, sort_matrices_delays
+from .common.delay_difference_equation import ddae_to_diff
 from .base import TDSBase
 
 logger = logging.getLogger(__name__)
@@ -227,6 +228,7 @@ class DDAE(TDSBase):
     @property
     def is_compressed(self) -> bool:
         """ Cheks if DDAE is in compressed form (no duplicates in hA) """
+        # TODO - this is not correct as A[:,:,i] can be close to 0 -> not compressed
         if self.mA == len(np.unique(self.hA)):
             return True
         else:
@@ -291,72 +293,11 @@ class DDAE(TDSBase):
         if diff.A.shape[2] == 0 and diff.hA[0] == 0:
             return True
         return False
-        
 
     @property
     def is_essentially_neutral(self):
         """ Checks if DDAE is essentialy netural """
         return not self.is_essentially_retarded
-    
-    def _get_delay_difference_equation(self, uE: npt.NDArray, vE: npt.NDArray,
-                                       normalize=False, tol=1e-14) -> tuple:
-        """ Converts to Delay difference Equation Representation
-
-        For a DDAE, the associated delay difference equation is given by
-            U'*A[0]*V x(t-hA[0]) + ... + U'*A[mA-1]*V x(t-hA[mA-1]) = 0
-        with U and V orthogonal matrices whose columns form a basis for the null
-        space of E.
-
-        Args:
-            uE (array): assumed to be non-zero
-            vE (array): assumed to be non-zero
-            normalize (bool): whether to normalize delay difference equation,
-                i.e. multiply by inv(A[0]), note that D0 and 0 delay term are
-                omitted, optional, default False
-            tol (float): norm tolerance for considering matrix vanish,'
-                default 1e-14
-        
-        Returns:
-            tuple containing
-
-                - D (int): number of discretization points necessary
-                - hD (complex): origin TODO
-        """
-        # calculate .. for both nullspaces, select the bigger one
-        norm_uE = linalg.norm(uE, ord=1, axis=None)
-        norm_vE = linalg.norm(vE, ord=1, axis=None)
-        norm_null = max(norm_uE, norm_vE)
-
-        # calculate Di = uE.T @ Ai @ vE, D.shape == A.shape (see numpy broadcasting)
-        D = np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C
-            'ijk,jn->ink',
-            np.einsum('ni,ijk->njk', uE.T, self.A),
-            vE,
-        )
-        
-        # select only Di =/= 0.0, i.e. Di sufficiently close to 0 are neglected
-        mask = (linalg.norm(D, ord=1, axis=(0,1)) / norm_null) > tol
-        D = D[:,:,mask]
-        hD = self.hA[mask]
-
-        # TODO, what if empty or 1 delay
-
-        # normalize
-        if normalize:
-            hDD = hD[1:] # TODO assume at least 2 delays, i.e. [0, tau1]
-            n, m = D.shape[0], hDD.shape[0]
-            DD = np.zeros(shape=(n, n, m))
-            
-            if m == 1:
-                DD[:,:,0] = linalg.lstsq(D[:,:,0], D[:,:,1])
-            else:
-                P, L, U = linalg.lu(D[:,:,0]) # LU decomposition for having inverse of A0
-                for i in range(1, m+1):
-                    DD[:,:, i-1] = linalg.lstsq(U, linalg.lstsq(L, P @ D[:,:,i])) # Di = inv(A0) @ Ai        
-            
-            return DD, hDD # return normalized
-        else:
-            return D, hD # return not normalized
    
     def get_delay_difference_equation(self, **kwargs) -> 'DDAE':
         """ Converts to Delay-difference Equation 
@@ -367,8 +308,10 @@ class DDAE(TDSBase):
         space of E.
         
         kwargs:
-            tol (float): norm tolerance for considering matrix vanish,'
-                default 1e-14
+            tol: norm tolerance for considering matrix vanish, default 1e-14
+            rcond (float): relative condition number. Singular values s smaller
+                than rcond * max(s) are considered zero in null space
+                construction, default 1e-12
         
         Returns:
             DDAE representing delay difference equation if E is singular
@@ -377,48 +320,48 @@ class DDAE(TDSBase):
         """
         if self.is_logical:
             raise ValueError(f"Can't form delay difference equation from logical DDAE")
-                
-        uE = self.uE # dynamic property -> calc it once and store into mem
-        vE = self.vE # dynamic property -> calc it once and store into mem
+        
+        D, hD = ddae_to_diff(self.E, self.A, self.hA, **kwargs)
 
-        if np.size(uE) == 0:
-            # TODO case where E is non-singular, return EMPTY DDAE
+        if np.size(D) == 0:
+            # E is singular -> empty delay difference equation
             return None
-            # return DDAE(A=np.empty(shape=(0,0,0)), hA=np.empty(shape=(0,)))
-
-        D, hD = self._get_delay_difference_equation(
-            uE,
-            vE,
-            normalize=kwargs.get("normalize", False),
-            tol= kwargs.get("tol", 1e-14),
-        )
-        nE = D.shape[1] # TODO --- what if emtpy
+        
+        nE = D.shape[1] # TODO --- what if D.shape[1] == 0 ? can it happen?
         dtype = self.E.dtype
         diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
                     uE=np.eye(nE, dtype=dtype), vE=np.eye(nE, dtype=dtype))
         return diff
 
     def to_asymptotic_transfer_function(self, **kwargs) -> 'DDAE':
-        raise NotImplementedError("Not implemented yet")
+        """ TODO - implement this function """
+        raise NotImplementedError("Not implemented") 
     
     def sort(self, inplace=False) -> 'DDAE':
-        """ Sorts arrays containing matrices and delays (ascending order) """
-        
-        A, hA = sort_matrices_delays(self.A, self.hA)
+        """ Sorts arrays containing matrices and delays (ascending order)
 
-        if self.B is None or self.hB is None:
-            B, hB = self.B, self.hB
-        else:
+        Args:
+            inplace (bool): wheter to modify existing DDEA or create a new one,
+                default False
+        
+        Returns:
+            DDAE: sorted representation
+            None: if inplace=True (current object is updated)
+        """
+        A, hA = None, None
+        if self.A is not None and self.hA is not None:
+            A, hA = sort_matrices_delays(self.A, self.hA)
+
+        B, hB = None, None
+        if self.B is not None and self.hB is not None:
             B, hB = sort_matrices_delays(self.B, self.hB)
         
-        if self.C is None or self.hC is None:
-            C, hC = self.C, self.hC
-        else:
+        C, hC = None, None
+        if self.C is not None and self.hC is not None:
             C, hC = sort_matrices_delays(self.C, self.hC)
         
-        if self.D is None or self.hD is None:
-            D, hD = self.D, self.hD
-        else:
+        D, hD = None, None
+        if self.D is not None and self.hD is not None:
             D, hD = sort_matrices_delays(self.D, self.hD)
 
         if inplace:
@@ -433,7 +376,7 @@ class DDAE(TDSBase):
         else:
             return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
-    def compress(self, inplace=False, rtol=1e-5, atol=1e-8):
+    def compress(self, inplace=False, rtol=1e-5, atol=1e-8) -> 'DDAE':
         """ Removes delay duplicates, sorts delays into ascending order
         
         Args:
@@ -448,24 +391,33 @@ class DDAE(TDSBase):
             DDAE: compressed representation
             None: if inplace=True (current object is updated)
         """
-        unique_hA = np.unique(self.hA) # sorted in ascending order
-        newA = np.zeros(shape=(self.n, self.n, unique_hA.shape[0]))
-        for i in range(unique_hA.shape[0]):
-            mask = self.hA == unique_hA[i] # create mask
-            newA[:,:,i] = np.sum(self.A[:,:,mask], axis=2)
-        
-        # perform elimination of newAi close to 0.0
-        mask = np.all(np.isclose(newA, 0.0, rtol=rtol, atol=atol), axis=(0,1))
-        A = newA[:,:,~mask]
-        hA = unique_hA[~mask]
+        A, hA = None, None
+        if self.A is not None and self.hA is not None:
+            A, hA = compress_matrices_delays(self.A, self.hA)
 
-        # TODO also solve input matrices, output matrices
+        B, hB = None, None
+        if self.B is not None and self.hB is not None:
+            B, hB = compress_matrices_delays(self.B, self.hB)
         
+        C, hC = None, None
+        if self.C is not None and self.hC is not None:
+            C, hC = compress_matrices_delays(self.C, self.hC)
+        
+        D, hD = None, None
+        if self.D is not None and self.hD is not None:
+            D, hD = compress_matrices_delays(self.D, self.hD)      
+
         if inplace:
             self._A = A
             self._hA = hA
+            self._B = B
+            self._hB = hB
+            self._C = C
+            self._hC = hC
+            self._D = D
+            self._hD = hD
         else:
-            return DDAE(E=self.E, A=A, hA=hA)
+            return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
         
     def eval_char_matrix(self, s: complex) -> npt.NDArray:
         """ Evaluate characteristic matrix at `s`

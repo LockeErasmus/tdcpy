@@ -5,7 +5,11 @@ Set of functions for TDS composition
 import numpy as np
 import numpy.typing as npt
 
-def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, hAA=None):
+def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
+                              C: npt.NDArray, D: npt.NDArray, hA: npt.NDArray,
+                              hB: npt.NDArray, hC: npt.NDArray, hD: npt.NDArray,
+                              EE: npt.NDArray=None, AA: npt.NDArray=None,
+                              hAA: npt.NDArray=None):
     """ Concatenates system into compact form respecting delay vectors
 
     Assumes system is defined as
@@ -40,7 +44,16 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
                          [0, D]
 
     Args:
-        TODO
+        E (array): RHS matrix
+        A (array): left hand side matrices of DDAE, assumed non-empty
+        B (array): 3D array of representing input matrices
+        C (array): 3D array of
+        D (array): left hand side matrices of DDAE, assumed non-empty
+        hA (array): vector of delays associated with array A
+        hB (array): vector of delays associated with array B
+        hC (array): vector of delays associated with array C
+        hD (array): vector of delays associated with array D
+        
     
     Returns:
         tuple containing:
@@ -72,7 +85,7 @@ def concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD, EE=None, AA=None, h
         EE = np.zeros(shape=(nrows, ncols), dtype=E.dtype)
     EE[:E.shape[0], :E.shape[1]] = E
 
-    # AA - RHS array
+    # AA - RHS 3D array
     if AA is None:
         AA = np.zeros(shape=(nrows, ncols, hAA.shape[0]), dtype=A.dtype)
 
