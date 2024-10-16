@@ -41,7 +41,7 @@ A1 = np.array([[3, 3, 3, 3],
                [0, 5, 5, 5]])
 A = np.stack([A0, A1], axis=2)
 hA = np.array([0,1.])
-r = -3.0
+r = -1.5
 ddae = tdspy.DDAE(A=A, hA=hA)
 rdde = tdspy.RDDE(A=A, hA=hA)
 cr, info = tdspy.roots(rdde, r=r)
