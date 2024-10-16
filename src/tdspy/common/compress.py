@@ -126,5 +126,11 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
     sorted_index = np.argsort(hA, kind="stable")
     return A[:,:,sorted_index], hA[sorted_index]
 
-def compress_ddae():
+def compress_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray,
+                  B: npt.NDArray, hB: npt.NDArray,
+                  C: npt.NDArray, hC: npt.NDArray,
+                  D: npt.NDArray, hD: npt.NDArray,
+                  rtol=1e-5, atol=1e-8):
+    """ Compresses DDAE representation
+    """
     raise NotImplementedError(".")

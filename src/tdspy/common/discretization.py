@@ -39,7 +39,7 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         Computing, 32(6), pp. 3278-3300.  
     
     Args:
-        E (array): right hand side matric of DDAE, assumed non-empty
+        E (array): right hand side matrix of DDAE, assumed non-empty
         A (array): left hand side matrices of DDAE, assumed non-empty
         hA (array): vector of delays, assumed non-empty, hA[0] == 0
         discretization (int): degree of discretization > 0
