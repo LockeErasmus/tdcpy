@@ -326,3 +326,9 @@ implementation of the function `tds_roots`. The function computes the characteri
 
 ##### `zeros`
 functionalities for computing the transmission zeros
+
+
+### `Examples`
+
+#### `example01`:
+

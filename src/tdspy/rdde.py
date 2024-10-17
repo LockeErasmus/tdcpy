@@ -239,23 +239,23 @@ class RDDE(TDSBase):
     def sort(self, inplace=False) -> 'RDDE':
         """ Sorts arrays containing matrices and delays (ascending order) """
         
-        A, hA = sort_matrices_delays(self.A, self.hA)
+        A, hA = None, None
+        if self.A is not None and self.hA is not None:
+            A, hA = sort_matrices_delays(self.A, self.hA)
 
-        if self.B is None or self.hB is None:
-            B, hB = self.B, self.hB
-        else:
+        B, hB = None, None
+        if self.B is not None and self.hB is not None:
             B, hB = sort_matrices_delays(self.B, self.hB)
         
-        if self.C is None or self.hC is None:
-            C, hC = self.C, self.hC
-        else:
+        C, hC = None, None
+        if self.C is not None and self.hC is not None:
             C, hC = sort_matrices_delays(self.C, self.hC)
-        
-        if self.D is None or self.hD is None:
-            D, hD = self.D, self.hD
-        else:
+
+        D, hD = None, None
+        if self.D is not None and self.hD is not None:
             D, hD = sort_matrices_delays(self.D, self.hD)
 
+        
         if inplace:
             self._A = A
             self._hA = hA
