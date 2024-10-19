@@ -14,24 +14,122 @@ import numpy as np
 import matplotlib.pyplot as plt
 import tdspy as tds
 
-def create_system() -> tuple:
+import tdspy.controller
+import tdspy.plot
+
+from tdspy.common.composition import concatenate_2x2_by_delays
+from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+
+
+def create_system1() -> tds.ddae:
     """ 
     returns A, B, C with correct shapes
     """
     A = np.array([
         [   1.25,   -0.8,   -0.95   ],
         [   0.175,  -0.4,   -0.125  ],
-            [-1.15, -0.4,   0.65    ],
+        [   -1.15, -0.4,   0.65    ],
     ])
     Bu = np.array([ [2],[0],[-2]    ])
     C = np.array([  [ -7, 25, -11 ]   ])
     D = [1]
-    return A, Bu, C, D
+    ddae = tds.ddae(E=np.eye(3),A=A,B=Bu,C=C,D=D)
+    return ddae
+
+
+def create_system2() -> tds.ddae:
+    """ 
+    Example 3.3 taken from TDS-Manual
+    x'(t)   =   A x(t)  +   B u(t-tau1)
+    y(t)    =   C x(t)  +   D1 u(t-tau2)    +   D2 u(t-tau3)
+        returns A, B, C with correct shapes
+    """
+    A0 = np.array([
+        [   -0.08,  -0.03,  0.2     ],
+        [   0.2,    -0.04,  -0.005  ],
+        [   -0.06,  0.2,    -0.07    ],
+    ])
+    A = np.stack([A0], axis=2)
+    hA = np.array([0])
+    Bu = np.array([ [-0.1],[-0.2],[0.1]    ])
+    B = np.stack([Bu],axis=1)
+    hB = np.array([5.])
+    C = np.array(np.eye(3))
+    C = np.stack([C],axis=2)
+    hC = np.array([0])
+    D1 = np.array([ [3],[4],[1]    ])
+    D2 = np.array([ [0.4],[-0.4],[-0.4]])
+    D = np.stack([D1,D2],axis = 2)
+    hD = np.array([2.5,5.])
+    ddae = tds.ddae.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
+    return ddae
+ 
+def generate_controller() -> tds.DDAE:
+    """ generates static output feedback controller according to the paper
+    u   =   Dc * y(t)
+    """
+    controller = tdspy.controller.create_static_controller(
+        K = np.array([[     0.0409,     0.0612,     0.3837  ]])
+    )
+
+    return controller
+
+
+def create_system3() -> tds.ddae:
+    """ 
+    % We will design a stabilizing acceleration feedback controller for the
+    mass-spring system with an artificially introduced feedback delay
+    x'(t) = [  0     1 ] x(t) + [ 0 ] u(t-tau)
+            [-k/m   0]         [1/m]
+    y(t) = [0 1] x'(t)
+    with k = 100 N/m, m = 1kg and tau = 0.1 s.
+
+    """
+    k = 100; m = 1; tau = 0.1;
+# Define transformed system matrices
+    Ea = np.array([ [1, 0, 0],
+                    [0, 1, 0],
+                    [0, 1, 0]])
+    Aa = np.array([[0,1,0],
+                   [-k/m,0,0],
+                   [0,0,1]])
+    Ba = np.array([[0],[1/m],[0]])
+    Ca = np.array([[0,0,1]])
+    D = np.array([[1]])
+    
+    # Use tds_create_ddae to create a TDS_SS-representation
+    
+    ddae = tds.ddae(E=Ea,A=Aa,B=Ba,hB=np.array([tau]), C=Ca, D=D)
+
+    return ddae
+
+def print_ddae(ddae: tds.DDAE):
+    with np.printoptions(precision=4, linewidth=1000, suppress=True):
+        print(f"E 2x2 matrix")
+        print(ddae.E)
+        print("-"*50)
+        for i in range(ddae.mA):
+            print(f"A[:,:,{i} - tau={ddae.hA[i]}")
+            print(ddae.A[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mB):
+            print(f"B[:,:,{i} - tau={ddae.hB[i]}")
+            print(ddae.B[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mC):
+            print(f"C[:,:,{i} - tau={ddae.hC[i]}")
+            print(ddae.C[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mD):
+            print(f"D[:,:,{i} - tau={ddae.hD[i]}")
+            print(ddae.D[:,:,i])
+            print("-"*50)
 
 def create_cl_ddae() -> tuple:
     """
+    
     """
-    A, B, C, D = create_system() # create system with defaults
+    A, B, C, D = create_system1() # create system with defaults
 
 if __name__ == "__main__":
     # Set up logging
@@ -43,11 +141,38 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    ddae = create_cl_ddae()
+    ddae = create_system2()
+    cont = generate_controller()
+    print_ddae(ddae)
+    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+    # cl = tdspy.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
+    # print_ddae(cl)
+    # K = np.array()
 
-    print(f"The DDAE is essentially neutral={ddae.is_essentially_neutral}")
+    # print(f"The DDAE is essentially neutral={ddae.is_essentially_neutral}")
 
-    cd = tds.cd(ddae)
+    # cd = tds.cd(ddae)
 
-    print(f"strogn spectral abscissa of associated DIFF {cd=}")
+    # print(f"strogn spectral abscissa of associated DIFF {cd=}
+
+    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
+
+    print_ddae(cl)
+
+    np.random.seed(10)
+    
+    E = cl.E
+    P = cl._A
+    hP = cl._hA
+    K0 = np.random.rand(*cl.K.shape)
+    hK = cl.hK
+    B = cl.BB
+    C = cl.CC
+
+    Kmask = np.full_like(K0, fill_value=1, dtype=bool)
+    Kshape = K0.shape
+
+    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+
+
 

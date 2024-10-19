@@ -112,7 +112,30 @@ sub-functions:
         A*[:,:,n+m+p:] = [0, 0]
                          [0, D]
 
-- `interconnect`:
+- `interconnect`: Creates an interconnected system
+
+    Args: \
+        tds1 (TDS): system 1    \
+        tds2 (TDS): system 2    \
+        y1_indices (list): list of indices (outputs of system 1), if not defined, [0] is assumed    \
+        u2_indices (list): list of indices (inputs of system 2), if not defined, [0] is assumed     \
+        y2_indices (list): list of indices (outputs of system 2), if not defined, [0] is assumed    \
+        u1_indices (list): list of indices (inputs of system 1), if not defined, [0] is assumed     
+
+        **kwargs:
+            compress (bool): perform compression of resulting system, default
+                True
+
+     Assume we have two systems:
+
+        E1 dx1dt = SUM A1[i] x1(t-hA1[i]) + SUM B1[j] u1(t-hB1[j])
+              y1 = SUM C1[k] x1(t-hC1[k]) + SUM D1[l] u1(t-hD1[l])
+
+        E2 dx2dt = SUM A2[i] x2(t-hA2[i]) + SUM B2[j] u2(t-hB2[j])
+              y2 = SUM C2[k] x2(t-hC2[k]) + SUM D2[l] u2(t-hD2[l])
+        
+    And interconnection defined via indices mapping, then the final system can
+    be discribed via TODO
 
 
 ##### `compress`:
@@ -235,6 +258,51 @@ sub-functions:
 - `ClosedLoop` controller representation
 - `interconnect` creates an interconnected system
 
+    Args:
+    
+        tds1 (TDS): system 1
+        tds2 (TDS): system 2
+        y1_indices (list): list of indices (outputs of system 1), if not defined,
+            [0] is assumed
+        u2_indices (list): list of indices (inputs of system 2), if not defined,
+            [0] is assumed
+        y2_indices (list): list of indices (outputs of system 2), if not defined,
+            [0] is assumed
+        u1_indices (list): list of indices (inputs of system 1), if not defined,
+            [0] is assumed
+        **kwargs:
+            compress (bool): perform compression of resulting system, default
+                True
+
+    Assume we have two systems:
+
+        E1 dx1dt = SUM A1[i] x1(t-hA1[i]) + SUM B1[j] u1(t-hB1[j])
+              y1 = SUM C1[k] x1(t-hC1[k]) + SUM D1[l] u1(t-hD1[l])
+
+        E2 dx2dt = SUM A2[i] x2(t-hA2[i]) + SUM B2[j] u2(t-hB2[j])
+              y2 = SUM C2[k] x2(t-hC2[k]) + SUM D2[l] u2(t-hD2[l])
+        
+    And interconnection defined via indices mapping, then the final system can
+    be discribed via TODO
+
+
+    x* = [x1, u1, y1, x2, u2, y2]
+
+        E1, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    E =  0, 0, 0,  0, 0, 0
+         0, 0, 0, E2, 0, 0
+         0, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    
+
+        E1, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+    E =  0, 0, 0,  0, 0, 0
+         0, 0, 0, E2, 0, 0
+         0, 0, 0,  0, 0, 0
+         0, 0, 0,  0, 0, 0
+
 - `create_static_controller` creates a static controller from the matrix of coefficients. Static controller is assumed to be of a form
 
         y = K*u,
@@ -326,3 +394,45 @@ implementation of the function `tds_roots`. The function computes the characteri
 
 ##### `zeros`
 functionalities for computing the transmission zeros
+
+
+### `Examples`
+
+#### `example01`:
+
+Example 2.1 from the TDS-CONTROL manual
+We will analyze the exponential stability of the following RDDE from [1,
+Section 6.1]: 
+
+    x'(t) = A0 x(t) + A1 x(t-1)
+
+[1] Verheyden K., Luzyanina T., and Roose D. (2008). Efficient
+    computation of characteristic roots of delay differential equations
+    using LMS methods. Journal of Computational and Applied Mathematics,
+    214(1), pp. 209–226.  
+
+#### `example02`:
+
+Example 2.6 from the TDS-CONTROL manual
+We will analyze the stability of the following NDDE from page 16, equation (2.20)
+
+    x'(t) = 1/4 x(t) - 1/3 x(t-tau1) + 3/4 x'(t-tau1) - 1/2 x' (t-tau2)
+
+
+Compute the roots for the above NDDE for 
+
+    tau1 = 1, tau2 = 2
+
+#### `example_strong_sa02`:
+
+Example 2.7 from the TDS-CONTROL manual
+Compute the strong spectral abscissa for the NDDE from page 16, equation (2.20)
+
+    x'(t) = 1/4 x(t) - 1/3 x(t-tau_1) + 3/4 x'(t-tau1) - 1/2 x' (t-tau2)
+
+Compute the roots for the above NDDE for 
+
+    tau1 = 1, tau2 = 2
+
+
+#### `example_

@@ -115,6 +115,22 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
                 delay difference equation
             - grad (array): jacobian, 1d array matching shape of x
     """
+    # x is 1d array (vectorized K) -> inverse this operations
+    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
+    A = np.concatenate( # 3d array containing whole RHS closed loop
+        [
+            P, # controlled system dynamics + conections
+            np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C for all i
+                'ijk,jn->ink',
+                np.einsum('ni,ijk->njk', B, K),
+                C,
+            ), # controller dynamics
+        ],
+        axis=2, # stack by delays axis
+    )
+    hA = np.r_[hP, hK] # 1d array containing all closed loop delays
+    A, hA = compress_matrices_delays(A, hA) # duplicates and unsorted hA
+    rmr, rmr_info = rightmost_root(E, A, hA, r=0)
     raise NotImplementedError(".") # TODO implement
 
 def func_gamma(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray) -> tuple[float, npt.NDArray]:
