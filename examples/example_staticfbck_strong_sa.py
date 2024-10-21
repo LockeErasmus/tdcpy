@@ -175,4 +175,26 @@ if __name__ == "__main__":
     #from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
 
 
+    # test for DIFF dependency
+    from tdspy.stabopt.utils import diff_dependency_mask
+
+    # here, user specifies adjustability of controller parameters
+    Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
+
+    r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+
+    print(r.shape)
+    for i in range(r.shape[2]):
+        print("Parameter mask Kmask[:,:,{i}]:")
+        print(Kmask[:,:,i])
+        print(f"DIFF_MASK[:,:,{i}] - tau={cl.hK[i]}")
+        print(r[:,:,i])
+        print("-"*50)
+    
+    if np.all(~r):
+        print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
+    else:
+        print("DIFF IS DEPENDENT")
+    
+
 
