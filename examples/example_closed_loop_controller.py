@@ -323,8 +323,10 @@ if __name__ == "__main__":
     
     nvar = K.size
     h = 0.0001          # step size
-    g_numerical, g_analytical = gradient_test(func, x=np.random.rand(nvar), h=0.0001, E=E, P=P, hP=hP, hK=hK, Kmask=Kmask, B=B, C=C)
-
+    g_numerical, g_analytical = gradient_test(func, x=np.random.rand(nvar), h=0.001, E=E, P=P, hP=hP, hK=hK, Kmask=Kmask, B=B, C=C)
+    print(g_numerical[0:10])
+    print(g_analytical[0:10])
+    
     sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
     K = sol.x.reshape(K.shape)
     print(sol)

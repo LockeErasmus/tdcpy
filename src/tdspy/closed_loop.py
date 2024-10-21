@@ -1,7 +1,6 @@
 """
 DDAE implementation
 
-
 TODO:
     1. `E` should not have default None value and should be first arg?
     1. lot of checking is duplicated code, maybe function(s)? but then we lose
@@ -28,7 +27,29 @@ class ClosedLoop(TDSBase):
     """
     def __init__(self, system: DDAE, order: int, y_indices: list=None, u_indices: list=None, K0: npt.NDArray=None, hK: npt.NDArray = None, **kwargs) -> None:
         """ TODO
+                             ___________________
+                u1[-1]      |                   |  y1[-1]    
+            --------------->|                   |---------------->
+        u1[0],...,u1[nu-2]  |      SYSTEM       |  y1[0],...,y[ny-2]
+                     ------>|                   |-------
+                    |       |___________________|       |
+                    |                                   |
+                    |        ___________________        |
+ y2[0],...,y2[ny-2] |       |                   |       | u2[0],...,u1[nu-2]
+                     -------|                   |<------
+                y2[-1]      |    CONTROLLER     |  u2[-1]
+            <---------------|                   |<---------------
+                            |___________________|
 
+
+        y1_indices (list): list of indices (outputs of system 1), if not defined,
+            [0] is assumed
+        u2_indices (list): list of indices (inputs of system 2), if not defined,
+            [0] is assumed
+        y2_indices (list): list of indices (outputs of system 2), if not defined,
+            [0] is assumed
+        u1_indices (list): list of indices (inputs of system 1), if not defined,
+            [0] is assumed
 
         Args:
             order (int): order of controller, non-negative
