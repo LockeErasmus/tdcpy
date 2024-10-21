@@ -84,8 +84,8 @@ class ClosedLoop(TDSBase):
         # place system matrices
         rows_end = system.A.shape[0] + len_y + len_z
         cols_end = system.A.shape[1] + len_u + len_w
-        reordered_output_indices = np.r_[self.y_indices, self.z_indices]
-        reordered_input_indices = np.r_[self.u_indices, self.w_indices]
+        reordered_output_indices = self.y_indices + self.z_indices
+        reordered_input_indices = self.u_indices + self.w_indices
 
         concatenate_2x2_by_delays(
             self.system.E, self.system.A,
