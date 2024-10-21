@@ -172,7 +172,7 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+    #from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
 
 
 
