@@ -52,7 +52,7 @@ def create_system2() -> tds.ddae:
     A = np.stack([A0], axis=2)
     hA = np.array([0])
     Bu = np.array([ [-0.1],[-0.2],[0.1]    ])
-    B = np.stack([Bu],axis=1)
+    B = np.stack([Bu],axis=2)
     hB = np.array([5.])
     C = np.array(np.eye(3))
     C = np.stack([C],axis=2)
@@ -172,7 +172,20 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    #from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+
+    # get delay difference equation from cl
+
+    dde = ddae.get_delay_difference_equation()
+
+    dde.A
+    dde.hA
+
+    # check if the dde is dependent on K
+
+
+    # case 1: dde 
+
 
 
 
