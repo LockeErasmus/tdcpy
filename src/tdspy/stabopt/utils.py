@@ -10,6 +10,26 @@ from scipy import linalg
 
 logger = logging.getLogger(__name__)
 
+def diff_dependency_mask(Kmask: npt.NDArray, uE: npt.NDArray, vE: npt.NDArray, B: npt.NDArray, C: npt.NDArray, **kwargs) -> npt.NDArray:
+    """ Creates dependency mask for coefficients of delay difference eqations
+    on controller parameters
+
+    Args:
+        Kmask (array): 3d boolean array of 
+    
+    """
+    # TODO what if uE, vE empty
+    rtol = kwargs.get("rtol", 1e-10)
+    atol = kwargs.get("rtol", 1e-10)
+
+    K_mask_3d = np.einsum(# more efficient way to obtain B @ K[:,:,i] @ C for all i
+        'ijk,jn->ink',
+        np.einsum('ni,ijk->njk', (uE.T).astype(bool) @ B.astype(bool), Kmask),
+        C.astype(bool) @ vE.astype(bool),
+    )
+    return K_mask_3d
+
+
 def check_diff(E: npt.NDArray, B: npt.NDArray, C: npt.NDArray, **kwargs) -> bool:
     """ Checks if delay difference equation is dependent on controller
     parameters
@@ -21,6 +41,7 @@ def check_diff(E: npt.NDArray, B: npt.NDArray, C: npt.NDArray, **kwargs) -> bool
     Returns:
         TODO
     """
+    raise NotImplementedError("Do not use this function, it is not correct and will be deleted.")
 
     uE = kwargs.get('uE', None)
     vE = kwargs.get('vE', None)

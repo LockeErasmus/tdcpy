@@ -105,8 +105,8 @@ class ClosedLoop(TDSBase):
         # place system matrices
         rows_end = system.A.shape[0] + len_y + len_z
         cols_end = system.A.shape[1] + len_u + len_w
-        reordered_output_indices = np.r_[self.y_indices, self.z_indices]
-        reordered_input_indices = np.r_[self.u_indices, self.w_indices]
+        reordered_output_indices = self.y_indices + self.z_indices
+        reordered_input_indices = self.u_indices + self.w_indices
 
         concatenate_2x2_by_delays(
             self.system.E, self.system.A,
@@ -145,6 +145,9 @@ class ClosedLoop(TDSBase):
 
         # fill variables
         self._E = E
+        self._uE = None # TODO kwargs
+        self._vE = None # TODO kwargs
+        
         self._A = A
         self._hA = hA
         self._B = B
@@ -158,7 +161,9 @@ class ClosedLoop(TDSBase):
         self._BB = BB
         self._CC = CC
         
-
+        # --- KWARGS ---
+        self.dtype = kwargs.get("dtype", np.float64)
+        self.tol_singular = kwargs.get("tol_singular", 1e-12)
 
     @property
     def n(self) -> int:
@@ -178,6 +183,24 @@ class ClosedLoop(TDSBase):
     @property
     def E(self) -> npt.NDArray:
         return self._E
+    
+    @property
+    def uE(self) -> npt.NDArray:
+        """ orthonormal basis for left null space of E """
+        if self._uE is None:
+            uE = linalg.null_space(self.E.T, rcond=self.tol_singular)
+            return uE
+        else:
+            return self._uE
+    
+    @property
+    def vE(self) -> npt.NDArray:
+        """ orthonormal basis for right null space of E """
+        if self._vE is None:
+            vE = linalg.null_space(self.E, rcond=self.tol_singular)
+            return vE
+        else:
+            return self._vE
     
     @property
     def A(self) -> npt.NDArray:
