@@ -16,7 +16,7 @@ import tdspy as tds
 
 import tdspy.controller
 import tdspy.plot
-
+from tdspy.common.delay_difference_equation import ddae_to_diff
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 
@@ -155,8 +155,8 @@ if __name__ == "__main__":
 
     # print(f"strogn spectral abscissa of associated DIFF {cd=}
 
-    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
-
+    # cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
+    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=np.zeros(K.shape), hK=hK)
     print_ddae(cl)
 
     np.random.seed(10)
@@ -165,6 +165,7 @@ if __name__ == "__main__":
     P = cl._A
     hP = cl._hA
     K0 = np.random.rand(*cl.K.shape)
+    K0 = np.zeros(cl.K.shape)
     hK = cl.hK
     B = cl.BB
     C = cl.CC
@@ -172,16 +173,27 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs, func, gradient_test
+    from tdspy.stabopt.controller_bfgs import design_bfgs
+    from tdspy.stabopt.gradients import func_sa, gradient_test
 
+
+    # check if cl contains a delay-difference 
     # get delay difference equation from cl
 
-    dde = ddae.get_delay_difference_equation()
+    K_ddae = cl.controller
 
-    dde.A
-    dde.hA
+    cl_ddae = tds.DDAE(E=cl.E,A=cl.A,hA=cl.hA,B=cl.BB[:,:,np.newaxis],hB=np.array([0]),C=cl.CC[:,:,np.newaxis],hC=np.array([0]))
+    print_ddae(cl_ddae)
+    
+    cl_dde = cl_ddae.get_delay_difference_equation()
+    print_ddae(cl_ddae)
+    cl_dde.A
+    cl_dde.hA
+    cl_sa = tds.spectral_abscissa(cl_ddae,r=-0.1)
+
 
     # check if the dde is dependent on K
+
 
 
     # case 1: dde 
