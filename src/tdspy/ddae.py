@@ -417,7 +417,7 @@ class DDAE(TDSBase):
             self._D = D
             self._hD = hD
         else:
-            return DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+            return DDAE(E=self.E, A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
         
     def eval_char_matrix(self, s: complex) -> npt.NDArray:
         """ Evaluate characteristic matrix at `s`
