@@ -145,6 +145,12 @@ if __name__ == "__main__":
     cont = generate_controller()
     print_ddae(ddae)
     E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+    
+    plant_sa = tds.spectral_abscissa(ddae, r=-10)
+    print(plant_sa)
+    cr, _ = tds.roots(ddae)
+    print(cr)
+
     # cl = tdspy.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
     # print_ddae(cl)
     # K = np.array()
@@ -189,37 +195,42 @@ if __name__ == "__main__":
     print_ddae(cl_ddae)
     cl_dde.A
     cl_dde.hA
-    cl_sa = tds.spectral_abscissa(cl_ddae,r=-0.1)
+    plant_sa = tds.spectral_abscissa(ddae, r=-0.1)
+    cl_sa = tds.spectral_abscissa(cl_ddae, r=-0.1)
 
-
-    # check if the dde is dependent on K
-
-
-
-    # case 1: dde 
+    print(f"SA of plant: {plant_sa}")
+    print(f"SA of CL: {cl_sa}")
 
 
 
-    # test for DIFF dependency
-    from tdspy.stabopt.utils import diff_dependency_mask
+    # # check if the dde is dependent on K
 
-    # here, user specifies adjustability of controller parameters
-    Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
 
-    r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
 
-    print(r.shape)
-    for i in range(r.shape[2]):
-        print("Parameter mask Kmask[:,:,{i}]:")
-        print(Kmask[:,:,i])
-        print(f"DIFF_MASK[:,:,{i}] - tau={cl.hK[i]}")
-        print(r[:,:,i])
-        print("-"*50)
+    # # case 1: dde 
+
+
+
+    # # test for DIFF dependency
+    # from tdspy.stabopt.utils import diff_dependency_mask
+
+    # # here, user specifies adjustability of controller parameters
+    # Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
+
+    # r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+
+    # print(r.shape)
+    # for i in range(r.shape[2]):
+    #     print("Parameter mask Kmask[:,:,{i}]:")
+    #     print(Kmask[:,:,i])
+    #     print(f"DIFF_MASK[:,:,{i}] - tau={cl.hK[i]}")
+    #     print(r[:,:,i])
+    #     print("-"*50)
     
-    if np.all(~r):
-        print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
-    else:
-        print("DIFF IS DEPENDENT")
+    # if np.all(~r):
+    #     print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
+    # else:
+    #     print("DIFF IS DEPENDENT")
     
 
 
