@@ -148,7 +148,9 @@ if __name__ == "__main__":
     
     plant_sa = tds.spectral_abscissa(ddae, r=-10)
     print(plant_sa)
+
     cr, _ = tds.roots(ddae)
+
     print(cr)
 
     # cl = tdspy.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
@@ -162,7 +164,7 @@ if __name__ == "__main__":
     # print(f"strogn spectral abscissa of associated DIFF {cd=}
 
     # cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
-    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=np.zeros(K.shape), hK=hK)
+    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=np.ones(K.shape), hK=hK)
     print_ddae(cl)
 
     np.random.seed(10)
@@ -171,7 +173,7 @@ if __name__ == "__main__":
     P = cl._A
     hP = cl._hA
     K0 = np.random.rand(*cl.K.shape)
-    K0 = np.zeros(cl.K.shape)
+    K0 = np.ones(cl.K.shape)
     hK = cl.hK
     B = cl.BB
     C = cl.CC
@@ -180,7 +182,7 @@ if __name__ == "__main__":
     Kshape = K0.shape
 
     from tdspy.stabopt.controller_bfgs import design_bfgs
-    from tdspy.stabopt.gradients import func_sa, gradient_test
+    from tdspy.stabopt.gradients import func_sa, func_cd, gradient_test
 
 
     # check if cl contains a delay-difference 
@@ -188,7 +190,9 @@ if __name__ == "__main__":
 
     K_ddae = cl.controller
 
-    cl_ddae = tds.DDAE(E=cl.E,A=cl.A,hA=cl.hA,B=cl.BB[:,:,np.newaxis],hB=np.array([0]),C=cl.CC[:,:,np.newaxis],hC=np.array([0]))
+    cl_ddae = tds.DDAE(E=cl.E,A=cl.A,hA=cl.hA)
+
+    # cl_ddae = tds.DDAE(E=cl.E,A=cl.A,hA=cl.hA,B=cl.BB[:,:,np.newaxis],hB=np.array([0]),C=cl.CC[:,:,np.newaxis],hC=np.array([0]))
     print_ddae(cl_ddae)
     
     cl_dde = cl_ddae.get_delay_difference_equation()
@@ -202,35 +206,35 @@ if __name__ == "__main__":
     print(f"SA of CL: {cl_sa}")
 
 
-
-    # # check if the dde is dependent on K
-
-
-
-    # # case 1: dde 
-
+    # case 1: dde 
+    if cl_dde.A.shape[2] == 1:  # system is retarded
+        func = func_sa          
+    else:                       # system is neutral
+        func = func_cd          
 
 
-    # # test for DIFF dependency
-    # from tdspy.stabopt.utils import diff_dependency_mask
 
-    # # here, user specifies adjustability of controller parameters
-    # Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
 
-    # r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+    # test for DIFF dependency
+    from tdspy.stabopt.utils import diff_dependency_mask
 
-    # print(r.shape)
-    # for i in range(r.shape[2]):
-    #     print("Parameter mask Kmask[:,:,{i}]:")
-    #     print(Kmask[:,:,i])
-    #     print(f"DIFF_MASK[:,:,{i}] - tau={cl.hK[i]}")
-    #     print(r[:,:,i])
-    #     print("-"*50)
+    # here, user specifies adjustability of controller parameters
+    Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
+
+    r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+
+    print(r.shape)
+    for i in range(r.shape[2]):
+        print("Parameter mask Kmask[:,:,{i}]:")
+        print(Kmask[:,:,i])
+        print(f"DIFF_MASK[:,:,{i}] - tau={cl.hK[i]}")
+        print(r[:,:,i])
+        print("-"*50)
     
-    # if np.all(~r):
-    #     print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
-    # else:
-    #     print("DIFF IS DEPENDENT")
+    if np.all(~r):
+        print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
+    else:
+        print("DIFF IS DEPENDENT")
     
 
 

@@ -11,6 +11,7 @@ TODO:
 import logging
 from typing import Callable
 import time
+import tdspy as tds
 
 import numpy as np
 import numpy.typing as npt
@@ -115,9 +116,10 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
                 delay difference equation
             - grad (array): jacobian, 1d array matching shape of x
     """
-    # check for only the DDE here
-    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
+    # for DIFF dependency
+    from tdspy.stabopt.utils import diff_dependency_mask
 
+    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
     # get delay_difference equation
     A = np.concatenate( # 3d array containing whole RHS closed loop
         [
@@ -132,7 +134,31 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
     )
     hA = np.r_[hP, hK] # 1d array containing all closed loop delays
     A, hA = compress_matrices_delays(A, hA) # duplicates and unsorted hA
-    rmr, rmr_info = rightmost_root(E, A, hA, r=0)
+
+    # check for only the DDE here
+    
+
+    # create cl_ddae
+    cl = tds.DDAE(E=E,A=A,hA=hA)
+
+    # extract cl_dde
+    cl_dde = cl.get_delay_difference_equation()
+
+    # here, user specifies adjustability of controller parameters
+    Kmask = np.full_like(K, fill_value=True, dtype=bool) # all parameters adjustable
+
+    mask = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+
+    if np.all(~r):
+        print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
+    else:
+        print("DIFF IS DEPENDENT")
+
+
+    # obtain parameters [r,l,u',v,th]
+    # [gammar,out] = compute_gamma_r(diff.A,diff.hA,r,options)
+
+    # num = (out.uE'*diff)
 
 
     raise NotImplementedError(".") # TODO implement
