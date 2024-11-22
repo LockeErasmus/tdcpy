@@ -10,6 +10,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .base import TDSBase
+from .ddae import DDAE
 
 class RDDE(TDSBase):
     """ Retarded Delay Differential Equaton
@@ -118,5 +119,3 @@ class RDDE(TDSBase):
     def get_delay_difference_equation(self) -> None:
         """ RDDE has no associated delay difference equation """
         return None
-
-

@@ -54,12 +54,12 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
             - A (array): right hand-side matrix of DAE
     """
     # TODO perform checks
+    assert A.shape[2] > 0
+    assert hA[0] == 0.0
     
     if s0 != 0: # discretization around non-zero -> shift matrices
-        A[:,:,0] = A[:,:,0] - s0*E 
-        A[:,:,1:] = A[:,:,1:] * np.exp(-s0 * hA[1:])
-        for i in range(1,len(A)):
-            A[i] = A[i] * np.exp(-s0 * hA[i])
+        A = A * np.exp(-s0*hA)
+        A[:,:,0] = A[:,:,0] - s0*E
     
     n_states = E.shape[0]
     hA_max = np.max(hA) # maximal delay - TODO assume sorted?
@@ -132,39 +132,3 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         Sigma_N += s0 * Pi_N
     
     return Pi_N, Sigma_N # E, A
-
-def discretize(tds: Type[TDSBase], N: int, s0: complex=0j, method: str="cheb") -> DAE:
-    """ Discretizes RDDE, NDDE or DDAE into DAE
-
-    Discretizes Time-Delay System into Differential Algebraic Equation.
-
-    Args:
-        tds (RDDE, NDDE, DDAE): Definition of Time-Delay System
-        N (int): degree of discretization N>0
-        s0 (complex): point discretization is done around, default 0
-        method (str): type of approximation, default 'cheb', allowed 'cheb', 'legendre'
-
-    Returns:
-        TODO
-    """
-    
-    assert isinstance(N, int) and N > 6, "N has to be int > 6"
-    assert isinstance(s0, (int, float, complex)), "s0 has to be float, int or complex"
-    assert method in ["cheb", "legendre"], "allowed methods from ['cheb', 'legendre']"
-    assert tds.hA[0] == 0, "First delay assumed to be 0.0" # TODO
-
-
-    if tds.mA == 1 and tds.hA[0] == 0.:
-        # already DAE
-        # TODO input output matrices
-        return # TODO
-    elif np.all(tds.hA == 0.):
-        A = sum(tds.A)
-        # TODO input output matrices
-        return
-        
-    Pi_N, Sigma_N = discretize(tds.E, tds.A, tds.hA, N, s0, method)
-    
-    # Construct DAE
-    dae = DAE(A=Sigma_N, B=None, C=None, D=None, E=Pi_N) # TODO update
-    return dae
