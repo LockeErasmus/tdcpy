@@ -142,6 +142,7 @@ if __name__ == "__main__":
     logger.addHandler(handler)
 
     ddae = create_system2()
+    diff = ddae.get_delay_difference_equation()
     cont = generate_controller()
     print_ddae(ddae)
     E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
@@ -164,7 +165,7 @@ if __name__ == "__main__":
     # print(f"strogn spectral abscissa of associated DIFF {cd=}
 
     # cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
-    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=np.ones(K.shape), hK=hK)
+    cl = tds.ClosedLoop(ddae, 0, [0,1,2], [0], K0=np.zeros(K.shape), hK=hK)
     print_ddae(cl)
 
     np.random.seed(10)
@@ -181,7 +182,7 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs
+    from tdspy.stabopt.controller_bfgs import design_bfgs, stab_opt
     from tdspy.stabopt.gradients import func_sa, func_cd, gradient_test
 
 
@@ -218,6 +219,10 @@ if __name__ == "__main__":
     # test for DIFF dependency
     from tdspy.stabopt.utils import diff_dependency_mask
 
+    g_numerical, g_analytical = gradient_test(func_cd, x=np.random.rand(K0.size), args=(E, P, hP, hK, Kmask, B, C))
+
+    sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
+
     # here, user specifies adjustability of controller parameters
     Kmask = np.full_like(K0, fill_value=True, dtype=bool) # all parameters adjustable
 
@@ -236,5 +241,5 @@ if __name__ == "__main__":
     else:
         print("DIFF IS DEPENDENT")
     
-
-
+    sol = stab_opt(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
+    K = sol.x.reshape(K.shape)
