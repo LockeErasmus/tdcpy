@@ -5,13 +5,7 @@ First demo for calculating roots of RDDE
 """
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.linalg
-
-import tdspy
-import tdspy.common
-import tdspy.common
-import tdspy.ddae
-import tdspy.roots
+import tdspy as tds
 
 # Set up logging
 import logging
@@ -32,13 +26,9 @@ A1 = np.array([[3, 3, 3, 3],
                [0, -1.5, 0, 0],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
-
-rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1.])
-
-# discretize rdde -> dae
-s0 = 0
-n = 50
-dae = tdspy.common.discretize(rdde, 50, s0=s0)
+A = np.stack([A0, A1], axis=2)
+hA = np.array([0, 1.])
+rdde = tds.DDAE(A=A, hA=hA)
 
 # matlab tds_roots() with r=-4 max discretization=600
 matlab_roots = np.array([-3.98775577845041 + 161.773555006624j,
@@ -312,24 +302,14 @@ matlab_roots = np.array([-3.98775577845041 + 161.773555006624j,
                         -0.453030980991650 - 1.17969784766041j])
 
 # solve generalized eigen-value problem
-r = scipy.linalg.eig(dae.A, dae.E, left=False, right=False)
-r = r[np.isfinite(r)] - s0  # get rid of inf and NaN and shift back
-print(r)
+r, meta = tds.roots(rdde, r=-4)
+r = meta.discretization_eigenvalues
 
 plt.figure()
 plt.scatter(np.real(matlab_roots), np.imag(matlab_roots),
             marker="x", color="b", label="matlab tds_roots")
 plt.scatter(np.real(r), np.imag(r), marker="o",
             edgecolors="r", facecolors='none', label="python")
+
 plt.legend()
-
-# plot matrices
-# plt.figure()
-# plt.title("A")
-# plt.matshow(dae.A, fignum=0)
-
-# plt.figure()
-# plt.title("E")
-# plt.matshow(dae.E, fignum=0)
-
 plt.show()
