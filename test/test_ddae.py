@@ -118,6 +118,15 @@ def test_diff_02():
     print(diff.uE)
     print(diff.vE)
 
+def test_ddae_is_essentialy_retarded_or_neutral_01():
+    ddae = generate_example_01()
+    assert ddae.is_essentially_retarded
+    assert not ddae.is_essentially_neutral
+
+def test_ddae_is_essentialy_retarded_or_neutral_02():
+    ddae = generate_example_02()
+    assert not ddae.is_essentially_retarded
+    assert ddae.is_essentially_neutral
 
 def test_feedthrough_ddae():
     """ Creates a feedthrough DDAE """

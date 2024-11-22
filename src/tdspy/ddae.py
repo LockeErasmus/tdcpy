@@ -287,12 +287,18 @@ class DDAE(TDSBase):
         does not depend on complex argument `s`, i.e. delay difference equation
         has to take form:
 
-            0 = A[0] x(t)
+            0 = A[0] * x(t)
         """
-        diff = self.get_delay_difference_equation()
-        if diff.A.shape[2] == 0 and diff.hA[0] == 0:
+        D, hD = ddae_to_diff(self.E, self.A, self.hA, uE=self.uE, vE=self.vE,
+                             tol=1e-12, rcond=1e-14)
+        D, hD = compress_matrices_delays(D, hD) # compress matrices
+        if np.size(hD) == 0: # empty delay difference equation
             return True
-        return False
+        if hD.shape[0] == 1 and hD[0] == 0.0:
+            # delay difference equation is of a form
+            # 0 = D[0] * x(t)
+            return True
+        return False # delay difference equation depends on complex argument
 
     @property
     def is_essentially_neutral(self):
@@ -325,7 +331,7 @@ class DDAE(TDSBase):
 
         if np.size(D) == 0:
             # E is singular -> empty delay difference equation
-            return None
+            return None # TODO - not good implementation
         
         nE = D.shape[1] # TODO --- what if D.shape[1] == 0 ? can it happen?
         dtype = self.E.dtype
