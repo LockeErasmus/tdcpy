@@ -123,12 +123,11 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
                     & (np.real(roots)<=r[1]) & (np.imag(roots)>=r[2])
                     & (np.imag(roots)<=r[3]))
         
-        roots = roots[mask]
         roots_info = RootsInfo(
             discretization=None,
             gamma_r_exceeds_one=False,
             index_exceeds_one=False,
-            discretization_eigenvalues=np.zeros((0,), dtype=np.complex128),
+            discretization_eigenvalues=roots.astype(np.complex128),
             max_size_evp_enforced=False,
             newton_inital_guesses=np.zeros((0,), dtype=np.complex128),
             newton_final_values=np.zeros((0,), dtype=np.complex128),
@@ -136,7 +135,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
             newton_unconverged_initial_guesses = np.zeros((0,), dtype=bool),
             newton_large_corrections = np.zeros((0,), dtype=bool),
         )
-        return roots, roots_info
+        return roots[mask], roots_info
 
     # CASE 2:
     mA = hA.shape[0] # number of delay terms
