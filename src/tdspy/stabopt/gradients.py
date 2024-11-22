@@ -11,15 +11,16 @@ TODO:
 import logging
 from typing import Callable
 import time
+import tdspy as tds
 
 import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+from tdspy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
 from tdspy.common.compress import compress_matrices_delays
-from tdspy.common.delay_difference_equation import ddae_to_diff
-from tdspy.stability.spectral_abscissa import spectral_abscissa_diff
+from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
 
 logger = logging.getLogger("__name__")
 
@@ -117,10 +118,16 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
                 delay difference equation
             - grad (array): jacobian, 1d array matching shape of x
     """
-    # check for only the DDE here
-    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
+    # for DIFF dependency
+    from tdspy.stabopt.utils import diff_dependency_mask
 
-    # get delay_difference equation
+    # extract K from x
+    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
+    
+    # create closed-loop matrices A,hA
+    # A = SUM P[i] x(t-hP[i]) + SUM B * K[j] * C x(t-hK[j])
+    # hA = [hP, kK]
+    
     A = np.concatenate( # 3d array containing whole RHS closed loop
         [
             P, # controlled system dynamics + conections
@@ -133,8 +140,68 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
         axis=2, # stack by delays axis
     )
     hA = np.r_[hP, hK] # 1d array containing all closed loop delays
-    A, hA = compress_matrices_delays(A, hA) # duplicates and unsorted hA
-    rmr, rmr_info = rightmost_root(E, A, hA, r=0)
+    # A, hA = compress_matrices_delays(A, hA) # duplicates and unsorted hA
+
+    # check for only the DDE here
+    
+    # here, user specifies adjustability of controller parameters
+    Kmask = np.full_like(K, fill_value=True, dtype=bool) # all parameters adjustable
+
+    r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+
+    if np.all(~r):
+        print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
+        is_dde_dependent = False
+    else:
+        print("DIFF IS DEPENDENT")
+        is_dde_dependent = True
+
+    # create cl_ddae
+    cl = tds.DDAE(E=E,A=A,hA=hA)
+
+    # extract diff and compute cd and gamma0
+    diff = cl.get_delay_difference_equation()
+    cd, cd_info = tds.cd(diff)
+    gamma0, gamma0_out = gamma_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True, n_theta=10)
+
+    # extract the zero-delay terms from the dde - ??
+    zero_delay = diff.hA==0
+    A0 = diff.A[:,:,zero_delay]
+    hA0 = diff.A[:,:,zero_delay]
+    diff0 = tds.ddae(diff.E,A0,hA0) 
+
+    # first make sure that CD is finite for initial optimization variables
+    # if gamma(inf)>1, then CD = inf and the grad cannot be computed
+    gInf, info = gamma_diff(diff0.A[:,:,1:], diff0.hA[1:], 0, correction=True, n_theta=10)
+    
+
+    # if the associated delay-difference equation doesn't depend on the controller parameters
+    # compute CD/gamma0
+    if is_dde_dependent:
+        if diff.hA.shape[1] > 1:
+            cd, cd_info = tds.cd(diff)
+            gamma0, gamma0_out = gamma_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True, n_theta=10)
+        else:
+            cd = -np.inf
+            gamma0, gamma0_out = 0, []
+
+    else:
+        gInf0, ginfo = gamma_diff(A0,hA0,0)
+        cd = cd
+        if gInf0 >=1:
+            raise ValueError("gammaInf > 1, objective function is infeasible for all possible optimization variables")
+        else:
+            # compute cd
+            gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
+            cd, cd_info = spectral_abscissa(diff.A,diff.hA)
+        
+
+        pass
+
+    # obtain parameters [r,l,u',v,th]
+    # [gammar,out] = compute_gamma_r(diff.A,diff.hA,r,options)
+
+    # num = (out.uE'*diff)
 
 
     raise NotImplementedError(".") # TODO implement
