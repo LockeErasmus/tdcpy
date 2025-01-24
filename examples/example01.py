@@ -22,13 +22,7 @@ import tdspy.plot
 from tdspy.stability.characteristic_roots import rightmost_root
 
 # Set up logging
-import logging
-logger = logging.getLogger("tdspy")
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+tdspy.init_logger(level="DEBUG")
 
 # Create DDAE representation
 A0 = np.array([[-1, 0, 0, 0],
