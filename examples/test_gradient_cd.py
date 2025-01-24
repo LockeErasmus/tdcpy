@@ -10,6 +10,9 @@ from numpy.linalg import inv
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
 from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
+from tdspy.stability.characteristic_roots import rightmost_root, roots_ddae
+from tdspy.stability.spectral_abscissa import spectral_abscissa_diff, spectral_abscissa
+
 
 
 def create_system() -> tds.ddae:
@@ -117,10 +120,20 @@ if __name__ == "__main__":
     cl_dde = cl_ddae.get_delay_difference_equation()
     D, hD = ddae_to_diff(E=cl.E, A=cl.A, hA=cl.hA, uE=cl.uE, vE=cl.vE)
     DD, hDD = normalize_diff(D, hD)
-    print_ddae(cl_ddae)
-    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, is_compressed=0)         
-    cd,cdInfo = tds.spectral_abscissa_diff(cl_dde)
 
+    ### TEST: Check if spectral abscissa is correct, if YES, continue
+    cr, cr_info = tds.roots(cl_ddae, r=-0.1)            # should be = 0.1067
+
+    print_ddae(cl_ddae)
+
+    ### TEST: Check if the gamma0 and cd match the expected values, if YES, continue
+    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, is_compressed=0)         # must be = 0.2898
+
+    gamma_diff, info_gamma_diff = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0)  # = 0.2898, must be = 0.2898
+    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                             # = 0.1067, ok
+    # NOT OK
+    print(f"out.s is: {info_gamma_diff.s}")                                           # must be = -0.2756+ 0.0896j (if we mupltiply by j, then it's correct)
+    
     # creating permutation matrix p1
     p1 = np.array(np.eye(4,4,1))
 
@@ -147,6 +160,6 @@ if __name__ == "__main__":
     # GammaInfo = namedtuple("GammaInfo", ["th", "M", "s", "u", "v"])
     # out = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
 
-    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(P, hP, hK, Kmask, B, C, uE, vE, out, cd))
+    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(P, hP, hK, Kmask, B, C, uE, vE, out, sa_diff))
 
     DD
