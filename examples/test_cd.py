@@ -9,6 +9,8 @@ from numpy.linalg import inv
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
 from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
+from tdspy.stability.characteristic_roots import rightmost_root, roots_ddae
+from tdspy.stability.spectral_abscissa import spectral_abscissa_diff, spectral_abscissa
 
 
 def create_system() -> tds.ddae:
@@ -109,16 +111,22 @@ if __name__ == "__main__":
     print(f"SA of plant: {tds.spectral_abscissa(ddae, r=-0.1)}")                # must be = 0.1081
     
     # NOT OK
-    cl_roots, rootsInfo = tds.roots(cl_ddae,r=-0.1)
+    cl_roots, rootsInfo = tds.roots(cl_ddae,r=-0.1)                            # must be = 0.1652
+    cl_roots, rootsInfo = roots_ddae(cl_ddae.E,cl_ddae.A,cl_ddae.hA,r=-0.1)    # must be = 0.1652
     print(f"Roots of closed-loop: {np.max(np.real(cl_roots))}")                # must be = -0.0309 
     print(f"Roots of closed-loop: {tds.spectral_abscissa(cl_ddae, r=-0.1)}")    # must be = -0.0309
+    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                             # = -0.0309, ok
     cd,cdInfo = tds.spectral_abscissa_diff(cl_dde)                             # must be = -0.0308894, more or less correct
     print(f"CD of diff: {cd}")
     gamma, gammaInfo = tds.gamma(cl_ddae,r=0,is_compressed=0)   
-    print(f"gamma0 of diff: {gamma}")
+    print(f"gamma0 of diff: {gamma}")                           # =0.9128, must be = 1.2448
     # gamma_norm_diff, gamma_norm_diff_Info = gamma_normalized_diff(cl_dde.A[:,:,1:], cl_dde.hA[1:], r=0, is_compressed=1)  
-    g, info = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0) 
-    print(f"gamma_norm_diff of diff: {g}")
+    g_diff, g_diff_info = gamma_diff(D, hD, 0, correction=True,is_compressed=0)     # =0.9128, must be = 1.2448
+    print(f"gamma_diff of diff: {g_diff}")
+    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                                   # must be -0.8657
+    print(f"sa_diff of diff: {sa_diff}")
+    g_normalized, g_normalized_info = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0)    # = 0.9554, must be = 1.2448
+    print(f"gamma_normalized_diff of diff: {g_normalized}")
 
     #-----------------TESTING IT FOR K = 0.01+np.zeros(shape=(1,3,1))----------------#
 
@@ -136,11 +144,16 @@ if __name__ == "__main__":
     # OK
     print(f"SA of plant: {tds.spectral_abscissa(ddae, r=-0.1)}")                # must be = 0.1081
     cl2_roots, rootsInfo = tds.roots(cl2_ddae,r=-0.1)
-    print(f"Roots of closed-loop: {np.max(np.real(cl2_roots))}")                    # must be = 0.1067
+    print(f"Roots of closed-loop: {np.max(np.real(cl2_roots))}")                    # = 0.1067, must be = 0.1067
+    g2, info2 = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0)  # = 0.2898, must be = 0.2898
     print(f"Roots of closed-loop: {tds.spectral_abscissa(cl2_ddae, r=-0.1)}")       # must be = 0.1067
+    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                                   # must be -0.8657
 
     # NOT OK
-    g2, info2 = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0) 
-    gamma2, gammaInfo2 = tds.gamma(cl2_ddae,r=0,is_compressed=False)                # must be
-    cd2,cdInfo = tds.spectral_abscissa_diff(cl2_dde)                             # must be = -0.8657, ours gives -inf
-    print(f"CD of diff: {cd2}")
+    print(f"out.s is: {info2.s}")                                           # must be = -0.2756+ 0.0896j
+
+    # NOT OK
+    gamma, gammaInfo = tds.gamma(cl2_ddae,r=0,is_compressed=0)                     # must be = 0.2898
+    print(f"gamma0 of diff: {gamma}")
+    g_diff, g_diff_info = gamma_diff(D, hD, 0, correction=True,is_compressed=0) 
+    print(f"gamma_diff of diff: {g_diff}")
