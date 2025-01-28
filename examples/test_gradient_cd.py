@@ -127,24 +127,68 @@ if __name__ == "__main__":
     print_ddae(cl_ddae)
 
     ### TEST: Check if the gamma0 and cd match the expected values, if YES, continue
-    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, is_compressed=0)         # must be = 0.2898
+    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)                 # = 0.2898, must be = 0.2898
 
-    gamma_diff, info_gamma_diff = gamma_normalized_diff(DD, hDD, 0, correction=True,is_compressed=0)  # = 0.2898, must be = 0.2898
-    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                             # = 0.1067, ok
+    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                         # = -0.8657, ok
     # NOT OK
-    print(f"out.s is: {info_gamma_diff.s}")                                           # must be = -0.2756+ 0.0896j (if we mupltiply by j, then it's correct)
+    print(f"out.th is: {out.th}")                                           # must be = [0. 3.1416 5.6549]
+    print(f"out.s is: {out.s}")                                             # must be = -0.2756+ 0.0896j (if we mupltiply by -j, then it's correct)
+    print(f"out.u is: {out.u}")                                             # incorrect values
+    print(f"out.v is: {out.v}")                                             # incorrect values
+
+
+    ### TEST FOR GAMMA: Copy same matrices as from tds-control
+
+    D[:,:,0] = np.array([
+                            [-1,0,0,0],
+                            [0,-1,0,0],
+                            [0,0,-1,0],
+                            [0,0,0,-1]
+                        ])
     
-    # creating permutation matrix p1
-    p1 = np.array(np.eye(4,4,1))
+    D[:,:,1] = np.array([
+                            [0,0,0,3],
+                            [0,0,0,4],
+                            [0,0,0,1],
+                            [0,0,0,0]
+                        ])
+    
+    D[:,:,2] = np.array([
+                            [0,0,0,0.4],
+                            [0,0,0,-0.4],
+                            [0,0,0,-0.4],
+                            [0,0,0,0]
+                        ])
+    D[:,:,3] = np.array([
+                            [0,0,0,0],
+                            [0,0,0,0],
+                            [0,0,0,0],
+                            [0.01,0.01,0.01,0]
+                        ])
+    
+    DD, hDD = normalize_diff(D, hD)
+    ### TEST: Check if the gamma0 and cd match the expected values, if YES, continue
+    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)                 
+    # OK
+    print(f"gamma0 is: {gamma0}")                                           # 0.2898
+    # NOT OK
+    print(f"out.th is: {out.th}")                                           # must be = [0. 3.1416 5.6549]
+    print(f"out.s is: {out.s}")                                             # must be = -0.2756+ 0.0896j (if we mupltiply by -j, then it's correct)
+    print(f"out.u is: {out.u}")                                             # incorrect values
+    print(f"out.v is: {out.v}")                                             # incorrect values
 
-    p1[0,0],p1[1,0] = 0,1
-    p1[0,1],p1[1,1] = 1,0
-    p1[3,2],p1[1,2] = 1,0
 
-    # permutated matrices
-    D1 = np.zeros_like(D)
-    hD1 = hD
-    D1 = np.einsum('ij,jkl->ikl',p1, D)
+    # # creating permutation matrix p1
+    # p1 = np.array(np.eye(4,4,1))
+
+    # p1[0,0],p1[1,0] = 0,1
+    # p1[0,1],p1[1,1] = 1,0
+    # p1[3,2],p1[1,2] = 1,0
+
+    # # permutated matrices
+    # DD1 = np.zeros_like(DD)
+    # hDD1 = hDD
+    # DD1 = np.einsum('ij,jkl->ikl',p1, DD)
 
     # gamma0, out = gamma_normalized_diff(D1[:,:,1:], hD1[1:], r=0, is_compressed=0)         
 
@@ -159,7 +203,8 @@ if __name__ == "__main__":
     # from collections import namedtuple
     # GammaInfo = namedtuple("GammaInfo", ["th", "M", "s", "u", "v"])
     # out = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
+    cd = sa_diff
 
-    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(P, hP, hK, Kmask, B, C, uE, vE, out, sa_diff))
+    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(P, hP, hK, Kmask, B, C, uE, vE, out, cd))
 
     DD
