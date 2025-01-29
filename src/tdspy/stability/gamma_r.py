@@ -252,7 +252,7 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     else:
         endpoint = n_theta
 
-    while id[0] <= endpoint:
+    while id[0] <= endpoint - 1:
         # the optimization variable theta = [0 theta_grid(id)]
         # -> we do not need to explicitly form the search grid
         # M = DD{1}*exp(-r*hDD(1))*exp(1j*theta(1)) + .. + DD{m}*exp(-r*hDD(m))*exp(1j*theta(m))
@@ -273,14 +273,14 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
             radius_ind = np.copy(id)
         
         # form the next gridpoint
-        id[-1] += 1
+        id[-1] = id[-1] + 1
         j = len(id)
         while id[j-1] == n_theta:
             if j == 0:
                 break
             id[j-1] = 0
             id[j-2] = id[j-2] + 1
-            j = j -1
+            j = j - 1       
 
     if radius == 0:
         # degenerate case
