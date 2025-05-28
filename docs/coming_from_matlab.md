@@ -450,7 +450,7 @@ functionalities for computing the transmission zeros
 
 ### `Examples`
 
-#### `example01`:
+#### `example01`: RDDE
 
 Example 2.1 from the TDS-CONTROL manual
 We will analyze the exponential stability of the following RDDE from [1,
@@ -463,7 +463,7 @@ Section 6.1]:
     using LMS methods. Journal of Computational and Applied Mathematics,
     214(1), pp. 209–226.  
 
-#### `example02`:
+#### `example02`: 
 
 Example 2.6 from the TDS-CONTROL manual
 We will analyze the stability of the following NDDE from page 16, equation (2.20)
