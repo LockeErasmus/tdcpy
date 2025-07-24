@@ -21,7 +21,6 @@ from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootIn
 from tdspy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
 from tdspy.common.compress import compress_matrices_delays
 from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
-from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
 
 logger = logging.getLogger("__name__")
 
@@ -206,78 +205,6 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
 
 
     raise NotImplementedError(".") # TODO implement
-
-
-
-def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, 
-            Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray, uE: npt.NDArray, vE: npt.NDArray) -> tuple[float, npt.NDArray]:
-    """
-    Args:
-        x: controller parameters = vec(K)
-        E: E matrix
-        P (array): 3d array defining the Pi matrices (controlled system)
-        hP(array): 1d array defining delays associated with P
-        hK(array): 1d array defining delays associated with K (note that
-            x := vec(K))
-        Kmask(array): 3d array defining the gradient mask for controller
-            parameters K, has to have same shape as K
-        B(array): left 2d matrix defining the position of controller matrices
-            with respect to closed loop, see (1)
-        C(array): right 2d matrix defining the position of controller matrices
-            with respect to closed loop, see (1)
-    """
-    
-    # extract K from x
-    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
-
-    # create closed-loop matrices A,hA
-    # A = SUM P[i] x(t-hP[i]) + SUM B * K[j] * C x(t-hK[j])
-    
-    AK = np.einsum('ijk,jn->ink', np.einsum('ni,ijk->njk', B, K), C)        # A entries that are dependent on K
-    A = np.concatenate( # 3d array containing whole RHS closed loop
-        [
-            P, # controlled system dynamics + conections
-            AK, # controller dynamics
-        ],
-        axis=2, # stack by delays axis
-    )
-    hA = np.r_[hP, hK] # 1d array containing all closed loop delays
-
-    # create diff, out.DD
-    diff, hdiff = ddae_to_diff(E=E, A=A, hA=hA, uE=uE, vE=vE)
-    DD, hDD = normalize_diff(diff, hdiff)
-
-    # compute cd
-    cd = spectral_abscissa_diff(DD,hDD,r=-0.1)                  
-
-    # compute gamma0: out.th, out.s, out.u, out.v, out.M    
-    # obtain parameters [r,l,u',v,th]   
-    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)
-
-    # algorithm starts here
-    if cd == -np.inf:
-        gradCD = np.zeros_like(x)
-
-    else:
-        # gradient denominator
-        DM = (out.u.T @ DD[:,:,0] @ out.v)  
-        + (out.u.T @ DD[:,:,1] @ out.v) *np.exp(-out.s*hDD[1])*hDD[1]*np.exp(1j*out.th[1])  
-        + (out.u.T @ DD[:,:,2] @ out.v) *np.exp(-out.s*hDD[2])*hDD[2]*np.exp(1j*out.th[2])          
-
-    
-    
-
-
-
-        
-
-
-
-
-
-
-
-
 
 def func_gamma(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray) -> tuple[float, npt.NDArray]:
     """ function for of gamma(r) and its gradient TODO
