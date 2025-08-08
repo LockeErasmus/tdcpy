@@ -53,10 +53,53 @@ TDSpy package
 
 ##### `common`
 
-- `delay_difference_equation`:
+###### `delay_difference_equation`:
     Set of functions for obtaining and manipulating the delay-difference equations
-- `discretization`:
+- ddae_to_diff: Converts delay    differential algebraic equation (DDAE) to delay-difference equation
+    
+    Syntax: 
+
+        E*dx/dt = A[0] x(t-hA[0]) + ... + A[m-1] x(t-hA[m-1])
+        
+        ddae_to_diff(E, A, hA)
+
+- ndde_to_diff(H, hH): Converts NDDE to delay difference equation
+
+    For a NDDAE, the associated delay difference equation is given by
+        
+    Syntax:
+
+            I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0  
+
+            ndde_to_diff(H, hH)
+
+- normalize_diff(D: npt.NDArray, hD: npt.NDArray): 
+
+    Normalizes delay difference equation
+
+    Transforms the delay difference equation such that the leading zero delay
+    matrix D[0] equals identity (and can be omitted).
+
+    Syntax:
+
+            normalize_diff(D, hD)
+
+###### `discretization`:
     set of methods for discretizing the delay system
+    
+- discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretization: int, s0: complex=0j, method: str="cheb") -> tuple[npt.NDArray, npt.NDArray]:
+
+    DDAE of form:
+
+        E x'(t) = A[0] x(t) + A[1] x(t-hA[1]) + .. + A[m] x(t-hA[m]),      (1)
+
+    is discretized into DAE of form:
+
+        E x'(t) = A x(t).
+    
+    Syntax:
+
+        discretize_ddae(E, A, hA)
 
 ###### `closed-loop`:
 
@@ -202,6 +245,15 @@ A DDAE of form:
 
 - `bounds`: 
     enforce the lowerbound and the upperbound
+
+    - `lower_bound`: Calculates lower bound
+
+            lower_bound(x, epsilon, gamma)
+
+    - `upper_bound`: Calculates upper bound
+
+            upper_bound(x, epsilon, gamma)
+
 - `discretization_heuristic`: 
     function to compute N
 - `characteristic_roots`:
@@ -522,7 +574,7 @@ functionalities for computing the transmission zeros
 
 ### `Examples`
 
-#### `example01`:
+#### `example01`: RDDE
 
 Example 2.1 from the TDS-CONTROL manual
 We will analyze the exponential stability of the following RDDE from [1,
@@ -535,7 +587,7 @@ Section 6.1]:
     using LMS methods. Journal of Computational and Applied Mathematics,
     214(1), pp. 209–226.  
 
-#### `example02`:
+#### `example02`: 
 
 Example 2.6 from the TDS-CONTROL manual
 We will analyze the stability of the following NDDE from page 16, equation (2.20)

@@ -24,6 +24,23 @@ logger = logging.getLogger(__name__)
 class ClosedLoop(TDSBase):
     """ Class representing system - controller interconnection
 
+    Example:
+        cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
+        system: rdde
+        order: 0
+        y_indices: [0,1,2,3,4,5]
+        u_indices: [0,1]
+        K0: K
+        hK: hK
+    
+    By introducing auxiliary variables @u, @w, @z, @y, the system-controller interconnection
+    can be represented as a DDAE. 
+    [E 0 0 0 0 0][x']           [A 0 0 0 0 0][x]    [B 0 0 0 0 0][x]
+    [0 0 0 0 0 0][@u']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
+    [0 0 I 0 0 0][@w'](t) =     [0 0 0 0 0 0][xc]   [0 0 0 0 0 0][xc]
+    [0 0 0 0 0 0][@z']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
+    [0 0 0 0 0 0][@y']          [0 0 0 0 0 0][@y]   [0 0 0 0 0 0][@y]
+    [0 0 0 0 0 0][xc']          [0 0 0 0 0 0][@v]   [0 0 0 0 0 0][@v]
     """
     def __init__(self, system: DDAE, order: int, y_indices: list=None, u_indices: list=None, K0: npt.NDArray=None, hK: npt.NDArray = None, **kwargs) -> None:
         """ TODO

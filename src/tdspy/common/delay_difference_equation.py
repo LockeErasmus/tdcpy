@@ -55,6 +55,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
+    is_compressed = kwargs.get("is_compressed", True)
 
     if uE is None:
         uE = linalg.null_space(E.T, rcond=rcond)

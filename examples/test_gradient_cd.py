@@ -134,48 +134,7 @@ if __name__ == "__main__":
     print(f"out.th is: {out.th}")                                           # must be = [0. 3.1416 5.6549]
     print(f"out.s is: {out.s}")                                             # must be = -0.2756+ 0.0896j (if we mupltiply by -j, then it's correct)
     print(f"out.u is: {out.u}")                                             # incorrect values
-    print(f"out.v is: {out.v}")                                             # incorrect values
-
-
-    ### TEST FOR GAMMA: Copy same matrices as from tds-control
-
-    D[:,:,0] = np.array([
-                            [-1,0,0,0],
-                            [0,-1,0,0],
-                            [0,0,-1,0],
-                            [0,0,0,-1]
-                        ])
-    
-    D[:,:,1] = np.array([
-                            [0,0,0,3],
-                            [0,0,0,4],
-                            [0,0,0,1],
-                            [0,0,0,0]
-                        ])
-    
-    D[:,:,2] = np.array([
-                            [0,0,0,0.4],
-                            [0,0,0,-0.4],
-                            [0,0,0,-0.4],
-                            [0,0,0,0]
-                        ])
-    D[:,:,3] = np.array([
-                            [0,0,0,0],
-                            [0,0,0,0],
-                            [0,0,0,0],
-                            [0.01,0.01,0.01,0]
-                        ])
-    
-    DD, hDD = normalize_diff(D, hD)
-    ### TEST: Check if the gamma0 and cd match the expected values, if YES, continue
-    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)                 
-    # OK
-    print(f"gamma0 is: {gamma0}")                                           # 0.2898
-    # NOT OK
-    print(f"out.th is: {out.th}")                                           # must be = [0. 3.1416 5.6549]
-    print(f"out.s is: {out.s}")                                             # must be = -0.2756+ 0.0896j (if we mupltiply by -j, then it's correct)
-    print(f"out.u is: {out.u}")                                             # incorrect values
-    print(f"out.v is: {out.v}")                                             # incorrect values
+    print(f"out.v is: {out.v}")                                             # incorrect values                                     # incorrect values
 
 
     # # creating permutation matrix p1
