@@ -129,7 +129,7 @@ if __name__ == "__main__":
     ### TEST: Check if the gamma0 and cd match the expected values, if YES, continue
     gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)                 # = 0.2898, must be = 0.2898
 
-    sa_diff = spectral_abscissa_diff(DD,hDD,r=-0.1)                         # = -0.8657, ok
+    sa_diff, cdInfo = spectral_abscissa_diff(DD,hDD,r=-0.1)                         # = -0.8657, ok
     # NOT OK
     print(f"out.th is: {out.th}")                                           # must be = [0. 3.1416 5.6549]
     print(f"out.s is: {out.s}")                                             # must be = -0.2756+ 0.0896j (if we mupltiply by -j, then it's correct)
@@ -205,6 +205,6 @@ if __name__ == "__main__":
     # out = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
     cd = sa_diff
 
-    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(P, hP, hK, Kmask, B, C, uE, vE, out, cd))
+    g_numerical, g_analytical = gradient_test(func=func_cd, x=K.reshape(-1), args=(E, P, hP, Kmask, hK, B, C, uE, vE, out, cd))
 
     DD
