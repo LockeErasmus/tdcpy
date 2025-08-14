@@ -25,14 +25,35 @@ import tdspy.plot
 
 from tdspy.stability.characteristic_roots import rightmost_root
 
+from scipy import linalg
+from tdspy.common.quasipoly import compress_qp, qp_to_ndde
+
 # Set up logging
 tdspy.init_logger(level="DEBUG")
 
-# Create qp representation
+omega=2.
+k=3.
+tau=0.1
 
-p1 = np.array([[3, 3, 3, 3],
-               [0, -1.5, 0, 0],
-               [0, 0, 3, -5],
-               [0, 5, 5, 5]])
-A = np.stack([A0, A1], axis=2)
-hA = np.array([0,1.])
+coeffs = np.array([[omega**2, 0., 1.],[-k, 0., 0.]])
+delays = np.array([0.,tau])
+
+A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
+
+ndde = tdspy.NDDE(A=A,hA=hA,H=H,hH=hH)
+ndde.print()
+ddae = ndde.to_ddae()
+
+cr, RootInfo = tdspy.roots(ndde,r=-2)
+
+
+
+# plt = tdspy.plot.eigen_plot(cr)
+# ax = plt.axis
+
+import matplotlib.pyplot as plt
+plt.plot([np.real(cr)], [np.imag(cr)], "bo", alpha=0.25)
+
+plt.show()
+
+ 
