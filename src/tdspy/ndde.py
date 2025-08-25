@@ -433,9 +433,13 @@ class NDDE(TDSBase):
         """ Prints NDDE in readable form """
 
         with np.printoptions(precision=4, linewidth=1000, suppress=True):
-            print(f"E 2x2 matrix")
-            print(self.E)
+            print(f"H 2x2 matrix")
+            print(self.H)
             print("-"*50)
+            for i in range(self.mH):
+                print(f"H[:,:,{i} - tau={self.hH[i]}")
+                print(self.H[:,:,i])
+                print("-"*50)
             for i in range(self.mA):
                 print(f"A[:,:,{i} - tau={self.hA[i]}")
                 print(self.A[:,:,i])

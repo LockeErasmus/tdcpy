@@ -127,6 +127,7 @@ class RDDE(TDSBase):
             print(f"E 2x2 matrix")
             print(self.E)
             print("-"*50)
+            
             for i in range(self.mA):
                 print(f"A[:,:,{i} - tau={self.hA[i]}")
                 print(self.A[:,:,i])
