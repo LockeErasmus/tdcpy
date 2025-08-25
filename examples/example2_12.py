@@ -56,4 +56,7 @@ A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
 
 ndde = tds.NDDE(A=A,hA=hA,H=H,hH=hH)
 
-ndde.print()
+print(ndde)
+
+print(ndde.A)
+print(ndde.H)

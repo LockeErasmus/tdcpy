@@ -5,98 +5,113 @@ Tests quasipolynomial representation
 import pytest
 
 import numpy as np
-from scipy import linalg
+import numpy.typing as npt
 
 import tdspy
-
 from tdspy.common.quasipoly import compress_qp, qp_to_ndde
 
-def generate_example_00():
-    delays = np.array([0.0, 1.0])
-    coefs = np.array([[1., 0],[0, 0]])
-    return coefs, delays, True
+def assert_arrays_equal(a: npt.NDArray, b: npt.NDArray):
+    assert a.ndim == b.ndim, f"ndim mismatch: {a.ndim} != {b.ndim}"
+    assert a.shape == b.shape, f"Shape mismatch: {a.shape} != {b.shape}"
+    assert np.array_equal(a, b), f"Arrays differ:\n{a}\nvs\n{b}"
 
-def generate_example_01():
-    delays = np.array([0.0, 1.0])
-    coefs = np.array([[0, 1],[1, 0]])
-    return coefs, delays, True
-
-def generate_example_02():
-    """ Example from tds-control MATLAB package """
-    delays = np.array([0., 1, 2])
-    coefs = np.array([
-        [1, -2, 1.],
-        [0, -2, 2],
-        [0, 0, 1],
-    ])
-    return coefs, delays, False
-
-def test_qp_to_ndde_00():
-    coefs, delays, ascending = generate_example_00()
+@pytest.mark.parametrize(
+        argnames="delays, coefs, ascending, ndde",
+        argvalues=[
+            (
+                np.array([0, 1.]),
+                np.array([[1, 0],[0, 0.]]),
+                True,
+                None,
+            ),
+            (
+                np.array([0, 1.]),
+                np.array([[0, 1],[1, 0.]]),
+                True,
+                None,
+            ),
+            (
+                np.array([0, 1, 2.]),
+                np.array([
+                    [1, -2, 1],
+                    [0, -2, 2],
+                    [0, 0, 1.],
+                ]),
+                False,
+                (# A, hA, H, hH
+                    np.stack(
+                        [
+                            np.array([ # A0
+                                [ 0., 1.],
+                                [-1., 2.],
+                            ]),
+                            np.array([ # A1
+                                [ 0.,  0.],
+                                [-2.,  2.],
+                            ]),
+                            np.array([ # A2
+                                [ 0., 0.],
+                                [-1., 0.],
+                            ]),
+                        ],
+                        axis=2
+                    ),
+                    np.array([0, 1, 2.]),
+                    np.zeros(shape=(2,2,0)),
+                    np.array([], dtype=np.float64),
+                )
+            ),
+            (
+                np.array([0, 1, 1.5]),
+                np.array([[3.,1.5],[2.0,0.5],[-2.0,-0.5]]),
+                True,
+                (# A, hA, H, hH
+                    np.stack(
+                        [
+                            np.array([ # A0
+                                [-2.],
+                            ]),
+                            np.array([ # A1
+                                [-4/3.],
+                            ]),
+                            np.array([ # A2
+                                [ 4/3.],
+                            ]),
+                        ],
+                        axis=2
+                    ),
+                    np.array([0, 1, 1.5]),
+                    np.stack(
+                        [
+                            np.array([ # H1
+                                [1/3.],
+                            ]),
+                            np.array([ # H2
+                                [-1/3.],
+                            ]),
+                        ],
+                        axis=2
+                    ),
+                    np.array([1, 1.5]),
+                )
+            ),
+        ],
+        ids=[
+            "simple-01",
+            "simple-02",
+            "MATLAB-tds-control-retarded",
+            "MATLAB-tds-control-neutral",
+        ],
+)
+def test_qp_to_ndde(coefs: npt.NDArray, delays: npt.NDArray, ascending: bool, ndde: tuple | None):
+    """ Tests quasipolynomial -> NDDE  convert """
     A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=ascending)
-    
-    with np.printoptions(precision=4, linewidth=1000, suppress=True):
-        for i in range(hA.shape[0]):
-            print(f"A[:,:,{i} - tau={hA[i]}")
-            print(A[:,:,i])
-            print("-"*50)
 
-        for i in range(hH.shape[0]):
-            print(f"H[:,:,{i} - tau={hA[i]}")
-            print(H[:,:,i])
-            print("-"*50)
+    if ndde is not None:
+        # unpack expected solution
+        expected_A, expected_hA, expected_H, expected_hH = ndde
 
-def test_qp_to_ndde_01():
-    coefs, delays, ascending = generate_example_01()
-    A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=ascending)
-    
-    with np.printoptions(precision=4, linewidth=1000, suppress=True):
-        for i in range(hA.shape[0]):
-            print(f"A[:,:,{i} - tau={hA[i]}")
-            print(A[:,:,i])
-            print("-"*50)
-
-        for i in range(hH.shape[0]):
-            print(f"H[:,:,{i} - tau={hA[i]}")
-            print(H[:,:,i])
-            print("-"*50)
-
-def test_qp_to_ndde_02():
-    coefs, delays, ascending = generate_example_02()
-    
-    # correct arrays
-    correct_hA = np.array([0., 1, 2])
-    A0 = np.array([
-        [ 0., 1.],
-        [-1., 2.],
-    ])
-    A1 = np.array([
-        [ 0.,  0.],
-        [-2.,  2.],
-    ])
-    A2 = np.array([
-        [ 0., 0.],
-        [-1., 0.],
-    ])
-    correct_A = np.stack([A0, A1, A2], axis=2)
-
-    correct_hH = np.array([])
-    correct_H = np.zeros(shape=(2,2,0))
-    
-    A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=ascending)
-
-    assert np.allclose(A, correct_A)
-    assert np.allclose(hA, correct_hA)
-    assert H.size == 0 and H.shape == correct_H.shape
-    assert hH.size == 0 and hH.shape == correct_hH.shape
-
-    with np.printoptions(precision=4, linewidth=1000, suppress=True):
-        for i in range(hA.shape[0]):
-            print(f"A[:,:,{i} - tau={hA[i]}")
-            print(A[:,:,i])
-            print("-"*50)
-
-        for i in range(hH.shape[0]):
-            print(f"H[:,:,{i} - tau={hA[i]}")
-            print(H[:,:,i])
-            print("-"*50)
+        assert_arrays_equal(A, expected_A)
+        assert_arrays_equal(hA, expected_hA)
+        assert_arrays_equal(H, expected_H)
+        assert_arrays_equal(hH, expected_hH)
