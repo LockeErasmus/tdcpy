@@ -121,6 +121,7 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
 
     if delays[0] != 0.0 or coefs[0,-1] == 0.0:
         raise ValueError("System can not be of advanced type!")
+    
     # Normalize the coefficients
     coefs = coefs / coefs[0, -1]
 
@@ -143,10 +144,10 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
     if np.any(coefs[1:, -1]): # returns False if all 0.0 or empty
         # non-empty and at least one non-zero coeficient -> neutral system
         hH = np.copy(delays)
-        hH = np.zeros(shape=(n,n,m), dtype=np.float64) # TODO dtype?
-        hH[-1, -1, :] = coefs[1:-1]
-        # last step, filter out matrices which are zero -> in this case, simly
-        mask = hH[-1, -1, :] == 0.0
+        H = np.zeros(shape=(n,n,m), dtype=np.float64) # TODO dtype?
+        H[-1, -1, 1:] = coefs[1:,-1]
+        # last step, filter out matrices which are zero -> in this case, simply
+        mask = H[-1, -1, :] == 0.0
         hH = hH[~mask]
         H = H[:,:,~mask]
 
