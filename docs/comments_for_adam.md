@@ -2,13 +2,24 @@
 
 Refer the jupyter notebook coming_from_matlab.ipynb
 
-2. Example 2.8: The plot displays incorrect results, compared with Figure 2.9
-    Besides, if the discretization is increased, the function does not work correctly.
+1. Example 2.9: Interconnected system
+    Issue: problem with using the function controller.interconnect()
+    
+    Plant:
+        x'(t)   = A0 x(t) + A1 x(t-1) + B11 u(t-1)
+        y(t)    = C10 x(t) + D11 u(t-1)
+
+    Controller:
+        xc'(t)  = Ac xc(t) + Bc y(t) 
+        u(t)    = Cc xc(t) + Dc y(t)
+        
 
 3. Example 2.12: Error in formulating the qp
     ValueError: could not broadcast input array from shape (2,) into shape (3,)
     issue in line 143 of quasipoly.py - looks incorrect to me!
     hH[-1, -1, :] = coefs[1:-1] 
+
+    Status: solved (Adam)
 
 4. test_common.py: The following tests fail
     1. test_static_controller_01(): 
