@@ -2,9 +2,6 @@
 
 Refer the jupyter notebook coming_from_matlab.ipynb
 
-1. Example 2.3: Computing the characteristic roots of a quasipolynomial
-    issue: the program gives incorrect results of the sp. abscissa
-
 2. Example 2.8: The plot displays incorrect results, compared with Figure 2.9
     Besides, if the discretization is increased, the function does not work correctly.
 
