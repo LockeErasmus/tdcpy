@@ -12,6 +12,16 @@ Refer the jupyter notebook coming_from_matlab.ipynb
     Controller:
         xc'(t)  = Ac xc(t) + Bc y(t) 
         u(t)    = Cc xc(t) + Dc y(t)
+
+    1. controller.interconnect: the function does not work. The closed-loop system matrices are different from in Tds-control
+    2. tds.ClosedLoop: there is a bug in the function. 
+        The D11 matrix block and the B11 matrix block from the original system are seen in the tau=0 blocks
+        It should appear in the tau1 block
+        Reason for the problem:
+        in line 128 of tds.ClosedLoop, it calls the function concatenate_2x2_by_delays
+        In the arguments, the B, C and D matrices are all assigned to the zero delay matrix of A
+        if you check self.system.hB, self.system.hD it shows 0
+
         
 
 3. Example 2.12: Error in formulating the qp
