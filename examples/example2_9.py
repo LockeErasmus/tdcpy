@@ -124,7 +124,7 @@ print("Closed-loop 2 is neutral:", cl.is_essentially_neutral)
 
 
 
-# Method 2: using tds.closed_loop
+# Method 2: using tds.closed_loop - Works!
 # P: DDAE
 # cont: DDAE
 
@@ -134,15 +134,5 @@ E, K1, hK1 = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, c
 K1, hK1 = compress_matrices_delays(K1, hK1)
 
 cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0,1],K0=K1, hK=hK1)
-print(cl2.A[:,:,0])         # this is not correct!
-
-#_--------------------------NOTES----------------------------#
-# The D11 matrix block and the B11 matrix block from the original system are seen in the tau=0 blocks
-# It should appear in the tau1 block
-# Reason for the problem:
-# in line 128 of tds.ClosedLoop, it calls the function concatenate_2x2_by_delays
-# In the arguments, the B, C and D matrices are all assigned to the zero delay matrix of A
-# if you check self.system.hB, self.system.hD it shows 0
 
 cl2.print()
-# cl2.is_essentially_neutral
