@@ -104,7 +104,7 @@ print(tds.strong_spectral_abscissa(CL))
 # P: DDAE 
 # K: DDAE
 
-P = tds.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
+P = tds.DDAE(A=A,hA=hA,B=B,hB=np.array([1.]),C=C,hC=hC,D=D,hD=np.array([1.]))
 K = tds.DDAE(A=np.stack([Ac],axis=2),hA=np.array([0.]),
              B=np.stack([Bc],axis=2),hB=np.array([0.]),
              C=np.stack([Cc],axis=2),hC=np.array([0.]),
