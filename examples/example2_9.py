@@ -1,3 +1,43 @@
+"""
+Example 2.9 from TDS-CONTROL Manual - DDAEs
+DDAEs:
+Consider the feedback interconnection of the form
+
+    x'(t)   = A0 x(t) + A1 x(t-1) +  B11 u(t-1)
+
+    y(t)    = C1 x(t) + D11 u(t-1)
+
+and the dynamic output feedback controller of the form
+
+    x'(t)   = Ac xc(t) + Bc y(t)
+
+    u(t)    = Cc xc(t) + Dc y(t)
+
+with
+
+    A0 =    [0.2    0.1 ] 
+            [0.5    1   ],
+    A1 =    [0.5    0.3 ]
+            [0.1    -0.1], 
+    B11 =   [1      0]
+            [0      1],
+
+    C10 =   [1  1],
+    D11 =   [0.01   0.01]
+
+and
+
+    Ac = -3.48,    Bc = 3.1, 
+
+    Cc =    [1.79]  Dc = [-1.86]
+            [-0.09],     [-1.4 ]
+
+In Pieter's method, he uses the augmented state vector 
+
+    x* = [x^T zeta_y^T x_c^T zeta_u^T]^T
+"""
+
+
 import tdspy as tds
 import numpy as np
 import tdspy.plot as plt
@@ -111,7 +151,7 @@ K = tds.DDAE(A=np.stack([Ac],axis=2),hA=np.array([0.]),
              D=np.stack([Dc],axis=2),hD=np.stack([0.]))
 hK = np.array([0.])
 
-cl = controller.interconnect(P,K)           # this does not work!
+cl = controller.interconnect(P,K,u1_indices=[0,1],y1_indices=[0],u2_indices=[0],y2_indices=[0,1])           # this does not work!
 
 # test measures
 diff2 = cl.get_delay_difference_equation()
@@ -124,7 +164,7 @@ print("Closed-loop 2 is neutral:", cl.is_essentially_neutral)
 
 
 
-# Method 2: using tds.closed_loop
+# Method 2: using tds.closed_loop - Works!
 # P: DDAE
 # cont: DDAE
 
@@ -134,15 +174,5 @@ E, K1, hK1 = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, c
 K1, hK1 = compress_matrices_delays(K1, hK1)
 
 cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0,1],K0=K1, hK=hK1)
-print(cl2.A[:,:,0])         # this is not correct!
-
-#_--------------------------NOTES----------------------------#
-# The D11 matrix block and the B11 matrix block from the original system are seen in the tau=0 blocks
-# It should appear in the tau1 block
-# Reason for the problem:
-# in line 128 of tds.ClosedLoop, it calls the function concatenate_2x2_by_delays
-# In the arguments, the B, C and D matrices are all assigned to the zero delay matrix of A
-# if you check self.system.hB, self.system.hD it shows 0
 
 cl2.print()
-# cl2.is_essentially_neutral
