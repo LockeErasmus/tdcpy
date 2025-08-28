@@ -28,6 +28,8 @@ import tdspy as tds
 import numpy as np
 from tdspy.stability.characteristic_roots import rightmost_root
 
+tds.init_logger("DEBUG")
+
 Th, Ta,Td, Tc = 14, 3, 3, 25
 Kb, Ka, Kd, Kc, Ku = 0.24, 1, 0.94, 0.81, 0.39
 nh, tb, te, td = 6.5, 40, 13, 18
@@ -58,7 +60,7 @@ hD = np.array([0.])
 hC = np.array([0.])
 
 plant = tds.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
-plant.print()
+# plant.print()
 
 # Finding the rightmost root - Test 
 z, z_info = rightmost_root(E=plant.E, A=plant.A, hA=plant.hA, r=2)
@@ -76,22 +78,31 @@ from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stabopt.gradients import func_sa, gradient_test
 import tdspy.controller as controller
 
-cont = controller.create_static_controller(np.array([[-0.1659, -0.2968, -0.3612, -0.3629, 0.0168]]))
-cont.print()
+# cont = controller.create_static_controller(np.array([[-0.1659, -0.2968, -0.3612, -0.3629, 0.0168]]))
+# A_ = np.empty(shape=(0,0,0))
+# E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
 
-E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
+K0 = np.array([[-0.1659, -0.2968, -0.3612, -0.3629, 0.0168]]).reshape((1,5,1))
 hK0 = np.array([0.])
-cl = tds.ClosedLoop(plant,order=0,y_indices=[0,1,2,3,4],u_indices=[0],K0=K,hK=hK0)
+
+cl = tds.ClosedLoop(plant,order=0,y_indices=[0,1,2,3,4],u_indices=[0],K0=K0,hK=hK0)
 
 print(cl.A.shape)
 print(cl.hA.shape)
-cl.print()
+# cl.print()
 
 # the shape after forming the cl is incorrect, therefore, the below causes an error
-cr_system, _ = tds.roots(cl.system, r=-0.1)
-cr_cl, _ = tds.roots(cl, r=-1)
+cr_system, _ = tds.roots(cl.system, r=-0.2)
+cr_cl, _ = tds.roots(cl, r=-0.2)
 
+import matplotlib.pyplot as plt
+import tdspy.plot
 
+fig, (ax1, ax2) = plt.subplots(1,2)
+tdspy.plot.eigen_plot(cr_system, ax=ax1)
+tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+
+plt.show()
 # E = cl.E
 # P = cl._A
 # hP = cl._hA

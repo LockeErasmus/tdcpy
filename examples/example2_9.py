@@ -9,6 +9,30 @@ import tdspy.controller as controller
 from tdspy.controller import create_dynamic_controller
 from tdspy.common.compress import compress_matrices_delays
 
+import tdspy
+tdspy.init_logger(level="DEBUG")
+
+def print_ddae(ddae):
+    with np.printoptions(precision=4, linewidth=1000, suppress=True):
+        print(f"E 2x2 matrix")
+        print(ddae.E)
+        print("-"*50)
+        for i in range(ddae.mA):
+            print(f"A[:,:,{i} - tau={ddae.hA[i]}")
+            print(ddae.A[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mB):
+            print(f"B[:,:,{i} - tau={ddae.hB[i]}")
+            print(ddae.B[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mC):
+            print(f"C[:,:,{i} - tau={ddae.hC[i]}")
+            print(ddae.C[:,:,i])
+            print("-"*50)
+        for i in range(ddae.mD):
+            print(f"D[:,:,{i} - tau={ddae.hD[i]}")
+            print(ddae.D[:,:,i])
+            print("-"*50)
 
 
 # Define system matrices
@@ -87,8 +111,8 @@ print("sp. abscissa is %.2f, must be -0.2845",sa)
 # import matplotlib.pyplot as plt
 # tds.plot.eigen_plot(l_rect)
 # plt.show()
+print_ddae(CL)
 
-CL.print()
 print(tds.strong_spectral_abscissa(CL))
 
 # l_rhp,_ = tds.roots(CL,r=-3,max_size_evp=2000,discretization=15)
@@ -113,13 +137,20 @@ hK = np.array([0.])
 
 cl = controller.interconnect(P,K)           # this does not work!
 
+sa = tds.spectral_abscissa(cl)
+print("sp. abscissa is %.2f, must be -0.2845", sa)
+
 # test measures
 diff2 = cl.get_delay_difference_equation()
 CD2,_ = tds.spectral_abscissa_diff(diff2)
 
-diff2.print()
+print_ddae(cl)
 
-print("Closed-loop 1 is neutral: ",CL.is_essentially_neutral)
+
+# print_ddae(diff2)
+# diff2.print()
+
+print("Closed-loop 1 is neutral: ", CL.is_essentially_neutral)
 print("Closed-loop 2 is neutral:", cl.is_essentially_neutral)
 
 
@@ -135,4 +166,6 @@ K1, hK1 = compress_matrices_delays(K1, hK1)
 
 cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0,1],K0=K1, hK=hK1)
 
-cl2.print()
+
+print_ddae(cl2)
+# cl2.print()
