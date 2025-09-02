@@ -173,6 +173,6 @@ cont = tds.controller.create_dynamic_controller(Ac,Bc,Cc,Dc)
 E, K1, hK1 = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
 K1, hK1 = compress_matrices_delays(K1, hK1)
 
-cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0,1],K0=K1, hK=hK1)
+cl2 = tds.ClosedLoop(P, order=1,y_indices=[0,1],u_indices=[0],K0=K1, hK=hK1)
 
 cl2.print()
