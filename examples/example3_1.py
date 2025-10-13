@@ -9,10 +9,10 @@ Consider the feedback interconnection of the form
     y(t)    = C1 x(t) 
 
 with
-1. Static output feedback
+1. Static output feedback (Example 3.1 in TDS-CONTROL)
     u(t)    = Dc y(t)
 
-2. Dynamic output feedback
+2. Dynamic output feedback (Example 3.2 in TDS-CONTROL)
 
     x'(t)   = Ac xc(t) + Bc y(t)
 
@@ -28,7 +28,7 @@ import tdspy as tds
 import numpy as np
 from tdspy.stability.characteristic_roots import rightmost_root
 
-tds.init_logger("DEBUG")
+tds.init_logger("ERROR")
 
 Th, Ta,Td, Tc = 14, 3, 3, 25
 Kb, Ka, Kd, Kc, Ku = 0.24, 1, 0.94, 0.81, 0.39
@@ -76,7 +76,7 @@ from tdspy.stabopt.controller_bfgs import design_bfgs, design_granso
 from tdspy.stabopt.gradients import func_sa, gradient_test
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stabopt.gradients import func_sa, gradient_test
-import tdspy.controller as controller
+from tdspy.controller import create_static_controller, create_dynamic_controller
 
 # cont = controller.create_static_controller(np.array([[-0.1659, -0.2968, -0.3612, -0.3629, 0.0168]]))
 # A_ = np.empty(shape=(0,0,0))
@@ -111,3 +111,36 @@ C = cl.CC
 
 # sol = design_bfgs(cl.E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
 sol = design_granso(cl.E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
+print("x = ",sol.final.x)
+
+K = sol.final.x.reshape(K0.shape)
+hK = np.array([0.])
+
+
+cont = create_static_controller(K)
+cl2 = tds.ClosedLoop(plant,order=0,y_indices=[0,1,2,3,4],u_indices=[0],K0=K,hK=hK)
+
+sa = tds.strong_spectral_abscissa(cl2,r=-0.1)
+print("Strong spectral abscissa of the closed-loop system is ", sa)
+
+
+
+# ------------------- Example 3.2 ------------------- #
+
+nc = 1 # controller order
+Ac = np.array([[-1]])
+Bc = np.array([[1.],[1.],[1.],[1.],[1.]])
+Cc = np.array([[1.]])
+Dc = sol.final.x.reshape((1,5))
+
+E = cl.E
+P = cl._A
+hP = cl._hA
+K0 = np.zeros([1,5,1])
+hK = cl.hK
+B = cl.BB
+C = cl.CC
+
+cont = create_dynamic_controller(Ac,Bc,Cc,Dc)
+cl = tds.ClosedLoop(plant,order=nc,y_indices=[0,1,2,3,4],u_indices=[0],K0=K0,hK=hK0)
+
