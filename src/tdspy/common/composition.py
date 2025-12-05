@@ -12,37 +12,6 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                               hAA: npt.NDArray=None):
     """ Concatenates system into compact form respecting delay vectors
 
-    Assumes system is defined as
-
-        E dxdt = A[:,:,0]*x(t-hA[0]) + ... + A[:,:,n] x(t-hA[n]) +
-                 + B[:,:,0]*u(t-hB[0]) + ... + B[:,:,m] u(t-hB[n])
-        
-            y  = C[:,:,0]*x(t-hC[0]) + ... + C[:,:,p] x(t-hC[p]) +
-                 + D[:,:,0]*u(t-hD[0]) + ... + D[:,:,q] u(t-hD[q])
-    
-    Concatenates the system into:
-
-        E*dx1dt = A*[:,:,0]*x2(t-hA*[0]) + ... + A*[:,:,n*] x2(t-hA*[n*])
-    
-    where:
-        x1 := [x^T y^T]^T
-        x2 := [x^T u^T]^T
-    and therefore:
-        hA* = [hA, hB, hC, hD]
-        n* = n+m+p+q
-    left hand-side matrix:
-        E* = [E, 0]
-             [0, 0]
-    right hand-side array:
-        A*[:,:,:n] = [A, 0]  
-                     [0, 0]
-        A*[:,:,n:n+m] = [0, B]  
-                        [0, 0]
-        A*[:,:,n+m:n+m+p] = [0, 0]  
-                            [C, 0]
-        A*[:,:,n+m+p:] = [0, 0]
-                         [0, D]
-
     Parameters:
     -----------
         E:  array
@@ -79,6 +48,37 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     Notes:
     ------
+    Assumes system is defined as
+
+        E dxdt = A[:,:,0]*x(t-hA[0]) + ... + A[:,:,n] x(t-hA[n]) +
+                 + B[:,:,0]*u(t-hB[0]) + ... + B[:,:,m] u(t-hB[n])
+        
+            y  = C[:,:,0]*x(t-hC[0]) + ... + C[:,:,p] x(t-hC[p]) +
+                 + D[:,:,0]*u(t-hD[0]) + ... + D[:,:,q] u(t-hD[q])
+    
+    Concatenates the system into:
+
+        E*dx1dt = A*[:,:,0]*x2(t-hA*[0]) + ... + A*[:,:,n*] x2(t-hA*[n*])
+    
+    where:
+        x1 := [x^T y^T]^T
+        x2 := [x^T u^T]^T
+    and therefore:
+        hA* = [hA, hB, hC, hD]
+        n* = n+m+p+q
+    left hand-side matrix:
+        E* = [E, 0]
+             [0, 0]
+    right hand-side array:
+        A*[:,:,:n] = [A, 0]  
+                     [0, 0]
+        A*[:,:,n:n+m] = [0, B]  
+                        [0, 0]
+        A*[:,:,n+m:n+m+p] = [0, 0]  
+                            [C, 0]
+        A*[:,:,n+m+p:] = [0, 0]
+                         [0, D]
+                         
     - Assumes all input arrays are non-empty
     - If EE, AA, hAA are provided, they are updated in place and returned
     - If EE, AA, hAA are not provided, they are created and returned
