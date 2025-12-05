@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 """
 Example 2.9 from TDS-CONTROL Manual - DDAEs
 DDAEs:
@@ -37,10 +35,11 @@ and
 In Pieter's method, he uses the augmented state vector 
 
     x* = [x^T zeta_y^T x_c^T zeta_u^T]^T
+
+
 """
 
 
->>>>>>> adrian_test
 import tdspy as tds
 import numpy as np
 import tdspy.plot as plt
@@ -52,33 +51,6 @@ import tdspy.controller as controller
 from tdspy.controller import create_dynamic_controller
 from tdspy.common.compress import compress_matrices_delays
 
-<<<<<<< HEAD
-import tdspy
-tdspy.init_logger(level="DEBUG")
-
-def print_ddae(ddae):
-    with np.printoptions(precision=4, linewidth=1000, suppress=True):
-        print(f"E 2x2 matrix")
-        print(ddae.E)
-        print("-"*50)
-        for i in range(ddae.mA):
-            print(f"A[:,:,{i} - tau={ddae.hA[i]}")
-            print(ddae.A[:,:,i])
-            print("-"*50)
-        for i in range(ddae.mB):
-            print(f"B[:,:,{i} - tau={ddae.hB[i]}")
-            print(ddae.B[:,:,i])
-            print("-"*50)
-        for i in range(ddae.mC):
-            print(f"C[:,:,{i} - tau={ddae.hC[i]}")
-            print(ddae.C[:,:,i])
-            print("-"*50)
-        for i in range(ddae.mD):
-            print(f"D[:,:,{i} - tau={ddae.hD[i]}")
-            print(ddae.D[:,:,i])
-            print("-"*50)
-=======
->>>>>>> adrian_test
 
 
 # Define system matrices
@@ -157,13 +129,7 @@ print("sp. abscissa is %.2f, must be -0.2845",sa)
 # import matplotlib.pyplot as plt
 # tds.plot.eigen_plot(l_rect)
 # plt.show()
-<<<<<<< HEAD
-print_ddae(CL)
 
-=======
-
-CL.print()
->>>>>>> adrian_test
 print(tds.strong_spectral_abscissa(CL))
 
 # l_rhp,_ = tds.roots(CL,r=-3,max_size_evp=2000,discretization=15)
@@ -186,32 +152,13 @@ K = tds.DDAE(A=np.stack([Ac],axis=2),hA=np.array([0.]),
              D=np.stack([Dc],axis=2),hD=np.stack([0.]))
 hK = np.array([0.])
 
-<<<<<<< HEAD
-cl = controller.interconnect(P,K)           # this does not work!
-
-sa = tds.spectral_abscissa(cl)
-print("sp. abscissa is %.2f, must be -0.2845", sa)
-=======
 cl = controller.interconnect(P,K,u1_indices=[0,1],y1_indices=[0],u2_indices=[0],y2_indices=[0,1])           # this does not work!
->>>>>>> adrian_test
 
 # test measures
 diff2 = cl.get_delay_difference_equation()
 CD2,_ = tds.spectral_abscissa_diff(diff2)
 
-<<<<<<< HEAD
-print_ddae(cl)
-
-
-# print_ddae(diff2)
-# diff2.print()
-
-print("Closed-loop 1 is neutral: ", CL.is_essentially_neutral)
-=======
-diff2.print()
-
 print("Closed-loop 1 is neutral: ",CL.is_essentially_neutral)
->>>>>>> adrian_test
 print("Closed-loop 2 is neutral:", cl.is_essentially_neutral)
 
 
@@ -225,14 +172,5 @@ cont = tds.controller.create_dynamic_controller(Ac,Bc,Cc,Dc)
 E, K1, hK1 = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
 K1, hK1 = compress_matrices_delays(K1, hK1)
 
-<<<<<<< HEAD
-cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0,1],K0=K1, hK=hK1)
+cl2 = tds.ClosedLoop(P, order=1,y_indices=[0],u_indices=[0],K0=K1, hK=hK1)
 
-
-print_ddae(cl2)
-# cl2.print()
-=======
-cl2 = tds.ClosedLoop(P, order=1,y_indices=[0,1],u_indices=[0],K0=K1, hK=hK1)
-
-cl2.print()
->>>>>>> adrian_test

@@ -429,30 +429,3 @@ class NDDE(TDSBase):
         """
         return self.E + np.sum(self.H * np.exp(-s*self.hH), axis=2) - s*np.sum(self.H * self.hH * np.exp(-s*self.hH), axis=2)+ np.sum(self.A * self.hA * np.exp(-s*self.hA), axis=2)
     
-    def print(self):
-        """ Prints NDDE in readable form """
-
-        with np.printoptions(precision=4, linewidth=1000, suppress=True):
-            print(f"H 2x2 matrix")
-            print(self.H)
-            print("-"*50)
-            for i in range(self.mH):
-                print(f"H[:,:,{i} - tau={self.hH[i]}")
-                print(self.H[:,:,i])
-                print("-"*50)
-            for i in range(self.mA):
-                print(f"A[:,:,{i} - tau={self.hA[i]}")
-                print(self.A[:,:,i])
-                print("-"*50)
-            for i in range(self.mB):
-                print(f"B[:,:,{i} - tau={self.hB[i]}")
-                print(self.B[:,:,i])
-                print("-"*50)
-            for i in range(self.mC):
-                print(f"C[:,:,{i} - tau={self.hC[i]}")
-                print(self.C[:,:,i])
-                print("-"*50)
-            for i in range(self.mD):
-                print(f"D[:,:,{i} - tau={self.hD[i]}")
-                print(self.D[:,:,i])
-                print("-"*50)

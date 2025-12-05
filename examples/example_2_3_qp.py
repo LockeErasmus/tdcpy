@@ -41,7 +41,6 @@ delays = np.array([0.,tau])
 A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
 
 ndde = tdspy.NDDE(A=A,hA=hA,H=H,hH=hH)
-ndde.print()
 ddae = ndde.to_ddae()
 
 cr, RootInfo = tdspy.roots(ndde,r=-2)

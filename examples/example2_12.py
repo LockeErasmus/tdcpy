@@ -42,11 +42,7 @@ This can be represented by the QP:
 
 import numpy as np
 import tdspy as tds
-<<<<<<< HEAD
 import tdspy.plot as plt
-=======
-import matplotlib.pyplot as plt
->>>>>>> adrian_test
 from tdspy.common.quasipoly import qp_to_ndde
 from tdspy.common.quasipoly import compress_qp, qp_to_ndde
 
@@ -60,16 +56,9 @@ A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
 
 ndde = tds.NDDE(A=A,hA=hA,H=H,hH=hH)
 
-<<<<<<< HEAD
-print(ndde)
-
-print(ndde.A)
-print(ndde.H)
-=======
-ndde.print()
-
 tau_grid = np.linspace(0,8,201)
 delta_grid = np.linspace(-8,10,451)
+
 
 # Z = np.zeros((len(delta_grid), len(tau_grid)))
 
@@ -100,4 +89,3 @@ delta_grid = np.linspace(-8,10,451)
 # plt.contour(X,Y,Z,[0,0])
 # plt.plot(plt.xlim,[0,0],'k-.')
 # plt.show()
->>>>>>> adrian_test

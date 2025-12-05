@@ -1,6 +1,7 @@
 import tdspy as tds
 import numpy as np
-import tdspy.plot as plt
+import tdspy.plot
+import matplotlib.pyplot as plt
 
 tds.init_logger(level="WARNING")
 
@@ -58,6 +59,7 @@ delay_diff = ndde.get_delay_difference_equation()
 
 cr4, RootsInfo = tds.roots(delay_diff,r,max_size_evp=1500)  
 tds.plot.eigen_plot(cr4)  # fig 2.8
+plt.show()
 
 
 #--------------------Beginning of Example 2.7----------------------#
