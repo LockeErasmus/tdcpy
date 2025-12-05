@@ -72,7 +72,7 @@ print(np.max(np.real(z)))
 
 import numpy as np
 import tdspy as tds
-from tdspy.stabopt.controller_bfgs import design_bfgs
+from tdspy.stabopt.controller_bfgs import design_bfgs, func_sa
 from tdspy.stabopt.gradients import func_sa, gradient_test
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stabopt.gradients import func_sa, gradient_test
@@ -87,30 +87,64 @@ hK0 = np.array([0.])
 
 cl = tds.ClosedLoop(plant,order=0,y_indices=[0,1,2,3,4],u_indices=[0],K0=K0,hK=hK0)
 
-print(cl.A.shape)
-print(cl.hA.shape)
-# cl.print()
+# print(cl.A.shape)
+# print(cl.hA.shape)
+# # cl.print()
 
-# the shape after forming the cl is incorrect, therefore, the below causes an error
-cr_system, _ = tds.roots(cl.system, r=-0.2)
-cr_cl, _ = tds.roots(cl, r=-0.2)
+# # the shape after forming the cl is incorrect, therefore, the below causes an error
+# cr_system, _ = tds.roots(cl.system, r=-0.2)
+# cr_cl, _ = tds.roots(cl, r=-0.2)
+
+# import matplotlib.pyplot as plt
+# import tdspy.plot
+
+# fig, (ax1, ax2) = plt.subplots(1,2)
+# tdspy.plot.eigen_plot(cr_system, ax=ax1)
+# tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+
+# plt.show()
+
+E = cl.E
+P = cl._A
+hP = cl._hA
+K0 = np.zeros([1,5,1])
+hK = cl.hK
+B = cl.BB
+C = cl.CC
+Kmask = np.full_like(K0, fill_value=True, dtype=bool)
 
 import matplotlib.pyplot as plt
-import tdspy.plot
+# Store objective values
 
-fig, (ax1, ax2) = plt.subplots(1,2)
-tdspy.plot.eigen_plot(cr_system, ax=ax1)
-tdspy.plot.eigen_plot(cr_cl, ax=ax2)
 
+# Create the plot
+plt.ion()  # Turn on interactive mode
+fig, ax = plt.subplots()
+line, = ax.plot([], [], 'b-')
+ax.set_xlabel('Iteration')
+ax.set_ylabel('Objective Value (fval)')
+ax.set_title('Optimization Progress')
+
+# Set some limits that may update later
+ax.set_xlim(0, 10)
+ax.set_ylim(0, 1000)
+
+# Callback function for updating the plot
+fvals = []
+def callback(xk):
+    fval, grad = func_sa(xk, cl.E, P, hP, hK, Kmask, B, C)
+    fvals.append(fval)
+    print(f"callback evaluated {xk=} {fvals=}\n {grad=}")
+    # Update plot data
+    line.set_data([i for i in range(len(fvals))], fvals)
+    ax.set_xlim(0, max(10, len(fvals)))
+    ax.set_ylim(0, max(fvals) * 1.1)
+    plt.draw()
+    plt.pause(0.05)
+
+callback(K0.reshape(-1))
+
+sol = design_bfgs(cl.E, P, hP, K0, hK, B, C, method="L-BFGS-B", options={"disp": True}, callback=callback)
+
+plt.ioff()
 plt.show()
-# E = cl.E
-# P = cl._A
-# hP = cl._hA
-# K0 = np.zeros([1,5,1])
-# hK = cl.hK
-# B = cl.BB
-# C = cl.CC
-
-# sol = design_bfgs(cl.E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
-
-cont.D

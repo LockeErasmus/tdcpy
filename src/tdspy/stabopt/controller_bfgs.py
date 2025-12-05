@@ -33,8 +33,9 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
         K0.reshape(-1),
         args=(E, P, hP, hK, Kmask, B, C),
         jac=True,
-        method="L-BFGS-B",
+        method=kwargs.get("method", "L-BFGS-B"),
         options=kwargs.get("options", {}),
+        callback=kwargs.get("callback", None)
     )
     return sol
 
