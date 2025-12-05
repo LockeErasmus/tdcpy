@@ -38,9 +38,9 @@ hA = np.array([0,1.])
 r = -1.5
 ddae = tdspy.DDAE(A=A, hA=hA)
 rdde = tdspy.RDDE(A=A, hA=hA)
-cr, info = tdspy.roots(rdde, r=r)
+cr, info = tdspy.roots(ddae, r=r)
 
-z, z_info = rightmost_root(rdde.E, rdde.A, rdde.hA, r=r)
+z, z_info = rightmost_root(E=rdde.E, A=rdde.A, hA=rdde.hA, r=r)
 print(f"rightmost roots is {z}")
 
 import matplotlib.pyplot as plt

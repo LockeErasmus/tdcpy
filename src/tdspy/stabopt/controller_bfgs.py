@@ -39,6 +39,74 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
     )
     return sol
 
+def design_granso(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
+    """
+    Args:
+        TODO
+        **kwargs:
+            mask (array): masking gradient
+    """
+
+    import traceback
+    import time
+    import torch
+    from torch import linalg as LA
+    from pygranso.pygranso import pygranso as granso
+    import scipy.io
+    from pygranso.pygransoStruct import pygransoStruct
+
+    device = torch.device('cpu')
+    double_precision = True
+    torch_dtype = torch.double
+    print_level = 0
+
+    # variables and corresponding dimensions
+    # torch.zeros(p*m,1).to(device=device, dtype=torch.double)
+    n = K0.reshape(-1).shape[0]
+    var_in = {"x": [n,1]}
+    Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
+
+    # define user_options
+    opts = pygransoStruct()
+    # opts.x0 = torch.tensor(K0.reshape(-1), dtype=torch_dtype, device=device)
+    # opts.x0 = torch.zeros_like(K0.reshape(-1).to(torch_dtype), dtype=torch_dtype, device=device)
+    opts.x0 = 4*torch.ones(n,1, dtype=torch_dtype, device=device)    
+    opts.torch_device = device
+    opts.print_frequency = 10
+    opts.maxit = 200
+    opts.globalAD = False
+
+    # define obj. function
+    def obj_fn(X_struct,E,P,hP,hK,Kmask,B,C):
+        # decision variables
+        X = X_struct.x.detach().numpy()
+        n = X.shape[0]
+
+        # objective function
+        f, g = func_sa(X, E, P, hP, hK, Kmask, B, C)
+        
+        grad = torch.from_numpy(g.reshape([n,1]))
+
+        # inequality constraint
+        ci = None
+        ci_grad = None
+
+        # equality constraint
+        ce = None
+        ce_grad = None
+
+        return [f, grad, ci, ci_grad, ce, ce_grad]
+        
+    comb_fn = lambda X_struct : obj_fn(X_struct,E, P, hP, hK, Kmask, B, C)
+
+    start = time.time()
+    sol = granso(var_spec = var_in, combined_fn=comb_fn, user_opts=opts)
+    end = time.time()
+
+    print("Total Time: {}s".format(end-start))
+
+    return sol
+
 def stab_opt(ddae,nc,**kwargs):
     """
     function to optimize the closed-loop spectral abscissa of:

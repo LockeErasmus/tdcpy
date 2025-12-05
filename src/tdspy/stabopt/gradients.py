@@ -21,6 +21,7 @@ from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootIn
 from tdspy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
 from tdspy.common.compress import compress_matrices_delays
 from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
 
 logger = logging.getLogger("__name__")
 
@@ -86,7 +87,8 @@ def func_sa(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
     # gradient needs to be vectorized to match shape of x
     return fval, fgrad.reshape(-1)
 
-def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK: npt.NDArray, Kmask: npt.NDArray, B: npt.NDArray, C: npt.NDArray) -> tuple[float, npt.NDArray]:
+def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, Kmask: npt.NDArray, hK: npt.NDArray, B: npt.NDArray, C: npt.NDArray, 
+            uE: npt.NDArray, vE: npt.NDArray, out: tuple, cd: float) -> tuple[float, npt.NDArray]:
     """ function for strong spectral abscissa of associated delay difference
     equation and its gradient with respect to controller parameters
 
@@ -147,7 +149,7 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
     # here, user specifies adjustability of controller parameters
     Kmask = np.full_like(K, fill_value=True, dtype=bool) # all parameters adjustable
 
-    r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+    r = diff_dependency_mask(Kmask, uE, vE, B, C)
 
     if np.all(~r):
         print("DIFF IS INDEPENDENT OF CONTROLLER PARAMETERS")
@@ -157,30 +159,34 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
         is_dde_dependent = True
 
     # create cl_ddae
-    cl = tds.DDAE(E=E,A=A,hA=hA)
+    cl = tds.DDAE(E=E,A=A,hA=hA)            # remove later
+    D, hD = ddae_to_diff(E, A, hA, uE, vE)
+    DD, hDD = normalize_diff(D, hD)
 
     # extract diff and compute cd and gamma0
-    diff = cl.get_delay_difference_equation()
-    cd, cd_info = tds.cd(diff)
-    gamma0, gamma0_out = gamma_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True, n_theta=10)
+    diff = cl.get_delay_difference_equation()   
+
+    sa_diff, cdInfo = spectral_abscissa_diff(DD,hDD,r=-0.1)                         # = -0.8657, ok
+    gamma0, out = gamma_normalized_diff(DD, hDD, r=0, correction=True, is_compressed=0)
 
     # extract the zero-delay terms from the dde - ??
-    zero_delay = diff.hA==0
-    A0 = diff.A[:,:,zero_delay]
-    hA0 = diff.A[:,:,zero_delay]
-    diff0 = tds.ddae(diff.E,A0,hA0) 
+    zero_delay = hA==0
+    A0 = A[:,:,zero_delay]
+    hA0 = hA[zero_delay]
+    D0, hD0 = ddae_to_diff(E, A0, hA0, uE, vE)
+    DD0, hDD0 = normalize_diff(D0, hD0)
 
     # first make sure that CD is finite for initial optimization variables
-    # if gamma(inf)>1, then CD = inf and the grad cannot be computed
-    gInf, info = gamma_diff(diff0.A[:,:,1:], diff0.hA[1:], 0, correction=True, n_theta=10)
+    # if gamma(inf)>1, then CD = inf and the gragInf, info = gamma_normalized_diff(DD0, hDD0, 0, correction=True, n_theta=10)d cannot be computed
+    
     
 
     # if the associated delay-difference equation doesn't depend on the controller parameters
     # compute CD/gamma0
     if is_dde_dependent:
-        if diff.hA.shape[1] > 1:
-            cd, cd_info = tds.cd(diff)
-            gamma0, gamma0_out = gamma_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True, n_theta=10)
+        if D.shape[1] > 1:
+            cd, cd_info = spectral_abscissa_diff(DD, hDD, r=-0.1)
+            gamma0, gamma0_out = gamma_normalized_diff(DD, hDD, r=0, correction=True, n_theta=10)
         else:
             cd = -np.inf
             gamma0, gamma0_out = 0, []
@@ -194,8 +200,6 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
             # compute cd
             gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
             cd, cd_info = spectral_abscissa(diff.A,diff.hA)
-        
-
         pass
 
     # obtain parameters [r,l,u',v,th]

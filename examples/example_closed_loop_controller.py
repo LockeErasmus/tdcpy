@@ -12,27 +12,13 @@ from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 
  # Masses
-
-m0 = 1.1750
-m1 = 0.5050
-m2 = 0.7290
-ma = 0.5200
+m0, m1, m2, ma = 1.1750, 0.5050, 0.7290, 0.5200
 
 # Stiffness
-k0 = 1001
-k1 = 749
-k2 = 711
-k3 = 950
-ka = 407
-k4 = 377
+k0, k1, k2, k3, ka, k4 = 1001, 749, 711, 950, 407, 377
 
 # Damping
-ca = 1.8000
-c0 = 4.3500
-c1 = 0.8500
-c2 = 1.8500
-c3 = 4.9500
-c4 = 0
+ca, c0, c1, c2, c3, c4 = 1.8000, 4.3500, 0.8500, 1.8500, 4.9500, 0
 
 def generate_system() -> tds.RDDE:
     """ generates rdde for the system described in the article
@@ -69,42 +55,17 @@ def generate_system() -> tds.RDDE:
     
     # Entering matrix entries
 
-    a21 = -(k0+k1+ka+k4)/m0
-    a22 = -(c0+c1+ca+c4)/m0
-    a23 = k1/m0
-    a24 = c1/m0
-    a25 = k4/m0
-    a26 = c4/m0
-    a27 = ka/m0
-    a28 = ca/m0
+    a21, a22, a23, a24 = -(k0+k1+ka+k4)/m0, -(c0+c1+ca+c4)/m0, k1/m0, c1/m0
+    a25, a26, a27, a28 = k4/m0, c4/m0, ka/m0, ca/m0
 
-    a41 = k1/m1
-    a42 = c1/m1
-    a43 = -(k1+k2)/m1
-    a44 = -(c1+c2)/m1
-    a45 = k2/m1
-    a46 = c2/m1
-    a47 = 0
-    a48 = 0
+    a41, a42, a43, a44 = k1/m1, c1/m1, -(k1+k2)/m1, -(c1+c2)/m1
+    a45, a46, a47, a48 = k2/m1, c2/m1, 0, 0
 
-    a61 = k4/m2
-    a62 = c4/m2
-    a63 = k2/m2
-    a64 = c2/m2
-    a65 = -(k2+k3+k4)/m2
-    a66 = -(c2+c3+c4)/m2
-    a67 = 0
-    a68 = 0
+    a61, a62, a63, a64 = k4/m2, c4/m2, k2/m2, c2/m2
+    a65, a66, a67, a68 = -(k2+k3+k4)/m2, -(c2+c3+c4)/m2, 0, 0
 
-    a81 = ka/ma
-    a82 = ca/ma
-    a83 = 0
-    a84 = 0
-    a85 = 0
-    a86 = 0
-    a87 = -ka/ma
-    a88 = -ca/ma
-
+    a81, a82, a83, a84 = ka/ma, ca/ma, 0, 0
+    a85, a86, a87, a88 = 0, 0, -ka/ma, -ca/ma
 
     A0 = np.array([[    0,      1,      0,      0,      0,      0,      0,     0           ],
                     [   a21,    a22,    a23,    a24,    a25,    a26,    a27,   a28         ],
@@ -141,6 +102,42 @@ def generate_system() -> tds.RDDE:
 
     rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
+
+    return rdde
+
+def generate_system2() -> tds.RDDE:
+    """ generates rdde for the Heat Exchanger problem
+    x'(t) = A0 x(t) + A2 x(t-nh) + A2 x(t-tb) + A3 x(t-te) + A4 x(t-td) + 
+                A5 x(t-tc) + A6 x(t-nc) + B1 u(t-tu)
+    y(t) = C2 x(t)
+    z(t) = C1 x(t)
+
+    """
+    # system constants
+    Th, Ta, Td, Tc = 14, 3, 3, 25
+    Kb, Ka, Kd, Kc, Ku = .24, 1., .94, .81, .39
+    nh, tb, te, td, tc, nc, tu = 6.5, 40, 13, 18, 2.8, 9.2, 13.2
+
+    #  delay values
+    d = np.array([0., nh, tb, te, td, tc, nc, tu])
+    A0 = A1 = A2 = A3 = A4 = A5 = A6 = np.zeros(shape=(5,5))
+    A0[1,0], A0[1,1], A0[2,2], A0[4,3]  = Ka/Ta, (-Ka-1)/Ta, -1/Td, -1
+    A1[0,0], A2[0,1], A3[1,3], A4[2,1], A5[3,2], A6[3,3]  = -1/Th, Kb/Th, 1/Ta, Kd/Td, Kc/Tc, -1/Tc
+
+    A = np.stack([A0,A1,A2,A3,A4,A5,A6],axis=2)
+    hA = d
+
+    B = np.stack([np.array([[Ku/Th,0,0,0,0]]).T],axis=2)
+    hB = np.array([0.])
+
+    C = np.stack([np.eye(5)],axis=2)
+    hC = np.array([0.])
+
+    D = np.zeros(shape=(5,1,1), dtype=float)
+    hD = np.array([0.])
+
+    rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    
 
     return rdde
 
@@ -245,7 +242,7 @@ if __name__ == "__main__":
     system_orig, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
     
     system, BB, CC = tdspy.controller.interconnect3(rdde, [0,1,4,5], [0])
-    
+
     cont = generate_controller_2()
 
     E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
@@ -325,7 +322,7 @@ if __name__ == "__main__":
     #     K = K - 0.1*jac.reshape(K0.shape)
 
     #print(np.allclose(K0 - K0.reshape(-1).reshape(K0.shape), 0.0))
-
+    
     nvar = K.size
     h = 0.0001          # step size
     # g_numerical, g_analytical = gradient_test(func_sa, x=np.random.rand(nvar), h=0.001, E=E, P=P, hP=hP, hK=hK, Kmask=Kmask, B=B, C=C)

@@ -1,6 +1,8 @@
 """
 Example: Create closed-loop for the vibration control setup, interconnected by a static feedback controller of gain K
 
+[1] Saldanha, A., H. Silm, W. Michiels, and T. Vyhlidal(2022). “An Optimization-Based Algorithm for Simultaneous 
+    Shaping of Poles and Zeros for Non-Collocated Vibration Suppression”. In: IFAC-PapersOnLine 55.16, pp. 394–399.
 """
 
 import numpy as np
@@ -55,14 +57,14 @@ def generate_system() -> tds.RDDE:
 
     D = 0
 
-    B1  = [  0   -0.8511 0   0   0   0   0   1.9231  ]'
+    B1  = [     0   -0.8511 0   0   0   0   0   1.9231  ]'
 
-    C1  = [ 1   0   0   0   0   0   0   0   
-            0   1   0   0   0   0   0   0
-            0   0   0   0   1   0   0   0
-            0   0   0   0   0   1   0   0
-            0   0   0   0   0   0   1   0
-            0   0   0   0   0   0   0   1   ]
+    C1  = [     1   0   0   0   0   0   0   0   
+                0   1   0   0   0   0   0   0
+                0   0   0   0   1   0   0   0
+                0   0   0   0   0   1   0   0
+                0   0   0   0   0   0   1   0
+                0   0   0   0   0   0   0   1       ]
 
     """
     

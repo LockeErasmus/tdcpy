@@ -16,8 +16,61 @@ logger = logging.getLogger(__name__)
 def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt.NDArray = None, hB: npt.NDArray = None, hC: npt.NDArray = None, hD: npt.NDArray = None, **kwargs):
     """ Creates empty controller reprezentation
     
-    TODO
-    
+    Parameters:
+    -----------
+    order: int
+        Controller order (0 for static controller)
+    n_inputs: int
+        Number of controller inputs
+    n_outputs: int
+        Number of controller outputs
+    hA: npt.ndarray, optional
+        Vector of delays for A matrix
+    hB: npt.ndarray, optional
+        Vector of delays for B matrix
+    hC: npt.ndarray, optional
+        Vector of delays for C matrix
+    hD: npt.ndarray, optional
+        Vector of delays for D matrix
+    **kwargs: dict, optional
+        Additional arguments (not used)
+
+    Returns:
+    --------
+    E: npt.NDArray
+        Descriptor matrix of the controller
+    K: npt.NDArray
+        System matrix of the controller
+    hK: npt.NDArray
+        Vector of delays for K matrix
+
+    Notes:
+    ------
+    - For static controller (order=0) only hD is used, other delay vectors
+      are ignored (and a warning is issued if they are provided)
+    - If order > 0 and user does not provide delay vectors, they are set to
+      [0.0] by default
+    - The resulting controller is fully connected (all entries in A, B, C, D
+      matrices are True)
+    - The resulting controller is in the form suitable for creating
+      ClosedLoop object
+
+    Examples:
+    ---------
+    >>> E, K, hK = controller_reprezentation(order=1, n_inputs=2, n_outputs=1)
+    >>> E.shape
+    (3, 3)
+    >>> K.shape
+    (1, 3)
+    >>> hK
+    array([0.])
+    >>> E, K, hK = controller_reprezentation(order=0, n_inputs=2, n_outputs=1, hD=np.array([0.0, 1.0]))
+    >>> E.shape
+    (2, 2)
+    >>> K.shape
+    (1, 2)
+    >>> hK
+    array([0., 1.])
     """
 
     assert isinstance(order, int)

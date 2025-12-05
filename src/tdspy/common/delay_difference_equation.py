@@ -26,40 +26,77 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     DDAE dynamics represented by
         E*dx/dt = A[0] x(t-hA[0]) + ... + A[m-1] x(t-hA[m-1])
 
-    Args:
-        E (array): left-side matrix of shape (n,n)
-        A (array): right-side matrices of shape (n,n,m)
-        hA (array): vector of delays of shape (m,)
-        uE (array): orthonormal basis for left null space of E, optional,
+    Parameters:
+    -----------
+        E:  array
+            left-side matrix of shape (n,n)
+        A:  array
+            right-side matrices of shape (n,n,m)
+        hA: array
+            vector of delays of shape (m,)
+        uE: array, optional
+            orthonormal basis for left null space of E, optional,
             default None means uE will be calculated via SVD
-        vE (array): orthonormal basis for right null space of E, optional,
-            default None means uE will be calculated via SVD 
+        vE: array, optional
+            orthonormal basis for right null space of E, optional,
+            default None means uE will be calculated via SVD
         **kwargs:
             tol: norm tolerance for considering matrix vanish, default 1e-14
             rcond (float): relative condition number. Singular values s smaller
                 than rcond * max(s) are considered zero in null space
                 construction, default 1e-12
-
+            is_compressed: if True, hA is assumed to be in compressed form,
+                i.e. hA[0] == 0, default True
+        
     Returns:
-            tuple containing
+    -----------
+        tuple containing
 
-                - D (array): right-side delay difference equation matrices
-                    of shape (p,p,q)
-                - hD (array): right-side delay difference equation delays of
-                    shape (q,)
+            - D (array): right-side delay difference equation matrices
+                of shape (p,p,q)
+            - hD (array): right-side delay difference equation delays of
+                shape (q,)
 
     Notes:
+    ------
         1. n, m are assumed to be > 1
         2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
         3. if E is non-singular, D, hD are returned as empty arrays
+        4. D, hD are returned in compressed form, i.e. no zero matrices in D
+           (and associated delays in hD)
+        5. if E is singular, the size of D, hD depends on the rank of E and
+           the number of non-vanishing matrices uE.T @ A[i] @ vE
+    
+    Examples:
+    --------
+    >>> E = np.array([[1,0,0],[0,0,0],[0,0,1]])
+    >>> A = np.zeros(shape=(3,3,3))
+    >>> A[:,:,0] = np.array([[0,1,0],[0,0,0],[0,0,0]])
+        >>> A[:,:,1] = np.array([[0,0,0],[1,0,0],[0,0,1]])
+    >>> A[:,:,2] = np.array([[0,0,1],[0,0,0],[0,1,0]])
+    >>> hA = np.array([0,1,2])
+    >>> D,hD = ddae_to_diff(E,A,hA)
+    >>> print("D=",D)
+    >>> print("hD=",hD)
+        D= [[[0. 0.]
+          [0. 1.]
+          [0. 0.]]
+         [[0. 1.]
+          [0. 0.]
+          [0. 0.]]
+         [[0. 0.]
+          [0. 0.]
+          [1. 0.]]]
+        hD= [1 2]
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
+    is_compressed = kwargs.get("is_compressed", True)
 
     if uE is None:
         uE = linalg.null_space(E.T, rcond=rcond)
-    if vE is None:
-        vE = linalg.null_space(E, rcond=rcond) # TODO, SVD is now calculated twice
+    # if vE is None:
+        # vE = linalg.null_space(E, rcond=rcond) # TODO, SVD is now calculated twice
     
     # Case where E is non-singular -> return empty delay difference equation
     if uE.size == 0 or vE.size == 0:
@@ -90,24 +127,110 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 def ndde_to_diff(H, hH, **kwargs):
     """ Converts NDDE to delay difference equation
 
+    Parameters:
+    -----------
+        H:  array
+            right-side matrices of shape (n,n,mH)
+        hH: array
+            vector of delays of shape (mH,)
+        **kwargs:
+            tol: norm tolerance for considering matrix vanish, default 1e-14
+
+    Returns:
+    -----------
+        tuple containing    
+            - D (array): right-side delay difference equation matrices
+                of shape (n,n,mH+1)
+            - hD (array): right-side delay difference equation delays of
+                shape (mH+1,)
+    
+    Notes:
+    ------
+
     For a NDDAE, the associated delay difference equation is given by
             
             I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0          (1)
+
+    1. n, mH are assumed to be > 0
+    2. hH is assumed to be non-zero delays
+    3. D, hD are returned in compressed form, i.e. no zero matrices in D
+        (and associated delays in hD)
+    4. D, hD are returned in normalized form, i.e. D[0] == I is omitted
+    
+    Examples:
+    --------
+    >>> H = np.zeros(shape=(2,2,2))
+    >>> H[:,:,0] = np.array([[0,1],[0,0]])
+    >>> H[:,:,1] = np.array([[0,0],[1,0]])
+    >>> hH = np.array([1,2])
+    >>> D,hD = ndde_to_diff(H,hH)
+    >>> print("D=",D)
+    >>> print("hD=",hD)
+        D= [[[0. 0.]
+          [0. 1.]]
+         [[0. 1.]
+          [0. 0.]]]
+        hD= [1 2]
     """
     assert H.ndim == 3 and hH.ndim == 1
-    assert H.shape[0] == hH.shape[1] > 0
-    assert H.shape[2] == hH.shape[0] > 0
+    assert H.shape[0] == H.shape[1] > 0 # square matrices
+    assert H.shape[2] == hH.shape[0] > 0    
     assert np.all(hH != 0)
 
     n = H.shape[0]
     hD = np.concatenate([[0], hH], axis=0)
     D = np.concatenate([np.eye(n)[:,:,np.newaxis], H], axis=2)
     
-    return D, hD
+    return H, hH
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ Normalizes delay difference equation """
+    """ Normalizes delay difference equation 
+    
+    Transforms the delay difference equation such that the leading zero delay
+    matrix D[0] equals identity (and can be omitted).
+
+    Parameters:
+    -----------
+        D:  array
+            right-side matrices of shape (n,n,m)
+        hD: array
+            vector of delays of shape (m,)
+
+    Returns:
+    -------
+        tuple containing
+            - D (array): 3D array representing matrices:
+                [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
+            - hDD (array): array of non-zero delays of shape (m-1,)
+
+    Notes:
+        1. D[0] is assumed to be invertible
+        2. hD[0] == 0
+
+    Examples:
+    ---------
+    >>> D = np.zeros(shape=(2,2,3))
+    >>> D[:,:,0] = np.array([[1,0],[0,1]])
+    >>> D[:,:,1] = np.array([[0,1],[1,0]])
+    >>> D[:,:,2] = np.array([[1,1],[0,0]])
+    >>> hD = np.array([0,1,2])
+    >>> DD,hDD = _normalize_diff(D,hD)
+    >>> print("DD=",DD)
+    >>> print("hDD=",hDD)
+        DD= [[[0. 1.]
+          [1. 0.]]
+         [[1. 1.]
+          [0. 0.]]]
+        hDD= [1 2]
+    
+    """
+
+    assert D.ndim == 3 and hD.ndim == 1
+    assert D.shape[0] == D.shape[1] > 0
+    assert D.shape[2] == hD.shape[0] >= 1
+    assert hD[0] == 0
+
     hDD = hD[1:]
     n, m = D.shape[0], hDD.shape[0]
     DD = np.zeros(shape=(n, n, m))
@@ -131,11 +254,14 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
 
-    Args:
-        D (array): right-side matrices of shape (n,n,m)
+    Parameters:
+    -----------
+        D:   array
+            right-side matrices of shape (n,n,m)
         hD (array): vector of delays of shape (m,)
 
     Returns:
+    -------
         tuple containing
 
         - D (array): 3D array representing matrices:
@@ -143,6 +269,7 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
         - hDD (array): array of non-zero delays
     
     Notes:
+    ------
         1. m > 2 is assumed
         2. D[0] is assumed to be invertible
         3. hD[0] == 0

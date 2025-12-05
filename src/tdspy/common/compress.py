@@ -26,19 +26,50 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
         1. matrices A*[i] are NOT close to zero
         1. hA* does not contain duplicates
 
-    Args:
-        A: (array): 3D array of stacked matrics (axis 2)
-        hA: (array): 1D array (vector) of delays
-        rtol (float): relative tolerance for determining matrix element is
+    Parameters:
+    -----------
+        A:  array
+            3D array of stacked matrices (axis 2)
+        hA: array
+            1D array (vector) of delays
+        rtol: float
+            relative tolerance for determining matrix element is
             zero, default 1e-5
-        atol (float): absolute tolerance for determining matrix element is 
+        atol: float
+            absolute tolerance for determining matrix element is 
             zero, default 1e-8
     
     Returns:
+    -------
         tuple containing:
 
             - compressed_A (array): compressed representation of A
             - compressed_hA (array): compressed vector of delays
+
+    Notes:
+    -----
+        1. the sort is "stable" (see numpy.argsort implementation)
+        2. if all matrices are close to zero, returns empty array with
+           shape (A.shape[0], A.shape[1], 0) and empty hA   array
+        3. if A is empty, returns A and hA unchanged
+        4. if hA is empty, returns A and hA unchanged
+        5. if A and hA have inconsistent shapes, raises ValueError
+        6. if rtol or atol are negative, raises ValueError
+        7. if A is not 3D array, raises ValueError
+        8. if hA is not 1D array, raises ValueError
+        9. if A.shape[2] != hA.shape[0], raises ValueError
+
+    Examples:
+    ---------
+    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+    >>> hA = np.array([0., 2., 0.])
+    >>> compress_matrices_delays(A, hA)
+    (array([[[0.],
+            [0.]]]), array([0., 2.]))   # only the second matrix is kept, delays 0 and 2 are kept
+    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+    >>> hA = np.array([0., 2., 0.])
+    >>> compress_matrices_delays(A, hA, rtol=1e-2, atol=1e-2)
+    (array([], shape=(2, 2, 0), dtype=int64), array([], dtype=float64))   # all matrices are close to zero, so all are removed
     """
     # Consider adding tests here - TODO
 
@@ -69,16 +100,45 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
         1. matrices A*[i] are NOT zero
         1. hA* does not contain duplicates
 
-    Args:
-        A: (array): 3D array of stacked boolean matrices (axis 2)
-        hA: (array): 1D array (vector) of delays
-        keep_zeros (bool): whether to keep matrices with all 0.0
+    Parameters:
+    -----------
+        A:  array
+            3D array of stacked boolean matrices (axis 2)
+        hA: array
+            1D array (vector) of delays
+        keep_zeros: bool
+            whether to keep zero matrices in the compressed representation,
+            default False
     
     Returns:
+    -------
         tuple containing:
 
             - compressed_A (array): compressed representation of A
             - compressed_hA (array): compressed vector of delays
+    Notes:
+    -----
+        1. the sort is "stable" (see numpy.argsort implementation)
+        2. if all matrices are zero, returns empty array with
+           shape (A.shape[0], A.shape[1], 0) and empty hA   array
+        3. if A is empty, returns A and hA unchanged
+        4. if hA is empty, returns A and hA unchanged
+        5. if A and hA have inconsistent shapes, raises ValueError
+        6. if A is not 3D array, raises ValueError
+        7. if hA is not 1D array, raises ValueError
+        8. if A.shape[2] != hA.shape[0], raises ValueError  
+    
+    Examples:
+    ---------
+    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]], dtype=bool)
+    >>> hA = np.array([0., 2., 0.])
+    >>> compress_bool_matrices_delays(A, hA)
+    (array([[[False]],
+            [[ True]]]), array([0., 2.]))   # only the second matrix is kept, delays 0 and 2 are kept
+    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0]], [[0, 0, 0], [0, 0, 0]]], dtype=bool)
+    >>> hA = np.array([0., 2., 0.])
+    >>> compress_bool_matrices_delays(A, hA)
+    (array([], shape=(2, 2, 0), dtype=bool), array([], dtype=float64))   # all matrices are zero, so all are removed
     """
     # Consider adding tests here - TODO
 
@@ -109,11 +169,15 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
         1. hA* is now in ascending order
         2. shapes are preserved
 
-    Args:
-        A: (array): 3D array of stacked matrics (axis 2)
-        hA: (array): 1D array (vector) of delays
-    
+    Parameters:
+    -----------
+    A: array
+        3D array of stacked matrices (axis 2)
+    hA: array
+        1D array (vector) of delays
+
     Returns:
+    -------
         tuple containing:
 
             - compressed_A (array): compressed representation of A
@@ -121,6 +185,33 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
     
     Notes:
         1. the sort is "stable" (see numpy.argsort implementation)
+        2. if A is empty, returns A and hA unchanged
+        3. if hA is empty, returns A and hA unchanged
+        4. if A and hA have inconsistent shapes, raises ValueError
+        5. if A is not 3D array, raises ValueError
+        6. if hA is not 1D array, raises ValueError
+        7. if A.shape[2] != hA.shape[0], raises ValueError
+        8. if hA is already sorted, returns A and hA unchanged
+
+    Examples:
+    ---------
+    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+    >>> hA = np.array([0., 2., 0.])
+    >>> sort_matrices_delays(A, hA)
+    (array([[[0., 0.],
+            [0., 0.]],
+           [[0., 0.],
+            [1., 0.]],
+           [[0., 0.],
+            [0., 0.]],
+           [[0., 0.],
+            [0., 0.]],
+           [[0., 0.],
+            [0., 0.]],
+           [[0., 0.],
+            [0., 0.]],
+           [[0., 0.],
+            [0., 0.]]]), array([0., 0., 2.]))   # delays are now sorted, shapes are preserved
     """
     # Consider adding tests here - TODO
     sorted_index = np.argsort(hA, kind="stable")

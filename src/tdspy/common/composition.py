@@ -12,6 +12,42 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                               hAA: npt.NDArray=None):
     """ Concatenates system into compact form respecting delay vectors
 
+    Parameters:
+    -----------
+        E:  array
+            RHS matrix
+        A:  array
+            left hand side matrices of DDAE, assumed non-empty
+        B:  array
+            3D array of representing input matrices
+        C:  array
+            3D array of representing output matrices
+        D:  array
+            left hand side matrices of DDAE, assumed non-empty
+        hA: array
+            vector of delays associated with array A
+        hB: array
+            vector of delays associated with array B
+        hC: array
+            vector of delays associated with array C
+        hD: array
+            vector of delays associated with array D
+        EE: array, optional
+            if provided, used as LHS matrix of the concatenated system
+        AA: array, optional
+            if provided, used as RHS 3D array of the concatenated system
+        hAA: array, optional
+            if provided, used as delay vector of the concatenated system
+
+        Returns:
+        tuple containing:
+
+            - EE (array): 2d array of concatenated LHS
+            - AA (array): 3d array of concatenated RHS
+            - hAA (array): 1d vector of concatenated delays associated with RHS
+
+    Notes:
+    ------
     Assumes system is defined as
 
         E dxdt = A[:,:,0]*x(t-hA[0]) + ... + A[:,:,n] x(t-hA[n]) +
@@ -42,25 +78,42 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                             [C, 0]
         A*[:,:,n+m+p:] = [0, 0]
                          [0, D]
+                         
+    - Assumes all input arrays are non-empty
+    - If EE, AA, hAA are provided, they are updated in place and returned
+    - If EE, AA, hAA are not provided, they are created and returned
+    - The resulting system is in the form suitable for creating ClosedLoop object
 
-    Args:
-        E (array): RHS matrix
-        A (array): left hand side matrices of DDAE, assumed non-empty
-        B (array): 3D array of representing input matrices
-        C (array): 3D array of
-        D (array): left hand side matrices of DDAE, assumed non-empty
-        hA (array): vector of delays associated with array A
-        hB (array): vector of delays associated with array B
-        hC (array): vector of delays associated with array C
-        hD (array): vector of delays associated with array D
-        
-    
-    Returns:
-        tuple containing:
-
-            - EE (array): 2d array of concatenated LHS
-            - AA (array): 3d array of concatenated RHS
-            - hAA (array): 1d vector of concatenated delays associated with RHS
+    Examples:
+    ---------
+    >>> E = np.array([[1, 0], [0, 0]])
+    >>> A = np.array([[[0, -1], [1, 0]], [[0, 0], [0, 0]]])
+    >>> B = np.array([[[0], [1]], [[0], [0]]])
+    >>> C = np.array([[[1, 0]], [[0, 0]]])
+    >>> D = np.array([[[0]], [[1]]])
+    >>> hA = np.array([0., 1.])
+    >>> hB = np.array([0.])
+    >>> hC = np.array([0.])
+    >>> hD = np.array([0.])
+    >>> EE, AA, hAA = concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD)
+    >>> EE
+    array([[1., 0., 0.],
+           [0., 0., 0.],
+           [0., 0., 0.]])
+    >>> AA[:,:,0]
+    array([[ 0., -1.,  0.],
+           [ 1.,  0.,  0.],
+           [ 0.,  0.,  0.]])
+    >>> AA[:,:,1]
+    array([[0., 0., 0.],
+           [0., 0., 0.],
+           [1., 0., 0.]])
+    >>> AA[:,:,2]
+    array([[0., 0., 0.],
+           [0., 0., 1.],
+           [0., 0., 0.]])
+    >>> hAA
+    array([0., 1., 0., 0., 0.])
     """
     # TODO perform necessary checks
 
