@@ -73,12 +73,24 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
     array([0., 1.])
     """
 
-    assert isinstance(order, int)
-    assert order >= 0
-    assert isinstance(n_inputs, int)
-    assert n_inputs > 0
-    assert isinstance(n_outputs, int)
-    assert n_outputs > 0
+    if not isinstance(order, int):
+        raise TypeError("order must be an integer")
+    if order < 0:
+        raise ValueError("order must be >= 0")
+    if not isinstance(n_inputs, int):
+        raise TypeError("n_inputs must be an integer")
+    if n_inputs <= 0:
+        raise ValueError("n_inputs must be > 0")
+    if not isinstance(n_outputs, int):
+        raise TypeError("n_outputs must be an integer")
+    if n_outputs <= 0:
+        raise ValueError("n_outputs must be > 0")
+    if n_inputs <= 0:
+        raise ValueError("n_inputs must be > 0")
+    if not isinstance(n_outputs, int):
+        raise TypeError("n_outputs must be an integer")
+    if n_outputs <= 0:
+        raise ValueError("n_outputs must be > 0")
 
     n, m = order + n_inputs, order + n_inputs
 

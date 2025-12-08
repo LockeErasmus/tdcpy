@@ -22,43 +22,47 @@ logger = logging.getLogger(__name__)
 
 
 class ClosedLoop(TDSBase):
-    """ Class representing system - controller interconnection
+    """ Class representing system - controller interconnection """
+    # Example
+        
+    #     cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
+    #     system: rdde
+    #     order: 0
+    #     y_indices: [0,1,2,3,4,5]
+    #     u_indices: [0,1]
+    #     K0: K
+    #     hK: hK
 
-    Example:
-        cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
-        system: rdde
-        order: 0
-        y_indices: [0,1,2,3,4,5]
-        u_indices: [0,1]
-        K0: K
-        hK: hK
-    
-    By introducing auxiliary variables @u, @w, @z, @y, the system-controller interconnection
-    can be represented as a DDAE. 
-    [E 0 0 0 0 0][x']           [A 0 0 0 0 0][x]    [B 0 0 0 0 0][x]
-    [0 0 0 0 0 0][@u']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
-    [0 0 I 0 0 0][@w'](t) =     [0 0 0 0 0 0][xc]   [0 0 0 0 0 0][xc]
-    [0 0 0 0 0 0][@z']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
-    [0 0 0 0 0 0][@y']          [0 0 0 0 0 0][@y]   [0 0 0 0 0 0][@y]
-    [0 0 0 0 0 0][xc']          [0 0 0 0 0 0][@v]   [0 0 0 0 0 0][@v]
-    """
+    # By introducint
+    #     By introducing auxiliary variables @u, @w, @z, @y, the system-controller interconnection
+    # can be represented as a DDAE. 
+    # [E 0 0 0 0 0][x']           [A 0 0 0 0 0][x]    [B 0 0 0 0 0][x]
+    # [0 0 0 0 0 0][@u']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
+    # [0 0 I 0 0 0][@w'](t) =     [0 0 0 0 0 0][xc]   [0 0 0 0 0 0][xc]
+    # [0 0 0 0 0 0][@z']          [0 0 0 0 0 0][@u]   [0 0 0 0 0 0][@u]
+    # [0 0 0 0 0 0][@y']          [0 0 0 0 0 0][@y]   [0 0 0 0 0 0][@y]
+    # [0 0 0 0 0 0][xc']          [0 0 0 0 0 0][@v]   [0 0 0 0 0 0][@v]
     def __init__(self, system: DDAE, order: int, y_indices: list=None, u_indices: list=None, K0: npt.NDArray=None, hK: npt.NDArray = None, **kwargs) -> None:
-        """ TODO
-                             ___________________
-                u1[-1]      |                   |  y1[-1]    
-            --------------->|                   |---------------->
-        u1[0],...,u1[nu-2]  |      SYSTEM       |  y1[0],...,y[ny-2]
-                     ------>|                   |-------
-                    |       |___________________|       |
-                    |                                   |
-                    |        ___________________        |
- y2[0],...,y2[ny-2] |       |                   |       | u2[0],...,u1[nu-2]
-                     -------|                   |<------
-                y2[-1]      |    CONTROLLER     |  u2[-1]
-            <---------------|                   |<---------------
-                            |___________________|
+        """ Initializes closed-loop system-controller interconnection
 
+        .. code-block:: text
+                    
+                                         ___________________
+                            u1[-1]      |                   |  y1[-1]    
+                        --------------->|                   |---------------->
+                    u1[0],...,u1[nu-2]  |      SYSTEM       |  y1[0],...,y[ny-2]
+                                 ------>|                   |-------
+                                |       |___________________|       |
+                                |                                   |
+                                |        ___________________        |
+            y2[0],...,y2[ny-2]  |       |                   |       | u2[0],...,u1[nu-2]
+                                 -------|                   |<------
+                            y2[-1]      |    CONTROLLER     |  u2[-1]
+                        <---------------|                   |<---------------
+                                        |___________________|
 
+        where:
+                                        
         y1_indices (list): list of indices (outputs of system 1), if not defined,
             [0] is assumed
         u2_indices (list): list of indices (inputs of system 2), if not defined,
