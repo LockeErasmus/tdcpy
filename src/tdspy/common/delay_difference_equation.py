@@ -95,8 +95,8 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 
     if uE is None:
         uE = linalg.null_space(E.T, rcond=rcond)
-    # if vE is None:
-        # vE = linalg.null_space(E, rcond=rcond) # TODO, SVD is now calculated twice
+    if vE is None:
+        vE = linalg.null_space(E, rcond=rcond) # TODO, SVD is now calculated twice
     
     # Case where E is non-singular -> return empty delay difference equation
     if uE.size == 0 or vE.size == 0:
