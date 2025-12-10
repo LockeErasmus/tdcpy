@@ -56,10 +56,12 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
 
     Returns:
     --------
-
-        tuple containing:
-            - E (array): left hand-side matrix of DAE
-            - A (array): right hand-side matrix of DAE
+    tuple:
+        A tuple containing:
+            E : array
+                left hand-side matrix of DAE
+            A : array
+                right hand-side matrix of DAE
 
     Notes:
     ------
@@ -67,6 +69,31 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         2. if s0 != 0, the matrices A are shifted accordingly before and after
            discretization
         3. if method is not recognized, raises ValueError
+
+    Examples:
+    ---------
+    >>> import numpy as np
+    >>> from tdspy.common.discretization import discretize_ddae
+    >>> E = np.array([[1,0],[0,1]])
+    >>> A = np.zeros(shape=(2,2,2))
+    >>> A[:,:,0] = np.array([[0,1],[0,0]])
+    >>> A[:,:,1] = np.array([[0,0],[1,0]])
+    >>> hA =  np.array([0,1])
+    >>> E_dae, A_dae = discretize_ddae(E,A,hA,discretization=2, method="cheb")
+    >>> E_dae
+    array([[ 0.5  ,  0.   ,  0.   ,  0.   , -0.25 , -0.   ],
+           [ 0.   ,  0.5  ,  0.   ,  0.   , -0.   , -0.25 ],
+           [ 0.   ,  0.   ,  0.125,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.125,  0.   ,  0.   ],
+           [ 1.   ,  0.   ,  1.   ,  0.   ,  1.   ,  0.   ],
+           [ 0.   ,  1.   ,  0.   ,  1.   ,  0.   ,  1.   ]])
+    >>> A_dae
+    array([[ 0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j],
+           [ 0.+0.j,  1.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  1.+0.j],
+           [ 1.+0.j,  0.+0.j, -1.+0.j,  0.+0.j,  1.+0.j,  0.+0.j]])
 
     """
     # TODO perform checks
@@ -148,3 +175,8 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         Sigma_N += s0 * Pi_N
     
     return Pi_N, Sigma_N # E, A
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

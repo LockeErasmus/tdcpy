@@ -41,11 +41,16 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     Returns:
     --------
-        tuple containing:
 
-            - EE (array): 2d array of concatenated LHS
-            - AA (array): 3d array of concatenated RHS
-            - hAA (array): 1d vector of concatenated delays associated with RHS
+    tuple:
+        A tuple containing:
+
+        EE : array
+            2d array of concatenated LHS
+        AA : array
+            3d array of concatenated RHS
+        hAA : array
+            1d vector of concatenated delays associated with RHS
 
     Notes:
     ------
@@ -60,35 +65,54 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                     + D_0 u(t - h_{D,0}) + ... + D_{q} u(t - h_{D,q})
 
     Concatenates the system into:
-    .. math::
 
-        E \dot{x1}(t) = A^*_0 x2(t - hA^*_0) + ... + A^*_{n^*} x2(t - hA^*_{n^*})
+    .. math::
+        E \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
     
     where:
-        x1 := [x^T y^T]^T
-        x2 := [x^T u^T]^T
+
+    .. math::
+
+        x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix},
+        \\qquad
+        x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}
+
     and therefore:
-        hA* = [hA, hB, hC, hD]
-        n* = n+m+p+q
-    left hand-side matrix:
-        E* = [E, 0]
-             [0, 0]
-    right hand-side array:
-        A*[:,:,:n] = [A, 0]  
-                     [0, 0]
-        A*[:,:,n:n+m] = [0, B]  
-                        [0, 0]
-        A*[:,:,n+m:n+m+p] = [0, 0]  
-                            [C, 0]
-        A*[:,:,n+m+p:] = [0, 0]
-                         [0, D]
+
+    .. math::
+        hA^* &= [hA \quad hB \quad hC \quad hD]
+
+        n^* &= n+m+p+q
+    left-hand side matrix:
+
+    .. math::
+
+        E^* := \\begin{bmatrix} E & 0 \\\\ 0 & 0\\end{bmatrix}
+
+    right-hand side array:
+    
+    .. math::
+
+        A^*\{:,:, :n\} := \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}
+
+    .. math::
+
+        A^*\{:,:, n:n+m\} = \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}
+
+    .. math::
+
+        A^*\{:,:, n+m:n+m+p\} = \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}
+
+    .. math::
+
+        A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}
                          
     - Assumes all input arrays are non-empty
     - If EE, AA, hAA are provided, they are updated in place and returned
     - If EE, AA, hAA are not provided, they are created and returned
     - The resulting system is in the form suitable for creating ClosedLoop object
 
-    Examples:
+    Examples
     ---------
     >>> import numpy as np
     >>> from tdspy.common.composition import concatenate_2x2_by_delays

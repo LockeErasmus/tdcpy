@@ -21,6 +21,9 @@ def compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol:
     vector of delays `delays` of shape (m), where the resulting quasipolynomial
     is defined as:
 
+    ..  math::
+        QP(s) =  \\sum\\limits_{i=0}^{m-1} exp(-delays[i]*s) \\sum\\limits_{j=0}^{n} coefs[i,j] * s^j
+
                  m-1                    n
         QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
                  i=0                   j=0

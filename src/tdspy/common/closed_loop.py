@@ -37,6 +37,7 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
 
     Returns:
     --------
+
     E: npt.NDArray
         Descriptor matrix of the controller
     K: npt.NDArray
@@ -55,7 +56,7 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
     - The resulting controller is in the form suitable for creating
       ClosedLoop object
 
-    Examples:
+    Examples
     ---------
     >>> import numpy as np
     >>> from tdspy.common.closed_loop import controller_reprezentation

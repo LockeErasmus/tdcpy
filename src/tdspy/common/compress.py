@@ -20,11 +20,12 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     Removes delay duplicates, sorts delays into ascending order and removes
     matrices close to zero, i.e. converts the representation (A, hA):
 
-        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
+    .. math::
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           
     
     into representation (A*, hA*), where:
         1. matrices A*[i] are NOT close to zero
-        1. hA* does not contain duplicates
+        2. hA* does not contain duplicates
 
     Parameters:
     -----------
@@ -41,10 +42,13 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     
     Returns:
     -------
-        tuple containing:
+    tuple:
+        A tuple containing:
 
-            - compressed_A (array): compressed representation of A
-            - compressed_hA (array): compressed vector of delays
+        compressed_A : array
+            compressed representation of A
+        compressed_hA : array
+            compressed vector of delays
 
     Notes:
     -----
@@ -61,6 +65,8 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
 
     Examples:
     ---------
+    >>> import numpy as np
+    >>> from tdspy.common.compress import compress_matrices_delays
     >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
     >>> hA = np.array([0., 2., 0.])
     >>> compress_matrices_delays(A, hA)
@@ -94,11 +100,12 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
     Removes delay duplicates, and sorts delays into ascending order,
     i.e. converts the representation (A, hA):
 
-        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])                           (1)
+    .. math::
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
     
     into representation (A*, hA*), where:
         1. matrices A*[i] are NOT zero
-        1. hA* does not contain duplicates
+        2. hA* does not contain duplicates
 
     Parameters:
     -----------
@@ -112,10 +119,15 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
     
     Returns:
     -------
-        tuple containing:
+    
+    tuple:
+        A tuple containing:
 
-            - compressed_A (array): compressed representation of A
-            - compressed_hA (array): compressed vector of delays
+        compressed_A : array
+            compressed representation of A
+        compressed_hA : array
+            compressed vector of delays
+
     Notes:
     -----
         1. the sort is "stable" (see numpy.argsort implementation)
@@ -163,7 +175,8 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
     
     Sorts delays into ascending order, i.e. changes the representation (A, hA):
 
-        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])                           (1)
+    .. math::
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
     
     into representation (A*, hA*), where:
         1. hA* is now in ascending order
@@ -178,11 +191,14 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
 
     Returns:
     -------
-        tuple containing:
+    tuple:
+        A tuple containing:
 
-            - compressed_A (array): compressed representation of A
-            - compressed_hA (array): compressed vector of delays
-    
+        compressed_A : array
+                compressed representation of A
+        compressed_hA : array
+                compressed vector of delays
+
     Notes:
         1. the sort is "stable" (see numpy.argsort implementation)
         2. if A is empty, returns A and hA unchanged
@@ -225,3 +241,8 @@ def compress_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray,
     """ Compresses DDAE representation
     """
     raise NotImplementedError(".")
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

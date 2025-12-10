@@ -57,12 +57,13 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
         
     Returns:
     -----------
-        tuple containing
+    tuple:
+        A tuple containing
 
-            - D (array): right-side delay difference equation matrices
-                of shape (p,p,q)
-            - hD (array): right-side delay difference equation delays of
-                shape (q,)
+        D : array
+            right-side delay difference equation matrices of shape (p,p,q)
+        hD : array
+            right-side delay difference equation delays of shape (q,)
 
     Notes:
     ------
@@ -76,25 +77,20 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     
     Examples:
     --------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import ddae_to_diff
     >>> E = np.array([[1,0,0],[0,0,0],[0,0,1]])
     >>> A = np.zeros(shape=(3,3,3))
     >>> A[:,:,0] = np.array([[0,1,0],[0,0,0],[0,0,0]])
-        >>> A[:,:,1] = np.array([[0,0,0],[1,0,0],[0,0,1]])
+    >>> A[:,:,1] = np.array([[0,0,0],[1,0,0],[0,0,1]])
     >>> A[:,:,2] = np.array([[0,0,1],[0,0,0],[0,1,0]])
     >>> hA = np.array([0,1,2])
     >>> D,hD = ddae_to_diff(E,A,hA)
-    >>> print("D=",D)
-    >>> print("hD=",hD)
-        D= [[[0. 0.]
-          [0. 1.]
-          [0. 0.]]
-         [[0. 1.]
-          [0. 0.]
-          [0. 0.]]
-         [[0. 0.]
-          [0. 0.]
-          [1. 0.]]]
-        hD= [1 2]
+    >>> D
+        array([], shape=(1, 1, 0), dtype=float64)
+    >>> hD
+        array([], dtype=int64)  
+
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
@@ -144,19 +140,20 @@ def ndde_to_diff(H, hH, **kwargs):
             tol: norm tolerance for considering matrix vanish, default 1e-14
 
     Returns:
-    -----------
-        tuple containing    
-            - D (array): right-side delay difference equation matrices
-                of shape (n,n,mH+1)
-            - hD (array): right-side delay difference equation delays of
-                shape (mH+1,)
+    --------
+    tuple:
+        A tuple containing    
+            D : array
+                right-side delay difference equation matrices of shape (n,n,mH+1)
+            hD : array
+                right-side delay difference equation matrices and delays of shape (n,n,mH+1) and (mH+1,)
     
     Notes:
     ------
 
     For a NDDAE, the associated delay difference equation is given by
-            
-            I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0          (1)
+    .. math::
+        I x(t) + H_0 x(t-hH_0) + ... + H_{mH} x(t-hH_{mH}) = 0          (1)
 
     1. n, mH are assumed to be > 0
     2. hH is assumed to be non-zero delays
@@ -166,18 +163,21 @@ def ndde_to_diff(H, hH, **kwargs):
     
     Examples:
     --------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import ndde_to_diff
     >>> H = np.zeros(shape=(2,2,2))
     >>> H[:,:,0] = np.array([[0,1],[0,0]])
     >>> H[:,:,1] = np.array([[0,0],[1,0]])
     >>> hH = np.array([1,2])
     >>> D,hD = ndde_to_diff(H,hH)
-    >>> print("D=",D)
-    >>> print("hD=",hD)
-        D= [[[0. 0.]
-          [0. 1.]]
-         [[0. 1.]
-          [0. 0.]]]
-        hD= [1 2]
+    >>> D
+    array([[[0., 0.],
+            [1., 0.]],
+    <BLANKLINE>
+        [[0., 1.],
+            [0., 0.]]])
+    >>> hD
+    array([1, 2])
 
     """
     assert H.ndim == 3 and hH.ndim == 1
@@ -207,10 +207,14 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     Returns:
     -------
-        tuple containing
-            - D (array): 3D array representing matrices:
+    tuple:
+        A tuple containing
+            D: array
+                3D array representing matrices:
                 [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
-            - hDD (array): array of non-zero delays of shape (m-1,)
+            hD: array
+                array of non-zero delays of shape (m-1,)
+
 
     Notes:
         1. D[0] is assumed to be invertible
@@ -224,13 +228,14 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     >>> D[:,:,2] = np.array([[1,1],[0,0]])
     >>> hD = np.array([0,1,2])
     >>> DD,hDD = _normalize_diff(D,hD)
-    >>> print("DD=",DD)
-    >>> print("hDD=",hDD)
-        DD= [[[0. 1.]
-          [1. 0.]]
-         [[1. 1.]
-          [0. 0.]]]
-        hDD= [1 2]
+    >>> DD
+    array([[[0., 1.],
+            [1., 0.]],
+    <BLANKLINE>
+        [[1. 1.],
+            [0. 0.]]])
+    >>> hDD
+    array([1, 2])
     
     """
 
@@ -266,16 +271,20 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     -----------
         D:   array
             right-side matrices of shape (n,n,m)
-        hD (array): vector of delays of shape (m,)
+        hD:  array
+            vector of delays of shape (m,)
 
     Returns:
-    -------
-        tuple containing
-        
-            - D (array): 3D array representing matrices:
-                [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
-            - hDD (array): array of non-zero delays
-    
+    --------
+    tuple: 
+        A tuple containing
+
+        D : array
+            3D array representing matrices:
+            [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
+        hDD : array
+            array of non-zero delays of shape (m-1,)
+
     Notes:
     ------
         1. m > 2 is assumed
@@ -284,19 +293,22 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     Examples:
     ---------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import normalize_diff
     >>> D = np.zeros(shape=(2,2,3))
     >>> D[:,:,0] = np.array([[1,0],[0,1]])
     >>> D[:,:,1] = np.array([[0,1],[1,0]])
     >>> D[:,:,2] = np.array([[1,1],[0,0]])
     >>> hD = np.array([0,1,2])
     >>> DD,hDD = normalize_diff(D,hD)
-    >>> print("DD=",DD)
-    >>> print("hDD=",hDD)
-        DD= [[[0. 1.]
-          [1. 0.]]
-         [[1. 1.]
-          [0. 0.]]]
-        hDD= [1 2]
+    >>> DD
+    array([[[0., 1.],
+            [1., 1.]],
+    <BLANKLINE>
+        [[1., 0.],
+            [0., 0.]]])
+    >>> hDD
+    array([1, 2])
 
     """
     assert D.ndim == 3 and hD.ndim == 1
@@ -309,6 +321,9 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     return DD, hDD
 
-    
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
 
     
