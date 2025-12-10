@@ -40,48 +40,54 @@ class NDDE(TDSBase):
 
         
         """
-
-        # TODO perform checks
-        # assert len(A) > 0, "TODO"
-        # TODO make sure hA[0] == 0
-
-        # TODO assert nonempty H and non-empty A
-
-        # A, hA
-        assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
-        assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
-        assert A.shape[2] == hA.shape[0], "number of delays hA does not match number of matrices Ai"
-        assert np.all(hA >= 0), "only non-negative delays possible"
-        assert np.all(hH > 0), "only non-negative delays possible"
-        if not np.any(hA == 0): # if necessary, add 0 delay term
-            hA = np.r_[0.0, hA]
-            A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
+        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=False,
+                                                              allow_negative_delays=False,
+                                                              allow_complex=False,
+                                                              add_zero_delay=True,
+                                                              sort_by_delays=True,
+                                                              dtype=kwargs.get("dtype", np.float64))
+        H, hH = self._prepare_system_descriptor_matrix_vector(H, hH, allow_empty=False,
+                                                              allow_negative_delays=False,
+                                                              allow_complex=False,
+                                                              add_zero_delay=False,
+                                                              sort_by_delays=True,
+                                                              dtype=kwargs.get("dtype", np.float64))
         
-        # I/O matrices
+         # Input/Output matrices
         if B is not None or hB is not None:
-            # input matrices are defined
-            assert isinstance(B, np.ndarray) and isinstance(hB, np.ndarray), "both ndarrays"
-            assert B.ndim == 3 and hB.ndim == 1, "dimensions check 1"
-            assert B.shape[0] == A.shape[0], "shapes of system do not match A-B matrices"
-            assert B.shape[2] == hB.shape[0], "number of delays hB do not match number of matrices Bi"
-            assert np.all(hB >= 0.0), "only non-negative delays possible"
-
+            B, hB = self._prepare_system_descriptor_matrix_vector(B, hB,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if B.shape[0] != A.shape[0]:
+                raise ValueError("B shape does not match A shape")
+        
         if C is not None or hC is not None:
-            # output matrices are defined
-            assert isinstance(C, np.ndarray) and isinstance(hC, np.ndarray), "both ndarrays"
-            assert C.ndim == 3 and hC.ndim == 1, "dimensions check 1"
-            assert C.shape[1] == A.shape[1], "shapes of system does not match A-C matrices "
-            assert C.shape[2] == hC.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hC >= 0.0), "only non-negative delays possible"
-
+            C, hC = self._prepare_system_descriptor_matrix_vector(C, hC,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if C.shape[1] != A.shape[1]:
+                raise ValueError("C shape does not match A shape")
+        
         if D is not None or hD is not None:
-            # feed-through matrices are defined
-            assert isinstance(C, np.ndarray), "C, hC needs to be defined to define D, hD"
-            assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray), "both ndarrays"
-            assert D.ndim == 3 and hD.ndim == 1, "dimensions check 1"
-            assert D.shape[0] == C.shape[0], "shapes of system does not match C-D matrices "
-            assert D.shape[2] == hD.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hD >= 0.0), "only non-negative delays possible"
+            if C is None or hC is None:
+                raise ValueError("C, hC needs to be defined to define D, hD")
+            D, hD = self._prepare_system_descriptor_matrix_vector(D, hD,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if D.shape[0] != C.shape[0]:
+                raise ValueError("D shape does not match C shape")
         
         # --- ARGS ---
         ## dynamics
@@ -95,15 +101,10 @@ class NDDE(TDSBase):
         self._hC = hC
         self._D = D
         self._hD = hD
-        
-        # TODO rest of the system description
-        # self._B1 , ...
 
         # --- KWARGS ---
         self.dtype = kwargs.get("dtype", np.float64)
         self.tol_singular = kwargs.get("tol_singular", 1e-12)
-
-        super().__init__()
 
         # TODO perform checks        
         # TODO rest of the system description

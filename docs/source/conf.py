@@ -29,6 +29,8 @@ extensions = [
     'sphinx_autodoc_typehints',    # Include type hints in docs
     'sphinx.ext.mathjax',          # Render LaTeX math
     'sphinx.ext.todo',
+    'sphinx_gallery.gen_gallery',  # This is for examples
+    "sphinxcontrib.bibtex",        # LaTeX like citations
 ]
 
 templates_path = ['_templates']
@@ -57,3 +59,19 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+# -- Example Gallery settings ------------------------------------------------
+
+sphinx_gallery_conf = {
+    'examples_dirs': [os.path.abspath('../../examples')],
+    'gallery_dirs': 'auto_examples',
+    'filename_pattern': r'.*\.py$', # include all .py files
+    'plot_gallery': True,           # render plots
+    'backreferences_dir': None,     # optional
+    'run_stale_examples': False,     # force re-execution set True
+}
+
+
+# -- Bibtex settings ---------------------------------------------------------
+
+bibtex_bibfiles = ["refs.bib"]

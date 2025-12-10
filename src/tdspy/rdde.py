@@ -20,11 +20,14 @@ class RDDE(TDSBase):
     """
     def __init__(self, A, hA,
                  B1=None, hB1=None, C1=None, hC1=None, D1=None, hD11=None,
-                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None, D21=None, hD21=None, D22=None, hD22=None) -> None:
-        super().__init__()
-
-        # TODO perform checks
-        assert len(A) > 0, "TODO"
+                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None,
+                 D21=None, hD21=None, D22=None, hD22=None, **kwargs) -> None:
+        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=False,
+                                                              allow_negative_delays=False,
+                                                              allow_complex=False,
+                                                              add_zero_delay=True,
+                                                              sort_by_delays=True,
+                                                              dtype=kwargs.get("dtype", np.float64))
 
         ## dynamics
         self._A = A
