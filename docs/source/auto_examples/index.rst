@@ -29,6 +29,23 @@ Below are examples demonstrating how to use the package.
     </div>
 
 
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Example 2.6 from appeltans2023analysis Section 2.3.2 and demonstrates that the exponential stability of neutral systems might be fragivel with respect to small delay perturbations.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_example02_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/example02`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example 02</div>
+    </div>
+
+
 .. thumbnail-parent-div-close
 
 .. raw:: html
@@ -40,6 +57,7 @@ Below are examples demonstrating how to use the package.
    :hidden:
 
    /auto_examples/example01
+   /auto_examples/example02
 
 
 .. only:: html
