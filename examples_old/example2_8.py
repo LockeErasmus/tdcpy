@@ -1,3 +1,5 @@
+"""Example 2_8: Demonstrates feature X."""
+
 import tdspy as tds
 import numpy as np
 import tdspy.plot

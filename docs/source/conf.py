@@ -29,6 +29,7 @@ extensions = [
     'sphinx_autodoc_typehints',    # Include type hints in docs
     'sphinx.ext.mathjax',          # Render LaTeX math
     'sphinx.ext.todo',
+    'sphinx_gallery.gen_gallery',  # This is for examples
 ]
 
 templates_path = ['_templates']
@@ -57,3 +58,16 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+# -- Example Gallery settings ------------------------------------------------
+
+sphinx_gallery_conf = {
+    'examples_dirs': [os.path.abspath('../../examples')],
+    'gallery_dirs': 'auto_examples',
+    'filename_pattern': r'.*\.py$',
+    # 'filename_pattern': r'^(example01\.py|example02\.py)$',
+    # 'ignore_pattern': r'^test_.*\.py$',
+    'plot_gallery': True,           # render plots
+    'backreferences_dir': None,     # optional
+    'run_stale_examples': True,     # force re-execution
+}

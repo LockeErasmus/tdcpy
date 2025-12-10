@@ -9,7 +9,7 @@
 #
 #  C =  [   1   0   0   ]
 # in the rectangular region [-4 4] x 1j*[-50 50].
-"""
+""" Example zeros
 
 """
 

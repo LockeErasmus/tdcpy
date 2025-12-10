@@ -19,8 +19,12 @@
 
 - [ ] Decide on PyPI name (`tdspy` is taken sadly)
 
-## Examples
+1. tddpy - time delay dynamics
+1. tdcpy - time delay control
+1. tdapy - time delay analysis
+1. tdscpy - time delay systems control
 
+## Examples
 
 ## Testing
 
