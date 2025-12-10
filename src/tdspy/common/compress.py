@@ -20,7 +20,7 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     Removes delay duplicates, sorts delays into ascending order and removes
     matrices close to zero, i.e. converts the representation (A, hA):
 
-        A[0] x(t-hA[0]) + ... + A[mA] x(t-hA[mA])                           (1)
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
     
     into representation (A*, hA*), where:
         1. matrices A*[i] are NOT close to zero

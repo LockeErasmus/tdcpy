@@ -57,20 +57,23 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
 
     Examples:
     ---------
+    >>> import numpy as np
+    >>> from tdspy.common.closed_loop import controller_reprezentation
     >>> E, K, hK = controller_reprezentation(order=1, n_inputs=2, n_outputs=1)
     >>> E.shape
-    (3, 3)
+    (2, 3)
     >>> K.shape
-    (1, 3)
+    (2, 3, 1)
     >>> hK
-    array([0.])
+    array([0.], dtype=float32)
     >>> E, K, hK = controller_reprezentation(order=0, n_inputs=2, n_outputs=1, hD=np.array([0.0, 1.0]))
     >>> E.shape
-    (2, 2)
-    >>> K.shape
     (1, 2)
+    >>> K.shape
+    (1, 2, 2)
     >>> hK
-    array([0., 1.])
+    array([0., 1.], dtype=float32)
+
     """
 
     if not isinstance(order, int):
@@ -142,6 +145,13 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
 
     return E, K, hK
 
+
+if __name__ == "__main__":
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import doctest
+    doctest.testmod()
 
 
     

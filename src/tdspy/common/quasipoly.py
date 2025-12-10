@@ -151,28 +151,39 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
         2. if coefs is empty, returns empty arrays
         3. if delays is empty, returns empty arrays
         4. if coefs and delays have inconsistent shapes, raises ValueError
-        5. if system is of advanced type (delay[0] != 0.0 or
-           coefs[0,-1] == 0.0), raises ValueError
+        5. if system is of advanced type (delay[0] != 0.0 or coefs[0,-1] == 0.0), raises ValueError
     
     Examples:
     ---------
     >>> import numpy as np
     >>> from tdspy.common.quasipoly import qp_to_ndde
     >>> coefs = np.array([[1.0, 0.0], [0.0, 2.0]])
-    >>> delays = np.array([1.0, 2.0])
-    >>> A, hA, H, hH = qp_to_ndde(coefs, delays)
-    ValueError: System can not be of advanced type!
-    >>> coefs = np.array([[1.0, 0.0], [0.0, 2.0]])
     >>> delays = np.array([0.0, 1.0])
-    >>> A, hA, H, hH = qp_to_ndde(coefs, delays)
-    >>> A.shape
-    (2, 2, 2)
+    >>> A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=False)
+    >>> A
+    array([[[-2.]]])
     >>> hA
-    array([0., 2.])
-    >>> H.shape
-    (2, 2, 1)
+    array([1.])
+    >>> H
+    array([], shape=(1, 1, 0), dtype=float64)
     >>> hH
-    array([0.])
+    array([], dtype=float64)
+    >>> coefs = np.array([[0.0, 1.0], [0.0, 2.0], [0.0, 3.0]])
+    >>> delays = np.array([0.0, 1.0, 2.0])
+    >>> A, hA, H, hH = qp_to_ndde(coefs, delays)
+    >>> A
+    array([[[-0., -0.]]])
+    >>> A.shape
+    (1, 1, 2)
+    >>> hA
+    array([1., 2.])
+    >>> H
+    array([[[2., 3.]]])
+    >>> H.shape
+    (1, 1, 2)
+    >>> hH
+    array([1., 2.])
+
     """
     if not ascending: # MATLAB like definition of s-powers coefficient
         coefs = coefs[:,::-1] # coefs of powers of s are in ascending order now

@@ -51,15 +51,18 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     ------
     Assumes system is defined as
 
-        E dxdt = A[:,:,0]*x(t-hA[0]) + ... + A[:,:,n] x(t-hA[n]) +
-                 + B[:,:,0]*u(t-hB[0]) + ... + B[:,:,m] u(t-hB[n])
-        
-            y  = C[:,:,0]*x(t-hC[0]) + ... + C[:,:,p] x(t-hC[p]) +
-                 + D[:,:,0]*u(t-hD[0]) + ... + D[:,:,q] u(t-hD[q])
-    
-    Concatenates the system into:
+    .. math::
 
-        E*dx1dt = A*[:,:,0]*x2(t-hA*[0]) + ... + A*[:,:,n*] x2(t-hA*[n*])
+        E \dot{x}(t) = A_0 x(t - h_{A,0}) + ... + A_{n} x(t - h_{A,n}) + 
+                    + B_0 u(t - h_{B,0}) + ... + B_{m} u(t - h_{B,m})
+            
+                y(t)  = C_0 x(t - h_{C,0}) + ... + C_{p} x(t - h_{C,p}) + 
+                    + D_0 u(t - h_{D,0}) + ... + D_{q} u(t - h_{D,q})
+
+    Concatenates the system into:
+    .. math::
+
+        E \dot{x1}(t) = A^*_0 x2(t - hA^*_0) + ... + A^*_{n^*} x2(t - hA^*_{n^*})
     
     where:
         x1 := [x^T y^T]^T
@@ -87,6 +90,8 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     Examples:
     ---------
+    >>> import numpy as np
+    >>> from tdspy.common.composition import concatenate_2x2_by_delays
     >>> E = np.array([[1, 0], [0, 0]])
     >>> A = np.array([[[0, -1], [1, 0]], [[0, 0], [0, 0]]])
     >>> B = np.array([[[0], [1]], [[0], [0]]])
@@ -94,29 +99,44 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     >>> D = np.array([[[0]], [[1]]])
     >>> hA = np.array([0., 1.])
     >>> hB = np.array([0.])
-    >>> hC = np.array([0.])
+    >>> hC = np.array([0.,0.])
     >>> hD = np.array([0.])
     >>> EE, AA, hAA = concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD)
     >>> EE
-    array([[1., 0., 0.],
-           [0., 0., 0.],
-           [0., 0., 0.]])
+    array([[1, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
     >>> AA[:,:,0]
-    array([[ 0., -1.,  0.],
-           [ 1.,  0.,  0.],
-           [ 0.,  0.,  0.]])
+    array([[0, 1, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
     >>> AA[:,:,1]
-    array([[0., 0., 0.],
-           [0., 0., 0.],
-           [1., 0., 0.]])
+    array([[-1,  0,  0,  0],
+           [ 0,  0,  0,  0],
+           [ 0,  0,  0,  0],
+           [ 0,  0,  0,  0]])
     >>> AA[:,:,2]
-    array([[0., 0., 0.],
-           [0., 0., 1.],
-           [0., 0., 0.]])
+    array([[0, 0, 0, 1],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
     >>> hAA
-    array([0., 1., 0., 0., 0.])
+    array([0., 1., 0., 0., 0., 0.])
+
     """
     # TODO perform necessary checks
+    assert A.size > 0 and B.size > 0 and C.size > 0 and D.size > 0, "Only non-empty arrays are supported!"
+    assert hA.size > 0 and hB.size > 0 and hC.size > 0 and hD.size > 0, "Only non-empty delay vectors are supported!"
+    assert E.size > 0, "Only non-empty arrays are supported!"
+    assert A.ndim == 3 and B.ndim == 3 and C.ndim == 3 and D.ndim == 3, "A, B, C, D must be 3D arrays!"
+    assert E.ndim == 2, "E must be a 2D array!"
+    assert hA.ndim == 1 and hB.ndim == 1 and hC.ndim == 1 and hD.ndim == 1, "Delay vectors must be 1D!"
+    assert A.shape[2] == hA.shape[0], "Inconsistent shape between A and hA!"
+    assert B.shape[2] == hB.shape[0], "Inconsistent shape between B and hB!"
+    assert C.shape[2] == hC.shape[0], "Inconsistent shape between C and hC!"
+    assert D.shape[2] == hD.shape[0], "Inconsistent shape between D and hD!"
 
     # non emtpy assumption
 
@@ -152,3 +172,11 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
 def interconnect():
     pass
+
+
+if __name__ == "__main__":
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import doctest
+    doctest.testmod()
