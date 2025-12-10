@@ -39,7 +39,8 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
         hAA: array, optional
             if provided, used as delay vector of the concatenated system
 
-        Returns:
+    Returns:
+    --------
         tuple containing:
 
             - EE (array): 2d array of concatenated LHS

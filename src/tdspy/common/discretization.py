@@ -38,20 +38,36 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         method for the delay eigenvalue problem. SIAM Journal on Scientific
         Computing, 32(6), pp. 3278-3300.  
     
-    Args:
-        E (array): right hand side matrix of DDAE, assumed non-empty
-        A (array): left hand side matrices of DDAE, assumed non-empty
-        hA (array): vector of delays, assumed non-empty, hA[0] == 0
-        discretization (int): degree of discretization > 0
-        s0 (complex): point discretization is done around, default 0
-        method (str): type of approximation, default 'cheb', allowed 'cheb',
+    Parameters:
+    -----------
+        E: array
+            right hand side matrix of DDAE, assumed non-empty
+        A: array
+            left hand side matrices of DDAE, assumed non-empty
+        hA: array
+            vector of delays, assumed non-empty, hA[0] == 0
+        discretization: int
+            degree of discretization > 0
+        s0: complex, optional
+            point discretization is done around, default 0
+        method: str, optional
+            type of approximation, default 'cheb', allowed 'cheb',
             'legendre'
 
     Returns:
-        tuple containing:
+    --------
 
+        tuple containing:
             - E (array): left hand-side matrix of DAE
             - A (array): right hand-side matrix of DAE
+
+    Notes:
+    ------
+        1. assumes hA is in compressed form, i.e. hA[0] == 0
+        2. if s0 != 0, the matrices A are shifted accordingly before and after
+           discretization
+        3. if method is not recognized, raises ValueError
+
     """
     # TODO perform checks
     assert A.shape[2] > 0

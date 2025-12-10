@@ -24,7 +24,14 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     difference equation
 
     DDAE dynamics represented by
-        E*dx/dt = A[0] x(t-hA[0]) + ... + A[m-1] x(t-hA[m-1])
+
+    .. math::
+
+        E \dot{x}(t) = A_0 x(t - h_{A,0}) + ... + A_{m_A} x(t - h_{A,m_A})
+    into delay difference equation represented by
+    
+    .. math::
+        D_0 x(t - h_{D,0}) + ... + D_{m_D} x(t - h_{D,m_D}) = 0
 
     Parameters:
     -----------
@@ -171,6 +178,7 @@ def ndde_to_diff(H, hH, **kwargs):
          [[0. 1.]
           [0. 0.]]]
         hD= [1 2]
+
     """
     assert H.ndim == 3 and hH.ndim == 1
     assert H.shape[0] == H.shape[1] > 0 # square matrices
@@ -263,16 +271,33 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     Returns:
     -------
         tuple containing
-
-        - D (array): 3D array representing matrices:
-            [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
-        - hDD (array): array of non-zero delays
+        
+            - D (array): 3D array representing matrices:
+                [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
+            - hDD (array): array of non-zero delays
     
     Notes:
     ------
         1. m > 2 is assumed
         2. D[0] is assumed to be invertible
         3. hD[0] == 0
+
+    Examples:
+    ---------
+    >>> D = np.zeros(shape=(2,2,3))
+    >>> D[:,:,0] = np.array([[1,0],[0,1]])
+    >>> D[:,:,1] = np.array([[0,1],[1,0]])
+    >>> D[:,:,2] = np.array([[1,1],[0,0]])
+    >>> hD = np.array([0,1,2])
+    >>> DD,hDD = normalize_diff(D,hD)
+    >>> print("DD=",DD)
+    >>> print("hDD=",hDD)
+        DD= [[[0. 1.]
+          [1. 0.]]
+         [[1. 1.]
+          [0. 0.]]]
+        hDD= [1 2]
+
     """
     assert D.ndim == 3 and hD.ndim == 1
     assert D.shape[0] == D.shape[1] > 0
