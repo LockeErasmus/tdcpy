@@ -1,12 +1,12 @@
 
 :orphan:
 
-.. _sphx_glr_sg_execution_times:
+.. _sphx_glr_auto_examples_aplications_sg_execution_times:
 
 
 Computation times
 =================
-**00:03.699** total execution time for 3 files **from all galleries**:
+**00:03.699** total execution time for 1 file **from auto_examples\aplications**:
 
 .. container::
 
@@ -32,12 +32,6 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``..\..\examples\aplications\peichl2025integrated.py``)
+   * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``peichl2025integrated.py``)
      - 00:03.699
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_example01.py` (``..\..\examples\example01.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_example02.py` (``..\..\examples\example02.py``)
-     - 00:00.000
      - 0.0

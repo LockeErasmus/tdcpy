@@ -255,7 +255,7 @@
    "name": "list"
   }
  ],
- "tds.NDDE": [
+ "tdspy.NDDE": [
   {
    "is_class": true,
    "is_explicit": false,
@@ -299,15 +299,6 @@
    "name": "NDDE"
   }
  ],
- "tdspy.init_logger": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "builtins",
-   "module_short": "builtins",
-   "name": "function"
-  }
- ],
  "tdspy.plot.eigen_plot": [
   {
    "is_class": false,
@@ -315,6 +306,13 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
   },
   {
    "is_class": false,
@@ -331,6 +329,13 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "roots"
   }
  ]
 }
