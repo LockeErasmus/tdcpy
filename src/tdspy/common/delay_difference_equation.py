@@ -33,21 +33,21 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     .. math::
         D_0 x(t - h_{D,0}) + ... + D_{m_D} x(t - h_{D,m_D}) = 0
 
-    Parameters:
-    -----------
-        E:  array
+    Parameters
+    ----------
+        E : array
             left-side matrix of shape (n,n)
-        A:  array
+        A : array
             right-side matrices of shape (n,n,m)
-        hA: array
+        hA : array
             vector of delays of shape (m,)
-        uE: array, optional
+        uE : array, optional
             orthonormal basis for left null space of E, optional,
             default None means uE will be calculated via SVD
         vE: array, optional
             orthonormal basis for right null space of E, optional,
             default None means uE will be calculated via SVD
-        **kwargs:
+        **kwargs :
             tol: norm tolerance for considering matrix vanish, default 1e-14
             rcond (float): relative condition number. Singular values s smaller
                 than rcond * max(s) are considered zero in null space
@@ -55,18 +55,16 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
             is_compressed: if True, hA is assumed to be in compressed form,
                 i.e. hA[0] == 0, default True
         
-    Returns:
-    -----------
-    tuple:
-        A tuple containing
-
+    Returns
+    -------
+    tuple :
         D : array
             right-side delay difference equation matrices of shape (p,p,q)
         hD : array
             right-side delay difference equation delays of shape (q,)
 
-    Notes:
-    ------
+    Notes
+    -----
         1. n, m are assumed to be > 1
         2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
         3. if E is non-singular, D, hD are returned as empty arrays
@@ -75,7 +73,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
         5. if E is singular, the size of D, hD depends on the rank of E and
            the number of non-vanishing matrices uE.T @ A[i] @ vE
     
-    Examples:
+    Examples
     --------
     >>> import numpy as np
     >>> from tdspy.common.delay_difference_equation import ddae_to_diff
@@ -130,28 +128,28 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 def ndde_to_diff(H, hH, **kwargs):
     """ Converts NDDE to delay difference equation
 
-    Parameters:
-    -----------
-        H:  array
+    Parameters
+    ----------
+        H : array
             right-side matrices of shape (n,n,mH)
-        hH: array
+        hH : array
             vector of delays of shape (mH,)
-        **kwargs:
+        **kwargs :
             tol: norm tolerance for considering matrix vanish, default 1e-14
 
-    Returns:
-    --------
-    tuple:
-        A tuple containing    
-            D : array
-                right-side delay difference equation matrices of shape (n,n,mH+1)
-            hD : array
-                right-side delay difference equation matrices and delays of shape (n,n,mH+1) and (mH+1,)
+    Returns
+    -------
+    tuple : 
+        D : array
+            right-side delay difference equation matrices of shape (n,n,mH+1)
+        hD : array
+            right-side delay difference equation matrices and delays of shape (n,n,mH+1) and (mH+1,)
     
-    Notes:
-    ------
+    Notes
+    -----
 
     For a NDDAE, the associated delay difference equation is given by
+    
     .. math::
         I x(t) + H_0 x(t-hH_0) + ... + H_{mH} x(t-hH_{mH}) = 0          (1)
 
@@ -161,7 +159,7 @@ def ndde_to_diff(H, hH, **kwargs):
         (and associated delays in hD)
     4. D, hD are returned in normalized form, i.e. D[0] == I is omitted
     
-    Examples:
+    Examples
     --------
     >>> import numpy as np
     >>> from tdspy.common.delay_difference_equation import ndde_to_diff
@@ -193,34 +191,38 @@ def ndde_to_diff(H, hH, **kwargs):
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ Normalizes delay difference equation 
+    """ 
+    
+    Normalizes delay difference equation 
     
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
 
-    Parameters:
-    -----------
-        D:  array
+    Parameters
+    ----------
+        D : array
             right-side matrices of shape (n,n,m)
         hD: array
             vector of delays of shape (m,)
 
-    Returns:
+    Returns
     -------
-    tuple:
+    tuple :
         A tuple containing
-            D: array
+            D : array
                 3D array representing matrices:
                 [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
-            hD: array
+            hD : array
                 array of non-zero delays of shape (m-1,)
 
 
-    Notes:
+    Notes
+    ------
+        1. m >= 1 is assumed
         1. D[0] is assumed to be invertible
         2. hD[0] == 0
 
-    Examples:
+    Examples
     ---------
     >>> D = np.zeros(shape=(2,2,3))
     >>> D[:,:,0] = np.array([[1,0],[0,1]])
@@ -262,37 +264,37 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
 
 def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ Normalizes delay difference equation
+    """ 
+    
+    Normalizes delay difference equation
 
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
 
-    Parameters:
-    -----------
-        D:   array
+    Parameters
+    ----------
+        D : array
             right-side matrices of shape (n,n,m)
-        hD:  array
+        hD : array
             vector of delays of shape (m,)
 
-    Returns:
-    --------
-    tuple: 
-        A tuple containing
-
+    Returns
+    -------
+    tuple : 
         D : array
             3D array representing matrices:
             [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
         hDD : array
             array of non-zero delays of shape (m-1,)
 
-    Notes:
-    ------
+    Notes
+    -----
         1. m > 2 is assumed
         2. D[0] is assumed to be invertible
         3. hD[0] == 0
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> import numpy as np
     >>> from tdspy.common.delay_difference_equation import normalize_diff
     >>> D = np.zeros(shape=(2,2,3))

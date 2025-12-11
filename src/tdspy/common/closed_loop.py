@@ -14,38 +14,39 @@ from .compress import compress_matrices_delays, compress_bool_matrices_delays
 logger = logging.getLogger(__name__)
 
 def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt.NDArray = None, hB: npt.NDArray = None, hC: npt.NDArray = None, hD: npt.NDArray = None, **kwargs):
-    """ Creates empty controller reprezentation
+    """ 
     
-    Parameters:
+    Creates empty controller reprezentation
+    
+    Parameters
     -----------
-    order: int
+    order : int
         Controller order (0 for static controller)
-    n_inputs: int
+    n_inputs : int
         Number of controller inputs
-    n_outputs: int
+    n_outputs : int
         Number of controller outputs
-    hA: npt.ndarray, optional
+    hA : npt.ndarray, optional
         Vector of delays for A matrix
-    hB: npt.ndarray, optional
+    hB : npt.ndarray, optional
         Vector of delays for B matrix
-    hC: npt.ndarray, optional
+    hC : npt.ndarray, optional
         Vector of delays for C matrix
-    hD: npt.ndarray, optional
+    hD : npt.ndarray, optional
         Vector of delays for D matrix
     **kwargs: dict, optional
         Additional arguments (not used)
 
-    Returns:
-    --------
-
-    E: npt.NDArray
+    Returns
+    -------
+    E : npt.NDArray
         Descriptor matrix of the controller
-    K: npt.NDArray
+    K : npt.NDArray
         System matrix of the controller
-    hK: npt.NDArray
+    hK : npt.NDArray
         Vector of delays for K matrix
 
-    Notes:
+    Notes
     ------
     - For static controller (order=0) only hD is used, other delay vectors
       are ignored (and a warning is issued if they are provided)
@@ -57,7 +58,7 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
       ClosedLoop object
 
     Examples
-    ---------
+    --------
     >>> import numpy as np
     >>> from tdspy.common.closed_loop import controller_reprezentation
     >>> E, K, hK = controller_reprezentation(order=1, n_inputs=2, n_outputs=1)
