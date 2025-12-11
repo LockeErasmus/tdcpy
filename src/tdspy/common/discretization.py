@@ -33,45 +33,49 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
     When method == 'legendre', the code uses a similar companion-type
     reformulation but now based on Legendre polynomials instead of Chebyshev
     polynomials.
+    
+    Parameters
+    ----------
+    E: array
+        right hand side matrix of DDAE, assumed non-empty
+    A: array
+        left hand side matrices of DDAE, assumed non-empty
+    hA: array
+        vector of delays, assumed non-empty, hA[0] == 0
+    discretization: int
+        degree of discretization > 0
+    s0: complex, optional
+        point discretization is done around, default 0
+    method: str, optional
+        type of approximation, default 'cheb', allowed 'cheb',
+        'legendre'
 
-    [1] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
+    Returns
+    -------
+    tuple
+        A tuple containing
+        E : array
+            left hand-side matrix of DAE
+        A : array
+            right hand-side matrix of DAE
+
+    Notes
+    -----
+    1. assumes hA is in compressed form, i.e. hA[0] == 0
+    2. if s0 != 0, the matrices A are shifted accordingly before and after
+        discretization
+    3. if method is not recognized, raises ValueError
+
+        
+    References
+    ----------
+
+    .. [1] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
         method for the delay eigenvalue problem. SIAM Journal on Scientific
         Computing, 32(6), pp. 3278-3300.  
-    
-    Parameters:
-    -----------
-        E: array
-            right hand side matrix of DDAE, assumed non-empty
-        A: array
-            left hand side matrices of DDAE, assumed non-empty
-        hA: array
-            vector of delays, assumed non-empty, hA[0] == 0
-        discretization: int
-            degree of discretization > 0
-        s0: complex, optional
-            point discretization is done around, default 0
-        method: str, optional
-            type of approximation, default 'cheb', allowed 'cheb',
-            'legendre'
 
-    Returns:
+    Examples
     --------
-    tuple:
-        A tuple containing:
-            E : array
-                left hand-side matrix of DAE
-            A : array
-                right hand-side matrix of DAE
-
-    Notes:
-    ------
-        1. assumes hA is in compressed form, i.e. hA[0] == 0
-        2. if s0 != 0, the matrices A are shifted accordingly before and after
-           discretization
-        3. if method is not recognized, raises ValueError
-
-    Examples:
-    ---------
     >>> import numpy as np
     >>> from tdspy.common.discretization import discretize_ddae
     >>> E = np.array([[1,0],[0,1]])

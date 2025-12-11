@@ -15,9 +15,7 @@ import numpy as np
 import numpy.typing as npt
 
 def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e-8):
-    """ 
-    
-    Compresses matrices - delays representation
+    """ Compresses matrices - delays representation
     
     Removes delay duplicates, sorts delays into ascending order and removes
     matrices close to zero, i.e. converts the representation (A, hA):
@@ -31,20 +29,22 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
 
     Parameters
     ----------
-        A : array
-            3D array of stacked matrices (axis 2)
-        hA : array
-            1D array (vector) of delays
-        rtol : float
-            relative tolerance for determining matrix element is
-            zero, default 1e-5
-        atol : float
-            absolute tolerance for determining matrix element is 
-            zero, default 1e-8
+    A : array
+        3D array of stacked matrices (axis 2)
+    hA : array
+        1D array (vector) of delays
+    rtol : float
+        relative tolerance for determining matrix element is
+        zero, default 1e-5
+    atol : float
+        absolute tolerance for determining matrix element is 
+        zero, default 1e-8
     
     Returns
     -------
-    tuple :
+    tuple
+        A tuple containing
+
         compressed_A : array
             compressed representation of A
         compressed_hA : array
@@ -52,16 +52,16 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
 
     Notes
     -----
-        1. the sort is "stable" (see numpy.argsort implementation)
-        2. if all matrices are close to zero, returns empty array with
-            shape (A.shape[0], A.shape[1], 0) and empty hA   array
-        3. if A is empty, returns A and hA unchanged
-        4. if hA is empty, returns A and hA unchanged
-        5. if A and hA have inconsistent shapes, raises ValueError
-        6. if rtol or atol are negative, raises ValueError
-        7. if A is not 3D array, raises ValueError
-        8. if hA is not 1D array, raises ValueError
-        9. if A.shape[2] != hA.shape[0], raises ValueError
+    1. the sort is "stable" (see numpy.argsort implementation)
+    2. if all matrices are close to zero, returns empty array with
+        shape (A.shape[0], A.shape[1], 0) and empty hA   array
+    3. if A is empty, returns A and hA unchanged
+    4. if hA is empty, returns A and hA unchanged
+    5. if A and hA have inconsistent shapes, raises ValueError
+    6. if rtol or atol are negative, raises ValueError
+    7. if A is not 3D array, raises ValueError
+    8. if hA is not 1D array, raises ValueError
+    9. if A.shape[2] != hA.shape[0], raises ValueError
 
     Examples
     ---------
@@ -95,33 +95,33 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     return compressed_A, compressed_hA
 
 def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=False):
-    """ 
-    
-    Compresses boolean matrices - delays representation
+    """ Compresses boolean matrices - delays representation
     
     Removes delay duplicates, and sorts delays into ascending order,
     i.e. converts the representation (A, hA):
 
     .. math::
-        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})
     
-    into representation (A*, hA*), where:
+    into the representation (A*, hA*), where:
         1. matrices A*[i] are NOT zero
         2. hA* does not contain duplicates
 
     Parameters
-    -----------
-        A : array
-            3D array of stacked boolean matrices (axis 2)
-        hA : array
-            1D array (vector) of delays
-        keep_zeros : bool
-            whether to keep zero matrices in the compressed representation,
-            default False
+    ----------
+    A : array
+        3D array of stacked boolean matrices (axis 2)
+    hA : array
+        1D array (vector) of delays
+    keep_zeros : bool
+        whether to keep zero matrices in the compressed representation,
+        default False
     
     Returns
     -------
-    tuple :
+    tuple
+        A tuple containing
+
         compressed_A : array
             compressed representation of A
         compressed_hA : array
@@ -129,18 +129,18 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
 
     Notes
     -----
-        1. the sort is "stable" (see numpy.argsort implementation)
-        2. if all matrices are zero, returns empty array with
-           shape (A.shape[0], A.shape[1], 0) and empty hA   array
-        3. if A is empty, returns A and hA unchanged
-        4. if hA is empty, returns A and hA unchanged
-        5. if A and hA have inconsistent shapes, raises ValueError
-        6. if A is not 3D array, raises ValueError
-        7. if hA is not 1D array, raises ValueError
-        8. if A.shape[2] != hA.shape[0], raises ValueError  
+    1. the sort is "stable" (see numpy.argsort implementation)
+    2. if all matrices are zero, returns empty array with
+        shape (A.shape[0], A.shape[1], 0) and empty hA   array
+    3. if A is empty, returns A and hA unchanged
+    4. if hA is empty, returns A and hA unchanged
+    5. if A and hA have inconsistent shapes, raises ValueError
+    6. if A is not 3D array, raises ValueError
+    7. if hA is not 1D array, raises ValueError
+    8. if A.shape[2] != hA.shape[0], raises ValueError  
     
     Examples
-    ---------
+    --------
     >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]], dtype=bool)
     >>> hA = np.array([0., 2., 0.])
     >>> compress_bool_matrices_delays(A, hA)
@@ -170,9 +170,7 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
     return compressed_A, compressed_hA
 
 def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
-    """ 
-    
-    Sorts matrices - delays representation (ascending order by delays)
+    """ Sorts matrices - delays representation (ascending order by delays)
     
     Sorts delays into ascending order, i.e. changes the representation (A, hA):
 
@@ -185,14 +183,16 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
 
     Parameters
     ----------
-        A : array
-            3D array of stacked matrices (axis 2)
-        hA : array
-            1D array (vector) of delays
+    A : array
+        3D array of stacked matrices (axis 2)
+    hA : array
+        1D array (vector) of delays
 
     Returns
     -------
-    tuple :
+    tuple
+        A tuple containing
+
         compressed_A : array
                 compressed representation of A
         compressed_hA : array
@@ -200,17 +200,17 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
 
     Notes
     -----
-        1. the sort is "stable" (see numpy.argsort implementation)
-        2. if A is empty, returns A and hA unchanged
-        3. if hA is empty, returns A and hA unchanged
-        4. if A and hA have inconsistent shapes, raises ValueError
-        5. if A is not 3D array, raises ValueError
-        6. if hA is not 1D array, raises ValueError
-        7. if A.shape[2] != hA.shape[0], raises ValueError
-        8. if hA is already sorted, returns A and hA unchanged
+    1. the sort is "stable" (see numpy.argsort implementation)
+    2. if A is empty, returns A and hA unchanged
+    3. if hA is empty, returns A and hA unchanged
+    4. if A and hA have inconsistent shapes, raises ValueError
+    5. if A is not 3D array, raises ValueError
+    6. if hA is not 1D array, raises ValueError
+    7. if A.shape[2] != hA.shape[0], raises ValueError
+    8. if hA is already sorted, returns A and hA unchanged
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
     >>> hA = np.array([0., 2., 0.])
     >>> sort_matrices_delays(A, hA)

@@ -28,6 +28,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     .. math::
 
         E \dot{x}(t) = A_0 x(t - h_{A,0}) + ... + A_{m_A} x(t - h_{A,m_A})
+
     into delay difference equation represented by
     
     .. math::
@@ -35,29 +36,31 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 
     Parameters
     ----------
-        E : array
-            left-side matrix of shape (n,n)
-        A : array
-            right-side matrices of shape (n,n,m)
-        hA : array
-            vector of delays of shape (m,)
-        uE : array, optional
-            orthonormal basis for left null space of E, optional,
-            default None means uE will be calculated via SVD
-        vE: array, optional
-            orthonormal basis for right null space of E, optional,
-            default None means uE will be calculated via SVD
-        **kwargs :
-            tol: norm tolerance for considering matrix vanish, default 1e-14
-            rcond (float): relative condition number. Singular values s smaller
-                than rcond * max(s) are considered zero in null space
-                construction, default 1e-12
-            is_compressed: if True, hA is assumed to be in compressed form,
-                i.e. hA[0] == 0, default True
+    E : array
+        left-side matrix of shape (n,n)
+    A : array
+        right-side matrices of shape (n,n,m)
+    hA : array
+        vector of delays of shape (m,)
+    uE : array, optional
+        orthonormal basis for left null space of E, optional,
+        default None means uE will be calculated via SVD
+    vE: array, optional
+        orthonormal basis for right null space of E, optional,
+        default None means uE will be calculated via SVD
+    **kwargs :
+        tol: norm tolerance for considering matrix vanish, default 1e-14
+        rcond (float): relative condition number. Singular values s smaller
+            than rcond * max(s) are considered zero in null space
+            construction, default 1e-12
+        is_compressed: if True, hA is assumed to be in compressed form,
+            i.e. hA[0] == 0, default True
         
     Returns
     -------
-    tuple :
+    tuple
+        A tuple containing
+
         D : array
             right-side delay difference equation matrices of shape (p,p,q)
         hD : array
@@ -65,13 +68,13 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 
     Notes
     -----
-        1. n, m are assumed to be > 1
-        2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
-        3. if E is non-singular, D, hD are returned as empty arrays
-        4. D, hD are returned in compressed form, i.e. no zero matrices in D
-           (and associated delays in hD)
-        5. if E is singular, the size of D, hD depends on the rank of E and
-           the number of non-vanishing matrices uE.T @ A[i] @ vE
+    1. n, m are assumed to be > 1
+    2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
+    3. if E is non-singular, D, hD are returned as empty arrays
+    4. D, hD are returned in compressed form, i.e. no zero matrices in D
+        (and associated delays in hD)
+    5. if E is singular, the size of D, hD depends on the rank of E and
+        the number of non-vanishing matrices uE.T @ A[i] @ vE
     
     Examples
     --------
@@ -88,7 +91,6 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
         array([], shape=(1, 1, 0), dtype=float64)
     >>> hD
         array([], dtype=int64)  
-
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
@@ -139,7 +141,9 @@ def ndde_to_diff(H, hH, **kwargs):
 
     Returns
     -------
-    tuple : 
+    tuple
+        A tuple containing
+
         D : array
             right-side delay difference equation matrices of shape (n,n,mH+1)
         hD : array
@@ -191,9 +195,7 @@ def ndde_to_diff(H, hH, **kwargs):
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ 
-    
-    Normalizes delay difference equation 
+    """ Normalizes delay difference equation 
     
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
@@ -207,7 +209,7 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     Returns
     -------
-    tuple :
+    tuple
         A tuple containing
             D : array
                 3D array representing matrices:
@@ -264,9 +266,7 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
 
 def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ 
-    
-    Normalizes delay difference equation
+    """ Normalizes delay difference equation
 
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
@@ -280,7 +280,9 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     Returns
     -------
-    tuple : 
+    tuple
+        A tuple containing
+
         D : array
             3D array representing matrices:
             [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]

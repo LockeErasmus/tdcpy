@@ -10,40 +10,40 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                               hB: npt.NDArray, hC: npt.NDArray, hD: npt.NDArray,
                               EE: npt.NDArray=None, AA: npt.NDArray=None,
                               hAA: npt.NDArray=None):
-    """ 
-    
-    Concatenates system into compact form respecting delay vectors.
+    """ Concatenates system into compact form respecting delay vectors.
 
     Parameters
     ----------
-        E : array
-            RHS matrix
-        A : array
-            left hand side matrices of DDAE, assumed non-empty
-        B : array
-            3D array of representing input matrices
-        C : array
-            3D array of representing output matrices
-        D : array
-            left hand side matrices of DDAE, assumed non-empty
-        hA : array
-            vector of delays associated with array A
-        hB : array
-            vector of delays associated with array B
-        hC : array
-            vector of delays associated with array C
-        hD : array
-            vector of delays associated with array D
-        EE : array, optional
-            if provided, used as LHS matrix of the concatenated system
-        AA: array, optional
-            if provided, used as RHS 3D array of the concatenated system
-        hAA : array, optional
-            if provided, used as delay vector of the concatenated system
+    E : array
+        RHS matrix
+    A : array
+        left hand side matrices of DDAE, assumed non-empty
+    B : array
+        3D array of representing input matrices
+    C : array
+        3D array of representing output matrices
+    D : array
+        left hand side matrices of DDAE, assumed non-empty
+    hA : array
+        vector of delays associated with array A
+    hB : array
+        vector of delays associated with array B
+    hC : array
+        vector of delays associated with array C
+    hD : array
+        vector of delays associated with array D
+    EE : array, optional
+        if provided, used as LHS matrix of the concatenated system
+    AA: array, optional
+        if provided, used as RHS 3D array of the concatenated system
+    hAA : array, optional
+        if provided, used as delay vector of the concatenated system
 
     Returns
     -------
-    tuple :
+    tuple
+        A tuple containing
+
         EE : array
             2d array of concatenated LHS
         AA : array
@@ -57,10 +57,10 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     .. math::
 
-        E \dot{x}(t) = A_0 x(t - h_{A,0}) + ... + A_{n} x(t - h_{A,n}) + 
+        E \dot{x}(t) &= A_0 x(t - h_{A,0}) + ... + A_{n} x(t - h_{A,n}) + 
                     + B_0 u(t - h_{B,0}) + ... + B_{m} u(t - h_{B,m})
             
-                y(t)  = C_0 x(t - h_{C,0}) + ... + C_{p} x(t - h_{C,p}) + 
+                y(t)  &= C_0 x(t - h_{C,0}) + ... + C_{p} x(t - h_{C,p}) + 
                     + D_0 u(t - h_{D,0}) + ... + D_{q} u(t - h_{D,q})
 
     Concatenates the system into:
@@ -82,6 +82,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
         hA^* &= [hA \quad hB \quad hC \quad hD]
 
         n^* &= n+m+p+q
+
     left-hand side matrix:
 
     .. math::
@@ -90,21 +91,13 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     right-hand side array:
     
-    .. math::
+    :math:`A^*\{:,:, :n\} := \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}`,
 
-        A^*\{:,:, :n\} &:= \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}
+    :math:`A^*\{:,:, n:n+m\} := \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}`,
 
-    .. math::
+    :math:`A^*\{:,:, n+m:n+m+p\} := \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}`,
 
-        A^*\{:,:, n:n+m\} &:= \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}
-
-    .. math::
-
-        A^*\{:,:, n+m:n+m+p\} &:= \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}
-
-    .. math::
-
-        A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}
+    :math:`A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}`.
                          
     - Assumes all input arrays are non-empty
     - If EE, AA, hAA are provided, they are updated in place and returned
