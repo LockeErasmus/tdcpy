@@ -21,34 +21,34 @@ logger = logging.getLogger(__name__)
 def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: complex=0j, discretization_ideal=None, xlim=None, ylim=None) -> animation.FuncAnimation:
     """ Creates discretization animation
 
-    Parameters:
+    Parameters
     ----------
-        tds: RDDE | NDDE | DDAE
-            system to discretize and animate
-        discretization: iterable
-            iterable of discretization degrees to animate over
-        s0: complex, optional
-            point discretization is done around, default 0j
-        discretization_ideal: int, optional
-            this discretization is assumed to be 'correct' and always present in
-            animation, set None to turn off, default None
-        xlim: tuple, optional
-            x axis limits, default None
-        ylim: tuple, optional
-            y axis limits, default None
+    tds : RDDE | NDDE | DDAE
+        system to discretize and animate
+    discretization : iterable
+        iterable of discretization degrees to animate over
+    s0 : complex, optional
+        point discretization is done around, default 0j
+    discretization_ideal : int, optional
+        this discretization is assumed to be 'correct' and always present in
+        animation, set None to turn off, default None
+    xlim : tuple, optional
+        x axis limits, default None
+    ylim : tuple, optional
+        y axis limits, default None
     
-    Returns:
+    Returns
+    -------
+    ani (Animation) : python Animation object, use plt.show() to see
+
+    Notes
+    -----
+    1. if this function does not suit you, copy and rewrite this
+    2. if you want to save animation, use ani.save(...) method of returned
+        Animation object
+
+    Examples
     --------
-        ani (Animation): python Animation object, use plt.show() to see
-
-    Notes:
-    ------
-        1. if this function does not suit you, copy and rewrite this
-        2. if you want to save animation, use ani.save(...) method of returned
-           Animation object
-
-    Examples:
-    ---------
     >>> from tdspy.ddae import DDAE
     >>> from tdspy.plot.discretization_animation import discretization_animation
     >>> import numpy as np
