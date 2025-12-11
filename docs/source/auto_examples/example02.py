@@ -25,10 +25,8 @@ differential equation is
 
 import matplotlib.pyplot as plt
 import numpy as np
-import tdspy as tds
+import tdspy
 import tdspy.plot
-
-tdspy.init_logger(level="DEBUG")
 
 A0 = np.array([[0.25]])
 A1 = np.array([[-1./3]])
@@ -41,7 +39,7 @@ r = [-0.9, 0.2, -500, 500]
 fig, axes = plt.subplots(1, 3, sharex=True, sharey=True)
 
 for delay, ax in zip([2, 2.05, 2.005], axes):
-    ndde = tds.NDDE(A=[A0, A1], hA=[0, 1], H=[H1, H2], hH=[1, delay])
+    ndde = tdspy.NDDE(A=[A0, A1], hA=[0, 1], H=[H1, H2], hH=[1, delay])
     cr, info = tdspy.roots(ndde, r=r, max_size_evp=1500)
     tdspy.plot.eigen_plot(cr, ax=ax)
     ax.set_title(rf"$\tau_2={delay}$")

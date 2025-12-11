@@ -9,10 +9,13 @@ This module configures Sphinx documentation generation including:
 - Autodoc and Napoleon options
 """
 
-# -- Path setup --------------------------------------------------------------
-
 import os
 import sys
+
+from sphinx_gallery.sorting import FileNameSortKey
+
+# -- Path setup --------------------------------------------------------------
+
 sys.path.insert(0, os.path.abspath('../../src')) # package root
 
 # -- Project information -----------------------------------------------------
@@ -64,8 +67,9 @@ napoleon_use_rtype = True
 
 sphinx_gallery_conf = {
     'examples_dirs': [os.path.abspath('../../examples')],
-    'gallery_dirs': 'auto_examples',
+    'gallery_dirs': ['auto_examples'],
     'filename_pattern': r'.*\.py$', # include all .py files
+    'within_subsection_order': FileNameSortKey,
     'plot_gallery': True,           # render plots
     'backreferences_dir': None,     # optional
     'run_stale_examples': False,     # force re-execution set True

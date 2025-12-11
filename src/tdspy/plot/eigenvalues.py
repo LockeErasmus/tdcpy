@@ -25,7 +25,7 @@ def complex_scatter_axplot(roots: npt.NDArray, ax: Axes, *args, **kwargs) -> Non
     ax.scatter(np.real(roots), np.imag(roots), *args, **kwargs)
 
 
-def eigen_plot(roots1, roots0=None, ax=None, **kwargs):
+def eigen_plot(roots: npt.NDArray, ax=None, **kwargs):
     """
     
     Args:
@@ -43,38 +43,16 @@ def eigen_plot(roots1, roots0=None, ax=None, **kwargs):
     ax.axhline(0.0, linestyle="-.", linewidth=1, color="k")
     ax.axvline(0.0, linestyle="-.", linewidth=1, color="k")
     
-    roots1_real = np.real(roots1)
-    roots1_imag = np.imag(roots1)
+    roots_real = np.real(roots)
 
-    mask_negative = roots1_real < -tol
-    if np.any(mask_negative) > 0:
-        complex_scatter_axplot(
-            roots1[mask_negative],
-            ax=ax,
-            marker="x",
-            color="g",
-            linewidths=0.5,
-        )
-    
-    mask_positive = roots1_real > tol
-    if np.any(mask_positive) > 0:
-        complex_scatter_axplot(
-            roots1[mask_positive],
-            ax=ax,
-            marker="x",
-            color="r",
-            linewidths=0.5,
-        )
+    conditions = [
+        roots_real < -tol,
+        (roots_real >= -tol) & (roots_real <= tol),
+        roots_real > tol,
+    ]
+    colors = np.select(conditions, ["g", "b", "r"], default='gray')
 
-    mask_zero = ~(mask_positive | mask_negative)
-    if np.any(mask_zero) > 0:
-        complex_scatter_axplot(
-            roots1[mask_zero],
-            ax=ax,
-            marker="x",
-            color="b",
-            linewidths=0.5,
-        )
+    complex_scatter_axplot(roots, ax=ax, c=colors, marker="x", linewidth=0.5, label="roots")
     
     ax.set_xlabel(r"$\Re (\lambda)$")
     ax.set_ylabel(r"$\Im (\lambda)$")
