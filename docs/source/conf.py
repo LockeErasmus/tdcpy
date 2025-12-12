@@ -29,7 +29,8 @@ release = '0.1.0'           # Version of your package
 extensions = [
     'sphinx.ext.autodoc',          # Automatically document docstrings
     'sphinx.ext.napoleon',         # Google / NumPy style docstrings
-    'sphinx_autodoc_typehints',    # Include type hints in docs
+    "sphinx.ext.autodoc.typehints",
+    # 'sphinx_autodoc_typehints',    # Include type hints in docs
     'sphinx.ext.mathjax',          # Render LaTeX math
     'sphinx.ext.todo',
     'sphinx_gallery.gen_gallery',  # This is for examples
@@ -41,7 +42,7 @@ exclude_patterns = []
 
 # -- HTML output -------------------------------------------------------------
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 html_static_path = ['_static']
 
 # -- Autodoc settings --------------------------------------------------------
@@ -75,7 +76,9 @@ sphinx_gallery_conf = {
     'run_stale_examples': False,     # force re-execution set True
 }
 
-
 # -- Bibtex settings ---------------------------------------------------------
 
 bibtex_bibfiles = ["refs.bib"]
+bibtex_reference_style = "author_year"
+bibtex_scan_rst = True
+bibtex_overwrite_cache = True

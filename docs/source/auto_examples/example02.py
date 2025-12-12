@@ -2,8 +2,8 @@ r"""
 Example 02
 ==========
 
-Example 2.6 from :cite:`appeltans2023analysis` Section 2.3.2 and demonstrates that
-the exponential stability of neutral systems might be fragivel with respect to
+Example 2.6 from :cite:`appeltans2023analysis` Section 2.3.2 demonstrates that
+the exponential stability of neutral systems might be fragile with respect to
 small delay perturbations.
 
 Consider the following neutral delay differential equation (NDDE):
@@ -21,6 +21,7 @@ differential equation is
     x(t) - \frac{3}{4}x(t-\tau_1) + \frac{1}{2}x(t-\tau_2) = 0.
 
 .. bibliography::
+    :filter: docname
 """
 
 import matplotlib.pyplot as plt

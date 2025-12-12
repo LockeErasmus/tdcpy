@@ -78,6 +78,7 @@ retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
      \end{bmatrix},
 
 .. bibliography::
+    :filter: docname
 """
 
 import matplotlib.pyplot as plt

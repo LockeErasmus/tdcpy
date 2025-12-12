@@ -15,7 +15,7 @@ Applications
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="In this peichl2025integrated authors considered chain of 3 flexibly linked masses (first and last also connected to rigid frame). On first mass, absorber m_a, k_a, c_a is mounted together with voice-coil which can be used for active control.">
+    <div class="sphx-glr-thumbcontainer" tooltip="In this peichl2025integrated authors considered chain of 3 flexibly linked masses (first and last also connected to rigid frame). Harmonic disturbance d(t) = \text{cos}(\omega t) acts on last mass, absorber m_a, k_a, c_a together with voice coil u(t) is mounted on the first mass to supress harmonic disturbance.">
 
 .. only:: html
 

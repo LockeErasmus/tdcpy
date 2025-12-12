@@ -19,21 +19,10 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+   :titlesonly:
 
-   modules
-
-Module Reference
-================
-
-.. automodule:: tdspy
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples
-
+   introduction
+   installation
+   api_reference
    auto_examples/index
+   citing

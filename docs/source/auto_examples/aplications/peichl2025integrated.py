@@ -3,11 +3,12 @@ Non-collocated vibration absorbtion via delayed resonator
 =========================================================
 
 In this :cite:`peichl2025integrated` authors considered chain of 3 flexibly
-linked masses (first and last also connected to rigid frame). On first mass,
-absorber :math:`m_a, k_a, c_a` is mounted together with voice-coil which can be
-used for active control.
+linked masses (first and last also connected to rigid frame). Harmonic
+disturbance :math:`d(t) = \text{cos}(\omega t)` acts on last mass, absorber
+:math:`m_a, k_a, c_a` together with voice coil :math:`u(t)` is mounted on
+the first mass to supress harmonic disturbance.
 
-The whole system is governed by 4 second order linear equations
+The whole system can be described via 4 second order linear equations
 
 .. math::
 
@@ -65,7 +66,7 @@ retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
 
     A_0 =
      \begin{bmatrix}
-        O_{4,4} & I
+        O_{4} & I \\
         -M^{-1} K & -M^{-1} C
      \end{bmatrix}
     A_1 = g
@@ -76,11 +77,8 @@ retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
          o_4  & E_a
      \end{bmatrix},
 
-
-
-
-
 .. bibliography::
+    :filter: docname
 """
 
 import matplotlib.pyplot as plt

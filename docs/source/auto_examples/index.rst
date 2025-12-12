@@ -31,7 +31,7 @@ Below are examples demonstrating how to use the package.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Example 2.6 from appeltans2023analysis Section 2.3.2 and demonstrates that the exponential stability of neutral systems might be fragivel with respect to small delay perturbations.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Example 2.6 from appeltans2023analysis Section 2.3.2 demonstrates that the exponential stability of neutral systems might be fragile with respect to small delay perturbations.">
 
 .. only:: html
 
@@ -43,6 +43,23 @@ Below are examples demonstrating how to use the package.
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Example 02</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The Smith predictor is given by:     C&#x27;(s) = C(s) / (1 + C H0 - C H0 e^(-s tau))">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_example2_12_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/example2_12`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example 2.12 from the TDS-CONTROL manual</div>
     </div>
 
 
@@ -58,6 +75,7 @@ Below are examples demonstrating how to use the package.
 
    /auto_examples/example01
    /auto_examples/example02
+   /auto_examples/example2_12
 
 Applications
 ============
@@ -72,7 +90,7 @@ Applications
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="In this peichl2025integrated authors considered chain of 3 flexibly linked masses (first and last also connected to rigid frame). On first mass, absorber m_a, k_a, c_a is mounted together with voice-coil which can be used for active control.">
+    <div class="sphx-glr-thumbcontainer" tooltip="In this peichl2025integrated authors considered chain of 3 flexibly linked masses (first and last also connected to rigid frame). Harmonic disturbance d(t) = \text{cos}(\omega t) acts on last mass, absorber m_a, k_a, c_a together with voice coil u(t) is mounted on the first mass to supress harmonic disturbance.">
 
 .. only:: html
 

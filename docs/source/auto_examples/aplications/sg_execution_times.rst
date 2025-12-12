@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:03.699** total execution time for 1 file **from auto_examples\aplications**:
+**00:04.052** total execution time for 1 file **from auto_examples\aplications**:
 
 .. container::
 
@@ -33,5 +33,5 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``peichl2025integrated.py``)
-     - 00:03.699
+     - 00:04.052
      - 0.0
