@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**01:15.655** total execution time for 4 files **from all galleries**:
+**00:03.248** total execution time for 4 files **from all galleries**:
 
 .. container::
 
@@ -32,15 +32,15 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_example02.py` (``..\..\examples\example02.py``)
-     - 01:15.655
+   * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``../../examples/aplications/peichl2025integrated.py``)
+     - 00:03.248
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``..\..\examples\aplications\peichl2025integrated.py``)
+   * - :ref:`sphx_glr_auto_examples_example01.py` (``../../examples/example01.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_example01.py` (``..\..\examples\example01.py``)
+   * - :ref:`sphx_glr_auto_examples_example02.py` (``../../examples/example02.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_example2_12.py` (``..\..\examples\example2_12.py``)
+   * - :ref:`sphx_glr_auto_examples_example2_12.py` (``../../examples/example2_12.py``)
      - 00:00.000
      - 0.0
