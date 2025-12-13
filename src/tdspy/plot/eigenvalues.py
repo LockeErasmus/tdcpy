@@ -52,7 +52,7 @@ def eigen_plot(roots: npt.NDArray, ax=None, **kwargs):
     ]
     colors = np.select(conditions, ["g", "b", "r"], default='gray')
 
-    complex_scatter_axplot(roots, ax=ax, c=colors, marker="x", linewidth=0.5, label="roots")
+    complex_scatter_axplot(roots, ax=ax, c=colors, marker="x", linewidth=0.5, label=kwargs.get("label", "roots"))
     
     ax.set_xlabel(r"$\Re (\lambda)$")
     ax.set_ylabel(r"$\Im (\lambda)$")

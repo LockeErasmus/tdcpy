@@ -53,16 +53,18 @@ class TDSBase(ABC):
             delays (list[float]|npt.NDArray): delay values
 
         """
+        if delays is None:
+            delays = np.zeros(shape=(0,), dtype=np.float64)
+
         if isinstance(delays, list):
             # note empty list of delays is allowed and converted properly to empty np array
             delays = np.array(delays, dtype=dtype)
 
-        if isinstance(matrices, list):
-            if len(matrices) == 0:
-                matrices = np.empty((0,0,0), dtype=np.dtype)
-            else:
-                # note: this correctly results in error if matrices have inconsistent shapes
-                matrices = np.stack(matrices, axis=2) # results is 3D array
+        if matrices is None or (isinstance(matrices, list) and len(matrices) == 0): # None or empty list
+            matrices = np.empty((0, 0, len(delays)), dtype=np.dtype)
+        elif isinstance(matrices, list): # non-empty list
+            # note: this correctly results in error if matrices have inconsistent shapes
+            matrices = np.stack(matrices, axis=2) # results is 3D array
 
         if matrices.ndim != 3:
             raise ValueError("matrices must be a list of 2D arrays or a 3D array")
@@ -82,7 +84,7 @@ class TDSBase(ABC):
         if add_zero_delay:
             if not np.any(delays == 0):
                 # add zero delay and zero matrix to the beginning
-                delays = np.r__[0.0, delays]
+                delays = np.r_[0.0, delays]
                 zero_matrix = np.zeros((matrices.shape[0], matrices.shape[1], 1), dtype=matrices.dtype)
                 matrices = np.concatenate((zero_matrix, matrices), axis=2)
         

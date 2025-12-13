@@ -43,7 +43,7 @@ class DDAE(TDSBase):
     def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None,
                  B: npt.NDArray=None, hB: npt.NDArray=None, C: npt.NDArray=None, hC: npt.NDArray=None, 
                  D: npt.NDArray=None, hD: npt.NDArray=None, **kwargs) -> None:
-        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=False,
+        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=True,
                                                               allow_negative_delays=False,
                                                               allow_complex=False,
                                                               add_zero_delay=True,
