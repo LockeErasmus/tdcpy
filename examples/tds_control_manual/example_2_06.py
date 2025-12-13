@@ -1,6 +1,6 @@
 r"""
-Example 02
-==========
+Example 2.6 - Stability analysis of neutral DDE with multiple delays
+====================================================================
 
 Example 2.6 from :cite:`appeltans2023analysis` Section 2.3.2 demonstrates that
 the exponential stability of neutral systems might be fragile with respect to
@@ -19,9 +19,6 @@ differential equation is
 .. math::
 
     x(t) - \frac{3}{4}x(t-\tau_1) + \frac{1}{2}x(t-\tau_2) = 0.
-
-.. bibliography::
-    :filter: docname
 """
 
 import matplotlib.pyplot as plt
