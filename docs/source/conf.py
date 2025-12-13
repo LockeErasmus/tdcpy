@@ -14,6 +14,7 @@ import sys
 
 from sphinx_gallery.sorting import FileNameSortKey
 
+
 # -- Path setup --------------------------------------------------------------
 
 sys.path.insert(0, os.path.abspath('../../src')) # package root
@@ -69,6 +70,7 @@ napoleon_use_rtype = True
 sphinx_gallery_conf = {
     'examples_dirs': [os.path.abspath('../../examples')],
     'gallery_dirs': ['auto_examples'],
+    "nested_sections": False,
     'filename_pattern': r'.*\.py$', # include all .py files
     'within_subsection_order': FileNameSortKey,
     'plot_gallery': True,           # render plots

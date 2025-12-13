@@ -1,12 +1,12 @@
 
 :orphan:
 
-.. _sphx_glr_sg_execution_times:
+.. _sphx_glr_auto_examples_tds_control_manual_sg_execution_times:
 
 
 Computation times
 =================
-**03:06.769** total execution time for 4 files **from all galleries**:
+**03:06.769** total execution time for 3 files **from auto_examples\tds_control_manual**:
 
 .. container::
 
@@ -32,15 +32,12 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example02.py` (``..\..\examples\tds_control_manual\example02.py``)
+   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example02.py` (``example02.py``)
      - 03:05.865
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example01.py` (``..\..\examples\tds_control_manual\example01.py``)
+   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example01.py` (``example01.py``)
      - 00:00.888
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example2_12.py` (``..\..\examples\tds_control_manual\example2_12.py``)
+   * - :ref:`sphx_glr_auto_examples_tds_control_manual_example2_12.py` (``example2_12.py``)
      - 00:00.016
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_aplications_peichl2025integrated.py` (``..\..\examples\aplications\peichl2025integrated.py``)
-     - 00:00.000
      - 0.0
