@@ -23,7 +23,9 @@ sys.path.insert(0, os.path.abspath('../../src')) # package root
 
 project = 'tdspy'       # Your package name
 author = 'Adam Peichl'        # Your name
+copyright = '|today|, Adam Peichl'  # Copyright info
 release = '0.1.0'           # Version of your package
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -45,6 +47,8 @@ exclude_patterns = []
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+html_logo = '_static/tdspy_logo.png'  # Path to your logo
+html_favicon = '_static/tdspy_favicon.ico'  # Path to your favicon
 
 # -- Autodoc settings --------------------------------------------------------
 
