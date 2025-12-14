@@ -132,9 +132,9 @@ Et = np.array([[0], [0], [1], [0], [0], [0], [0], [0],])
 
 A1 = g * Bu @ Ea.T
 
-ddae = tdspy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0], D=[np.array([[0.]])], hD=[0.])
-cr, info = tdspy.roots(ddae, r=-350)
-z, _ = tdspy.zeros(ddae, r=[-350, 5, -4500, 4500])
+rdde = tdspy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0], D=[np.array([[0.]])], hD=[0.])
+cr, info = tdspy.roots(rdde, r=-350)
+z, _ = tdspy.zeros(rdde, r=[-350, 5, -4500, 4500])
 
 fig, ax1 = plt.subplots(1,1)
 

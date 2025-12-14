@@ -60,8 +60,9 @@ def zeros(tds: RDDE | NDDE | DDAE, r: list, input_index: int=0, output_index: in
     # form new DDAE representing transmission zeros problem
     E, A, hA = concatenate_2x2_by_delays(
         tds.E, tds.A, tds.B[:, [input_index], :], tds.C[[output_index], :, :],
-        tds.D[[output_index], [input_index], :], tds.hA, tds.hB, tds.hC, tds.hD,
-    )        
+        tds.D[np.ix_([output_index], [input_index], range(tds.D.shape[2]))],
+        tds.hA, tds.hB, tds.hC, tds.hD,
+    )     
 
     # compress - TODO consider as kwarg? or always do compression?
     compressed_A, compressed_hA = compress_matrices_delays(A, hA)
