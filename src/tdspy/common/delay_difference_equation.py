@@ -191,7 +191,7 @@ def ndde_to_diff(H, hH, **kwargs):
     hD = np.concatenate([[0], hH], axis=0)
     D = np.concatenate([np.eye(n)[:,:,np.newaxis], H], axis=2)
     
-    return H, hH
+    return D, hD
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
