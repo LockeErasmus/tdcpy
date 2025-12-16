@@ -1,4 +1,4 @@
-# Cookbook for me to create documentation
+# Building the documentation
 
 Assuming we are at root, make sure we installed all `sphinx` dependencies
 
@@ -15,7 +15,7 @@ sphinx-build -b html source _build/html
 ```
 
 
-## Starting from scratch (DO NOT USE)
+## Starting from scratch (**DO NOT USE** - it will rewrite `.rst` files)
 
 ```
 sphinx-quickstart
