@@ -49,9 +49,9 @@ exclude_patterns = []
 # -- HTML output -------------------------------------------------------------
 
 html_theme = 'alabaster'
-html_static_path = ['_static']
-html_logo = '_static/tdspy_logo.png'  # Path to your logo
-html_favicon = '_static/tdspy_favicon.ico'  # Path to your favicon
+html_static_path = [os.path.join(PACKAGE_ROOT, 'docs', '_static')]
+html_favicon = os.path.join(html_static_path[0], 'favicon.ico')  # Path to favicon.ico, generated via: https://favicon.io/favicon-generator/
+html_logo = os.path.join(html_static_path[0], 'logo.svg')  # Path to logo
 
 # -- Autodoc settings --------------------------------------------------------
 
@@ -77,7 +77,8 @@ napoleon_use_rtype = True
 sphinx_gallery_conf = {
     "examples_dirs": [EXAMPLES_PATH],
     'gallery_dirs': ['auto_examples'],
-    "nested_sections": False,
+    "nested_sections": True,
+    "show_signature": False,
     'filename_pattern': r'.*\.py$', # include all .py files
     'within_subsection_order': FileNameSortKey,
     'plot_gallery': True,           # render plots
