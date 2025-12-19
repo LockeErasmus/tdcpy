@@ -39,7 +39,8 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
     
     Returns
     -------
-    ani (Animation) : python Animation object, use plt.show() to see
+    ani : animation
+        python Animation object, use plt.show() to see
 
     Notes
     -----

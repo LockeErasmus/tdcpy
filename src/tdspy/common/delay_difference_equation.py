@@ -1,6 +1,16 @@
 """
 Set of functions for obtaining and manipulation of delay difference equations
 -----------------------------------------------------------------------------
+
+Implemented functions:
+    1. ddae_to_diff -> extracts the delay-difference equation represented by 
+        (D,hD) from the delay-differential algebraic equation represented by
+        (E,A,hA)
+    2. ndde_to_diff -> extracts the associated delay-difference equation 
+        represented by (D,hD) given an NDDE represented by matrices (H,hH)
+    3. normalize_diff -> obtained the normalized ADDE with the leading matrix
+        corresponding to the zero-delay term equal to the identity matrix
+
 Notes:
     1. these functions are internal, they do not operate via high level API
     2. these functions assume correct inputs, input types, etc. (that is to
@@ -217,7 +227,6 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
             hD : array
                 array of non-zero delays of shape (m-1,)
 
-
     Notes
     ------
         1. m >= 1 is assumed
@@ -225,7 +234,7 @@ def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
         2. hD[0] == 0
 
     Examples
-    ---------
+    --------
     >>> D = np.zeros(shape=(2,2,3))
     >>> D[:,:,0] = np.array([[1,0],[0,1]])
     >>> D[:,:,1] = np.array([[0,1],[1,0]])

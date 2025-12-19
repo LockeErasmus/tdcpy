@@ -1,5 +1,11 @@
 """
 TODO
+Set of functions for discretizing a DDAE into a DAE
+---------------------------------------------------
+
+Implemented functions:
+
+    1. discretize_ddae -> returns a discretized DAE represented by (E*,A*) given a ddae represented by (E,A,hA)
 """
 
 import logging
@@ -20,11 +26,15 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
 
     DDAE of form:
 
-        E x'(t) = A[0] x(t) + A[1] x(t-hA[1]) + .. + A[m] x(t-hA[m]),      (1)
+    .. math::
+
+        E \dot{x}(t) = A_0 x(t) + A_1 x(t - h_{A,1}) + ... + A_{m} x(t - h_{A,m}),          (1)
 
     is discretized into DAE of form:
-
-        E x'(t) = A x(t).                                                  (2)
+    
+    .. math::
+        
+        E \dot{x}(t) = A x(t),                                                              (2)
     
     When method == 'cheb', the code uses the companion-type reformulation of
     the spectral discretisaion of the infinitesimal generator of the solution
@@ -36,17 +46,17 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
     
     Parameters
     ----------
-    E: array
+    E : array
         right hand side matrix of DDAE, assumed non-empty
-    A: array
+    A : array
         left hand side matrices of DDAE, assumed non-empty
-    hA: array
+    hA : array
         vector of delays, assumed non-empty, hA[0] == 0
-    discretization: int
+    discretization : int
         degree of discretization > 0
-    s0: complex, optional
+    s0 : complex, optional
         point discretization is done around, default 0
-    method: str, optional
+    method : str, optional
         type of approximation, default 'cheb', allowed 'cheb',
         'legendre'
 
@@ -54,6 +64,7 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
     -------
     tuple
         A tuple containing
+        
         E : array
             left hand-side matrix of DAE
         A : array

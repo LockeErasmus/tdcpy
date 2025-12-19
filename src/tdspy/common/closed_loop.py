@@ -1,6 +1,11 @@
 """
 Closed-loop and controller related functionality
 ------------------------------------------------
+
+Implemented functions:
+
+    1. controller_reprezentation -> creates empty controller reprezentation (E, K, hK) given order, number of inputs and outputs, and delays for matrices A, B, C, D (if applicable)
+
 """
 
 import numpy as np
@@ -14,9 +19,7 @@ from .compress import compress_matrices_delays, compress_bool_matrices_delays
 logger = logging.getLogger(__name__)
 
 def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt.NDArray = None, hB: npt.NDArray = None, hC: npt.NDArray = None, hD: npt.NDArray = None, **kwargs):
-    """ 
-    
-    Creates empty controller reprezentation
+    """ Creates an empty controller reprezentation
     
     Parameters
     -----------
