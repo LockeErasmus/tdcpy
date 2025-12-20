@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    tdspy.common
+   tdspy.stability
    tdspy.plot
    tdspy.stabopt
 

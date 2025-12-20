@@ -2,7 +2,7 @@
 Set of functions for TDS composition
 
 Implemented functions:
-    1. concatenate_2x2_by_delays -> creates a concatenated DDAE (E*, A*, hA*) given a DDAE representation (E,A,B,C,D) and the repective delay matrices (hA, hB, hC, hD).
+1. concatenate_2x2_by_delays -> creates a concatenated DDAE (E*, A*, hA*) given a DDAE representation (E,A,B,C,D) and the repective delay matrices (hA, hB, hC, hD).
 
 """
 
@@ -70,6 +70,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     Concatenates the system into:
 
     .. math::
+    
         E^* \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
     
     where:

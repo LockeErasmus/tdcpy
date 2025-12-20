@@ -8,8 +8,8 @@ Implemented functions:
     2. rightmost_root -> right most root and necessary things for gradient
 
 TODO:
-    1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
-        higher logic into high level API (tdspy.roots)
+1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
+    higher logic into high level API (tdspy.roots)
 """
 
 from collections import namedtuple
@@ -44,7 +44,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
 
     .. math::
 
-        E \Dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})
+        E \Dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})  \ldots \qquad (1)
     
     region is defined either by (1) r is float:
         region = {z \in C: Re(z) >= r && Im(z) >= 0}
@@ -398,23 +398,23 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float=0.0
 
         A tuple containing:
 
-            root_star : complex
-                rightmost root
-            root_info : RightmostRootInfo
-                RMR metadata containing:
-                M : array
-                    characteristic matrix evaluated at `root_star`
-                DM : array
-                    derivative of characteristic matrix evaluated at 
-                    `root_star`
-                u : array
-                    left eigenvector associated with `root_star`
-                v : array
-                    right eigenvector associated with `root_star`
-                found : bool
-                    flag if RMR succesfully found
-                max_size_evp_enforced : bool
-                    flag if maximum size of EVP was enforced
+        root_star : complex
+            rightmost root
+        root_info : RightmostRootInfo
+            RMR metadata containing:
+            M : array
+                characteristic matrix evaluated at `root_star`
+            DM : array
+                derivative of characteristic matrix evaluated at 
+                `root_star`
+            u : array
+                left eigenvector associated with `root_star`
+            v : array
+                right eigenvector associated with `root_star`
+            found : bool
+                flag if RMR succesfully found
+            max_size_evp_enforced : bool
+                flag if maximum size of EVP was enforced
 
     """
     # unpack kwargs
