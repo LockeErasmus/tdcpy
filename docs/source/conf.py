@@ -53,6 +53,25 @@ html_static_path = [os.path.join(PACKAGE_ROOT, 'docs', '_static')]
 html_favicon = os.path.join(html_static_path[0], 'favicon.ico')  # Path to favicon.ico, generated via: https://favicon.io/favicon-generator/
 html_logo = os.path.join(html_static_path[0], 'logo.svg')  # Path to logo
 
+# -- LaTeX output ------------------------------------------------------------
+latex_engine = "pdflatex"
+
+latex_documents = [
+    (
+        "index",                # root document
+        "tdspy.tex",            # output .tex file
+        "TDSpy Documentation",  # document title
+        "Adam Peichl",          # author
+        "manual",               # document class
+    ),
+]
+
+latex_elements = {
+    "papersize": "a4paper",
+    "pointsize": "11pt",
+    "figure_align": "htbp",
+}
+
 # -- Autodoc settings --------------------------------------------------------
 
 autodoc_member_order = 'bysource'  # Order members as in the source code
