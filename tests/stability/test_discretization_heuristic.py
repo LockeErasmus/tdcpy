@@ -22,8 +22,6 @@ CASES = [
     )
 ]
 
-
-
 @pytest.mark.parametrize(
     argnames="factory",
     argvalues=CASES,
@@ -32,13 +30,6 @@ def test_discretization_heuristic(factory, enable_plot: bool) -> None:
     """ ... """
     E, A, hA = factory
 
-    D, hD = ndde_to_diff(H, hH)
-    # normalization is not necessary for NDDE
-    print(D, hD)
+    n = compute_n_rhp(E, A[:,:,0], A[:,:,1:], tau=hA)
 
-    val, info = gamma_normalized_diff(H, hH, r=0, n_theta=3)   
-    
-    print(val, info)
-
-    if enable_plot:
-        raise NotImplementedError("Plotting not implemented yet for gamma_r tests.")
+    print(n)

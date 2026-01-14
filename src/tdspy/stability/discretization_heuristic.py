@@ -11,6 +11,7 @@ References:
 
 """
 
+import itertools
 import logging
 
 import numpy as np
@@ -67,15 +68,26 @@ cubic_spline_b = interpolate.CubicSpline(THETA, B_THETA)
 cubic_spline_a_rect = interpolate.CubicSpline(THETA_RECT, A_THETA_RECT)
 cubic_spline_b_rect = interpolate.CubicSpline(THETA_RECT, B_THETA_RECT)
 
+def grid_generator(m: int, n_grid_points:int=10):
+    """ Generator for m-dimensional space grid points in [0, pi] x [-pi, pi]^{m-1} """
+    if m < 1:
+        raise ValueError("m must be >= 1")
+
+    grid0 = np.linspace(0.0, np.pi, n_grid_points, endpoint=True)
+    grid_rest = np.linspace(-np.pi, np.pi, n_grid_points, endpoint=True)
+    grids = [grid0] + [grid_rest] * (m - 1)
+    vec = np.empty(m, dtype=grid0.dtype)
+
+    for sample in itertools.product(*grids):
+        vec[:] = sample
+        yield vec
+
 def commensurate_gk(E, B, C, n_k, grid_points=20) -> npt.NDArray:
     """ TODO """
-    stepsize = np.pi / grid_points
-    #factor = 1.05*np.sin(stepsize)
     gk = []
     jhh = np.pi / (grid_points*n_k[-1])
     for k in range(grid_points*n_k[-1]):
-        coef = np.exp(1j*k*jhh*n_k[1:])
-        W = B + np.sum(C*coef, axis=2)
+        W = B + np.sum(C * np.exp(1j*k*jhh*n_k[1:]), axis=2)
         r = linalg.eig(W, E, left=False, right=False)
         gk.append(np.conjugate(r)) # complex conjugate
     return np.concatenate(gk)
@@ -86,73 +98,31 @@ def commensurate_gk2(E, B, C, tau, n_k, si, grid_points=20) -> npt.NDArray:
     factor = 1.05*np.sin(stepsize)
     gk = []
     jhh = np.pi / (grid_points*n_k[-1])
+
+    # pre-multiply C by constat vector
+    CC = C * np.exp(-factor * si * tau[1:])
+
     for k in range(grid_points*n_k[-1]):
-        coef = np.exp(1j*k*jhh*n_k[1:]) * np.exp(-factor * si * tau[1:])
-        W = B + np.sum(C*coef, axis=2)
+        W = B + np.sum(CC * np.exp(1j*k*jhh*n_k[1:]), axis=2)
         r = linalg.eig(W, E, left=False, right=False)
         gk.append(np.conjugate(r)) # complex conjugate
     return np.concatenate(gk)
 
-def disproportionate_gk(E, B, C, tau, grid_points=20) -> npt.NDArray:
+def incommensurate_gk(E, B, C, tau, grid_points=20) -> npt.NDArray:
     """ TODO - in original implementation, only 3 non zero delays allowed """
     n_delays = len(tau)
-    stepsize = np.pi / grid_points
-
-    gk = []
-    if n_delays == 2:
-        for k in range(grid_points + 1):
-            W = B + C[:,:,0] * np.exp(1j*k*stepsize)
+    if n_delays < 2:
+        raise NotImplementedError("Imposible to calculate for 1 or 0 delays")
+    elif n_delays < 5:
+        gk = []
+        for sample_vec in grid_generator(n_delays-1, grid_points + 1):
+            W = B + np.sum(C * np.exp(1j * sample_vec), axis=2)
             r = linalg.eig(W, E, left=False, right=False)
             gk.append(np.conjugate(r))
-    elif n_delays == 3:
-        for k in range(grid_points + 1):
-            for j in range(-grid_points+1, grid_points+1, 1):
-                W = B + C[:,:,0] * np.exp(1j*k*stepsize) + C[:,:,1] * np.exp(1j*j*stepsize)
-                r = linalg.eig(W, E, left=False, right=False)
-                gk.append(np.conjugate(r))
-    elif n_delays == 4:
-        for k in range(grid_points + 1):
-            for j in range(-grid_points+1, grid_points+1, 1):
-                for i in range(-grid_points+1, grid_points+1, 1):
-                    W = B + C[:,:,0] * np.exp(1j*k*stepsize) + C[:,:,1] * np.exp(1j*j*stepsize) + C[:,:,2] * np.exp(1j*i*stepsize)
-                    r = linalg.eig(W, E, left=False, right=False)
-                    gk.append(np.conjugate(r))
+        return np.concatenate(gk)
     else:
-        raise NotImplementedError(f"Not implemented for more than 3 non-zero delays.")
-    return np.concatenate(gk)
-
-def disproportionate_gk2(E, B, C, tau, si, grid_points=20) -> npt.NDArray:
-    """ TODO - in original implementation, only 3 non zero delays allowed """
-    n_delays = len(tau)
-    stepsize = np.pi / grid_points
-    factor = 1.05*np.sin(stepsize)
-    gk = []
-    if n_delays == 2:
-        for k in range(grid_points + 1):
-            W = B + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
-            r = linalg.eig(W, E, left=False, right=False)
-            gk.append(np.conjugate(r))
-    elif n_delays == 3:
-        for k in range(grid_points + 1):
-            for j in range(-grid_points+1, grid_points+1, 1):
-                W = (B
-                     + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
-                     + C[:,:,1] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[2]))
-                r = linalg.eig(W, E, left=False, right=False)
-                gk.append(np.conjugate(r))
-    elif n_delays == 4:
-        for k in range(grid_points + 1):
-            for j in range(-grid_points+1, grid_points+1, 1):
-                for i in range(-grid_points+1, grid_points+1, 1):
-                    W = (B
-                     + C[:,:,0] * np.exp(1j*k*stepsize) * np.exp(-factor*si*tau[1])
-                     + C[:,:,1] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[2])
-                     + C[:,:,2] * np.exp(1j*j*stepsize) * np.exp(-factor*si*tau[3]))
-                    r = linalg.eig(W, E, left=False, right=False)
-                    gk.append(np.conjugate(r))
-    else:
-        raise NotImplementedError(f"Not implemented for more than 3 non-zero delays.")
-    return np.concatenate(gk)
+        # TODO, this implementation works for more delays, it raised error in original code
+        raise NotImplementedError(f"Not implemented for more than 3 non-zero delays.") 
     
 def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) -> int:
     """
@@ -198,13 +168,12 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
         pass # TODO maybe some log message
 
     #h=np.pi / n_grid # step size
-    factor = 1.05*np.sin(np.pi/n_grid)
+    factor = 1.05*np.sin(np.pi/n_grid) # np.pi / n_grid <- stepsize
 
     if is_commensurate:
         gk = commensurate_gk(E, B, C, n_k, grid_points=n_grid)
-    else:
-        # cases for 2, 3, 4 delays
-        gk = disproportionate_gk(E, B, C, tau, grid_points=n_grid)
+    else: # cases for 2, 3, 4 delays
+        gk = incommensurate_gk(E, B, C, tau, grid_points=n_grid)
 
     gk = gk[np.isfinite(gk)] # get rid of inf and NaN
     si = np.max(np.real(gk))
@@ -228,11 +197,9 @@ def compute_n_rhp(E, B, C, tau: npt.NDArray, basic_delay: float=None, **kwargs) 
 
         # matlab code - line 157 to 200
         if is_commensurate:
-            # commensurate delays
-            gk = commensurate_gk2(E, B, C, tau, n_k, si, grid_points=n_grid)
-        else:
-            # cases for 2, 3, 4 delays
-            gk = disproportionate_gk2(E, B, C, tau, si, grid_points=n_grid)
+            gk = commensurate_gk(E, B, C * np.exp(-factor * si * tau[1:]), n_k, grid_points=n_grid)
+        else: # case for > 2 delays
+            gk = incommensurate_gk(E, B, C * np.exp(-factor * si * tau[1:]), tau, grid_points=n_grid)
         
         # matlab code - line 202 -> TODO to function (repeating code)
         gk = gk[np.isfinite(gk)] # get rid of inf and NaN
