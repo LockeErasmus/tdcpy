@@ -48,7 +48,7 @@ exclude_patterns = []
 
 # -- HTML output -------------------------------------------------------------
 
-html_theme = 'alabaster'
+html_theme = 'pydata_sphinx_theme' # 'alabaster'
 html_static_path = [os.path.join(PACKAGE_ROOT, 'docs', '_static')]
 html_favicon = os.path.join(html_static_path[0], 'favicon.ico')  # Path to favicon.ico, generated via: https://favicon.io/favicon-generator/
 html_logo = os.path.join(html_static_path[0], 'logo.svg')  # Path to logo
@@ -93,18 +93,22 @@ napoleon_use_rtype = True
 
 # -- Example Gallery settings ------------------------------------------------
 
+
+
 sphinx_gallery_conf = {
     "examples_dirs": [EXAMPLES_PATH],
     'gallery_dirs': ['auto_examples'],
-    "nested_sections": True,
-    "show_signature": False,
+    # --- subgalleries ---
+    "nested_sections": True,                # sub-sections for subfolders
+    # "subsection_order": "by_folder",        # order subfolders as in file system
+    # "within_subsection_order": "by_file",   # order examples inside subfolder
     'filename_pattern': r'.*\.py$', # include all .py files
-    'within_subsection_order': FileNameSortKey,
+    # 'within_subsection_order': FileNameSortKey,
     'plot_gallery': True,           # render plots
-    'backreferences_dir': None,     # optional
+    # 'backreferences_dir': None,     # optional
     'run_stale_examples': False,     # force re-execution set True
     'download_all_examples': False,  # optional, button for download all .zip
-    'matplotlib_animations': (True, 'html5'), # (True, 'mp4') - to save .rst size
+    # 'matplotlib_animations': (True, 'html5'), # (True, 'mp4') - to save .rst size
 }
 
 # -- Bibtex settings ---------------------------------------------------------
