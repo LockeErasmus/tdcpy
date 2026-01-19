@@ -5,6 +5,17 @@ Docstring for test.examples
 import numpy as np
 import numpy.typing as npt
 
+def tds_control_manual_example_2_1() -> npt.NDArray[np.float64]:
+    # Create RDDE matrix representation
+    A0 = np.array([[-1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, -10, -4],
+                [0, 0, 4, -10]])
+    A1 = np.array([[3, 3, 3, 3],
+                [0, -1.5, 0, 0],
+                [0, 0, 3, -5],
+                [0, 5, 5, 5]])
+    return np.stack([A0, A1], axis=2), np.array([0, 1.0])
 
 def tds_control_manual_example_2_6(tau2=2.0) -> npt.NDArray[np.float64]:
     """ Example 2.1 from TDS Control Manual
@@ -27,6 +38,8 @@ def tds_control_manual_example_2_6(tau2=2.0) -> npt.NDArray[np.float64]:
 
 
 import pytest
+
+TDS_CONTROL_RETARDED_CASES = []
 
 TDS_CONTROL_MANUAL_NEUTRAL_CASES = [
     pytest.param(

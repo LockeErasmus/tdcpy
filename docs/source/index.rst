@@ -4,8 +4,7 @@ TDSpy Documentation
 Welcome to the documentation for **tdspy**!
 
 .. toctree::
-   :maxdepth: 1
-   :titlesonly:
+   :maxdepth: 2
 
    introduction
    installation
