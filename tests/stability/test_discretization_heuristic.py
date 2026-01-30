@@ -30,6 +30,7 @@ def test_discretization_heuristic(factory, enable_plot: bool) -> None:
     """ ... """
     E, A, hA = factory
 
-    n = compute_n_rhp(E, A[:,:,0], A[:,:,1:], tau=hA)
+    N = compute_n_rhp(E, A[:,:,0], A[:,:,1:], hA)
 
-    print(n)
+    if enable_plot:
+        raise NotImplementedError("Plotting not implemented yet for gamma_r tests.")

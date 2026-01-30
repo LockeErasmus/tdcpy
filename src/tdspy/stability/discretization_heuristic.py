@@ -92,22 +92,6 @@ def commensurate_gk(E, B, C, n_k, grid_points=20) -> npt.NDArray:
         gk.append(np.conjugate(r)) # complex conjugate
     return np.concatenate(gk)
 
-def commensurate_gk2(E, B, C, tau, n_k, si, grid_points=20) -> npt.NDArray:
-    """ TODO """
-    stepsize = np.pi / grid_points
-    factor = 1.05*np.sin(stepsize)
-    gk = []
-    jhh = np.pi / (grid_points*n_k[-1])
-
-    # pre-multiply C by constat vector
-    CC = C * np.exp(-factor * si * tau[1:])
-
-    for k in range(grid_points*n_k[-1]):
-        W = B + np.sum(CC * np.exp(1j*k*jhh*n_k[1:]), axis=2)
-        r = linalg.eig(W, E, left=False, right=False)
-        gk.append(np.conjugate(r)) # complex conjugate
-    return np.concatenate(gk)
-
 def incommensurate_gk(E, B, C, tau, grid_points=20) -> npt.NDArray:
     """ TODO - in original implementation, only 3 non zero delays allowed """
     n_delays = len(tau)
