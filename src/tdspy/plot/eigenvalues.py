@@ -85,9 +85,7 @@ def eigen_plot(roots: npt.NDArray, ax=None, **kwargs):
     >>> roots = np.array([1+2j, -1-1j, 0+0j, 3+0j])
     >>> ax = eigen_plot(roots)
     >>> plt.show()
-    Args:
-        tol (float): tolerance for assuming Re(root) ~ 0, defgault 1e-10
-    
+
     """
 
     tol = kwargs.get("tol", 1e-10)

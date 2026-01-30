@@ -101,6 +101,38 @@ TDSpy package
 
         discretize_ddae(E, A, hA)
 
+###### `quasipoly`: 
+Converts quasipolynomial to minimal form
+    
+sub-functions:
+
+- compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol: float=None) -> tuple[npt.NDArray, npt.NDArray]
+Minimal form of QP: No zero rows in coefs, last coef column is not zero
+column, delays are sorted in ascending order.
+
+Quasipolynomial is represented via matrix `coefs` of shape  (m, n+1), and
+vector of delays `delays` of shape (m), where the resulting quasipolynomial
+is defined as:
+
+                m-1                    n
+    QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
+                i=0                   j=0
+
+- qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]: Converts quasipolynomial into neutral delay differential equation. Converts quasipolynomial defined via `coefs` and `delays`
+
+                 m-1                    n
+        QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
+                 i=0                   j=0
+
+    into NDDE represented via arrays A, hA, H, hH
+
+        dxdt(t) = A[:,:,0]*x(t - hA[0]) + ... + A[mA]*x(t - hA[mA])
+            - H[:,:,0] * dxdt(t - hH[0]) - ... - H[:,:,mH] * dxdt(t - hH[mH])
+
+    with mA number of delays associated with A and mH number of delays
+    associated with H.
+    
+
 ###### `closed-loop`:
 
 creates a TDS object that represents the closed-loop interconnection of the provided plant and controller.
@@ -187,7 +219,17 @@ Set of functions for representing compressions i.e. obtaining a minimally sorted
 
 sub-functions
 
-- `compress_matrices_delays` compresses the matrices-delays representation. Removes delay duplicates, sorts the delays into ascending order and removes the matrices close to zero
+- `compress_matrices_delays` compresses the matrices-delays representation. 
+    Removes delay duplicates, sorts delays into ascending order and removes
+    matrices close to zero, i.e. converts the representation (A, hA):
+
+    .. math::
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           
+    
+    into representation (A*, hA*), where:
+        1. matrices A*[i] are NOT close to zero
+        2. hA* does not contain duplicates
+    
 - `compress_bool_matrices_delays` compresses boolean matrices - delays representation
 
     removes delay duplicates, and sorts delays into ascendinging
@@ -258,6 +300,24 @@ A DDAE of form:
     function to compute N
 - `characteristic_roots`:
     set of functionalities connected to computation of characteristic roots of a DDAE
+    Computes the roots of DDAE represented via E, A, hA in region r
+    - `roots_ddae`: TDS is assumed to be defined via E, A, hA as
+
+            E dxdt(t) = SUM A[k] x(t-hA[k])
+    
+        region is defined either by (1) r is float:
+            region = {z \in C: Re(z) >= r && Im(z) >= 0}
+        or r is list of 4 floats  [Re_min, Re_max, Im_min, Im_max]
+            region = {z \in C: Re(z) \in [Re_min, Re_max] and
+                           Im(z) \in [Im_min, Im_max]}
+
+    - `rightmost_root`:
+        Find the rightmost root (RMR) of DDAE represented via E, A, hA
+
+        TDS is assumed to be defined via E, A, hA as
+
+            E dxdt(t) = SUM A[k] x(t-hA[k])
+
 - `compute_n_rect`:
 - `gamma_r`:
     Computation of gamma(r, DIFF)

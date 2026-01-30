@@ -5,11 +5,11 @@ Set of functionalities connected to characteristic roots of DDAE
 
 Implemented functions:
     1. roots_ddae -> characteristic roots of DDAE
-    1. rightmost_root -> right most root and necessary things for gradient
+    2. rightmost_root -> right most root and necessary things for gradient
 
 TODO:
-    1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
-        higher logic into high level API (tdspy.roots)
+1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
+    higher logic into high level API (tdspy.roots)
 """
 
 from collections import namedtuple
@@ -42,7 +42,9 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
 
     TDS is assumed to be defined via E, A, hA as
 
-        E dxdt(t) = SUM A[k] x(t-hA[k])
+    .. math::
+
+        E \Dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})  \ldots \qquad (1)
     
     region is defined either by (1) r is float:
         region = {z \in C: Re(z) >= r && Im(z) >= 0}
@@ -50,38 +52,86 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
         region = {z \in C: Re(z) \in [Re_min, Re_max] and
                            Im(z) \in [Im_min, Im_max]}
 
-    Args:
-        E (array): 2d array defining LHS of DDAE
-        A (array): 3d array defining the Ai matrices on the RHS
-        hA (array): 1d array defining delays associated with A
-        r (float): definition of region, either float (half-plane) or list of 
-            4 floats (rectangle)
-        **kwargs:
-            discretization (int): discretization for discretizing DDAE into DAE,
-                optional, default None, if not specified, heuristic will be used
-                to obtain sufficient discretization
-            max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
-                optional, default 600
-            basic_delay (float): base delay in case delays are commensurate,
-                optional, default None, used in discretization heuristic
+    Parameters
+    ----------
+    E : array
+        2d array defining LHS of DDAE
+    A : array
+        3d array defining the Ai matrices on the RHS
+    hA : array
+        1d array defining the delays associated with A
+    r : float
+        definition of region, either float (half-plane) or list of 4 floats (rectangle)
+    **kwargs : 
+        discretization (int): discretization for discretizing DDAE into DAE,
+            optional, default None, if not specified, heuristic will be used
+            to obtain sufficient discretization
+        max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
+            optional, default 600
+        basic_delay (float): base delay in case delays are commensurate,
+            optional, default None, used in discretization heuristic
 
-    Returns:
-        tuple containing:
-        
-            - cr (array): vector of obtained roots
-            - roots_info (RootsInfo): RMR metadata containing:
-                discretization (int): discretization used for obtaining EVP
-                gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
-                index_exceeds_one (bool): flag that index exceeds one
-                discretization_eigenvalues (array): eigenvalues of EVP
-                max_size_evp_enforced (bool): flag if maximum size of EVP was
-                    enforced
-                newton_inital_guesses (array): roots before newton corrections
-                newton_final_values (array): roots after newton corrections
-                newton_residuals (array): newton residuals
-                newton_unconverged_initial_guesses (array): mask of unconverged
-                    newton initial guesses
-                newton_large_corrections (array): mask of "large" corrections
+    Returns
+    -------
+    tuple
+        A tuple containing:
+
+        cr : array
+            vector of obtained roots
+        roots_info : RootsInfo
+            RMR metadata containing:
+            discretization : int
+                discretization used for obtaining EVP 
+            gamma_r_exceeds_one : bool
+                flag indicating gamma(r) > 1
+            index_exceeds_one : bool
+                flag that index exceeds one
+            discretization_eigenvalues : array
+                eigenvalues of EVP
+            max_size_evp_enforced : bool
+                flag if maximum size of EVP was enforced
+            newton_inital_guesses : array
+                roots before newton corrections
+            newton_final_values : array
+                roots after newton corrections
+            newton_residuals : array
+                newton residuals
+            newton_unconverged_initial_guesses : array
+                mask of unconverged newton initial guesses
+            newton_large_corrections : array
+                mask of "large" corrections
+
+
+    Notes
+    -----
+    1. assumes non-empty, real E, A, hA
+    2. assumes dimensions E.shape[:2] == A.shape[:2] and A.shape[2] == hA.shape[0]
+    3. if hA[0] > 0, prepends zero-delay term to hA and A
+    4. if region is half-plane and no roots found, warns user
+    5. if region is rectangle and no roots found, warns user
+    6. uses Newton corrections to refine roots obtained via spectral discretization
+    7. if discretization is not provided, heuristic is used to obtain sufficient discretization
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.stability.characteristic_roots import roots_ddae
+    >>> E = np.array([[1,0],[0,1]])
+    >>> A = np.zeros(shape=(2,2,2))
+    >>> A[:,:,0] = np.array([[0,1],[0,0]])
+    >>> A[:,:,1] = np.array([[0,0],[1,0]])
+    >>> hA =  np.array([0,1])
+    >>> cr, info = roots_ddae(E,A,hA,r=-0.1)
+    >>> cr
+    array([0.61803399+0.j, -1.61803399+0.j, -0.30901699+0.95105652j,
+           -0.30901699-0.95105652j])
+    >>> info.discretization
+    10
+    >>> info.gamma_r_exceeds_one
+    False
+    >>> info.index_exceeds_one
+    False
+
     """
     # TODO perform checks? This is internal functions -> just list them as
     # comments and implement if necessary
@@ -323,31 +373,49 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float=0.0
 
     TDS is assumed to be defined via E, A, hA as
 
-        E dxdt(t) = SUM A[k] x(t-hA[k])
+    .. math::
+        E \Dot{x}(t) = \sum\limits_{k=1}^N A_k x(t-h_{A,k})
 
-    Args:
-        E (array): 2d array defining LHS of DDAE
-        A (array): 3d array defining the Ai matrices on the RHS
-        hA (array): 1d array defining delays associated with A
-        r (float): definition of complex half-plane, also discretization is
-            performed around this point, optional, default 0.0
-        **kwargs:
-            residual_max (float): roots with norm=||M(s) @ v|| bellow this
+    Parameters
+    ----------
+        E : array
+            2d array defining LHS of DDAE
+        A : array
+            3d array defining the Ai matrices on the RHS
+        hA : array
+            1d array defining delays associated with A
+        r : float
+            definition of complex half-plane, also discretization 
+            is perfomed around this point, optional, default 0.0
+        **kwargs :
+            residual_max : float
+                roots with norm=||M(s) @ v|| bellow this
                 threshold will be considered as correct solutions, default 1e-6
 
-    Returns:
-        tuple containing:
-        
-            - root_star (complex): rightmost root
-            - root_info (RightmostRootInfo): RMR metadata containing:
-                M (array): characteristic matrix evaluated at `root_star`
-                DM (array): derivative of characteristic matrix evaluated at
-                    `root_star`
-                u (array): left eigenvector associated with `root_star`
-                v (array): right eigenvector associated with `root_star`
-                found (bool): flag if RMR succesfully found
-                max_size_evp_enforced (bool): flag if maximum size of EVP was
-                    enforced
+    Returns
+    -------
+    tuple
+
+        A tuple containing:
+
+        root_star : complex
+            rightmost root
+        root_info : RightmostRootInfo
+            RMR metadata containing:
+            M : array
+                characteristic matrix evaluated at `root_star`
+            DM : array
+                derivative of characteristic matrix evaluated at 
+                `root_star`
+            u : array
+                left eigenvector associated with `root_star`
+            v : array
+                right eigenvector associated with `root_star`
+            found : bool
+                flag if RMR succesfully found
+            max_size_evp_enforced : bool
+                flag if maximum size of EVP was enforced
+
     """
     # unpack kwargs
     residual_max = kwargs.get("residual_max", 1e-6)

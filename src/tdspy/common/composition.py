@@ -1,5 +1,10 @@
 """
 Set of functions for TDS composition
+
+Implemented functions:
+
+1. `concatenate_2x2_by_delays`: creates a concatenated DDAE ``(E*, A*, hA*)`` given a DDAE representation ``(E,A,B,C,D)`` and the repective delay matrices ``(hA, hB, hC, hD)``.
+
 """
 
 import numpy as np
@@ -15,7 +20,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     Parameters
     ----------
     E : array
-        RHS matrix
+        LHS matrix
     A : array
         left hand side matrices of DDAE, assumed non-empty
     B : array
@@ -66,23 +71,28 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     Concatenates the system into:
 
     .. math::
-        E \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
     
-    where:
+        E^* \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
+    
+    with
 
+    :math:`x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix}`, :math:`x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}`, 
+    :math:`hA^* = [hA \quad hB \quad hC \quad hD]`, and :math:`n^* = n+m+p+q`.
+    
     .. math::
-
         x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix},
-        \\qquad
+        \quad
         x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}
 
     and therefore:
 
     .. math::
-        hA^* &= [hA \quad hB \quad hC \quad hD]
+    
+        h_A^* = [hA \quad hB \quad hC \quad hD],
+        \quad
+        n^* = n+m+p+q
 
-        n^* &= n+m+p+q
-
+    with the new
     left-hand side matrix:
 
     .. math::
@@ -92,11 +102,8 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     right-hand side array:
     
     :math:`A^*\{:,:, :n\} := \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n:n+m\} := \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n+m:n+m+p\} := \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}`.
                          
     - Assumes all input arrays are non-empty
@@ -143,9 +150,9 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     """
     # TODO perform necessary checks
-    # assert A.size > 0 and B.size > 0 and C.size > 0 and D.size > 0, "Only non-empty arrays are supported!"
-    # assert hA.size > 0 and hB.size > 0 and hC.size > 0 and hD.size > 0, "Only non-empty delay vectors are supported!"
-    # assert E.size > 0, "Only non-empty arrays are supported!"
+    assert A.size > 0 and B.size > 0 and C.size > 0 and D.size > 0, "Only non-empty arrays are supported!"
+    assert hA.size > 0 and hB.size > 0 and hC.size > 0 and hD.size > 0, "Only non-empty delay vectors are supported!"
+    assert E.size > 0, "Only non-empty arrays are supported!"
     assert A.ndim == 3 and B.ndim == 3 and C.ndim == 3 and D.ndim == 3, "A, B, C, D must be 3D arrays!"
     assert E.ndim == 2, "E must be a 2D array!"
     assert hA.ndim == 1 and hB.ndim == 1 and hC.ndim == 1 and hD.ndim == 1, "Delay vectors must be 1D!"

@@ -4,6 +4,12 @@ Set of function for representation compressions
 
 compression := obtaining minimal sorted representation of "something"
 
+Implemented functions:
+
+1. `compress_matrices_delays`: creates a compressed matrix representation ``(A*, hA*)`` by removing duplicate delays
+2. `compress_bool_matrices_delays`: removes delay duplicates and sorts matrices in ascending of delays
+3. `sort_matrices_delays`: sorts the matrices in ascending order of the delays
+
 TODO:
     ---
 
@@ -64,7 +70,7 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     9. if A.shape[2] != hA.shape[0], raises ValueError
 
     Examples
-    ---------
+    --------
     >>> import numpy as np
     >>> from tdspy.common.compress import compress_matrices_delays
     >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])

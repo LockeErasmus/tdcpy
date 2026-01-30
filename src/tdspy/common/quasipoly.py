@@ -1,5 +1,12 @@
 """
 Set of functions for necessary quasipolynomial manipulation
+-----------------------------------------------------------
+
+Implemented functions:
+
+1. `compress_qp`: converts a quasipolynomial to minimal form
+2. `qp_to_ndde`: returns an ndde represented by `(H,hH,A,hA)` given a quasipolynomial of the representation (coeffs,delays)
+
 """
 
 import numpy as np
@@ -22,11 +29,8 @@ def compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol:
     is defined as:
 
     ..  math::
+    
         QP(s) =  \\sum\\limits_{i=0}^{m-1} exp(-delays[i]*s) \\sum\\limits_{j=0}^{n} coefs[i,j] * s^j
-
-                 m-1                    n
-        QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
-                 i=0                   j=0
     
     Parameters
     ----------
@@ -64,8 +68,8 @@ def compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol:
     7. if delays is not 1D array, raises ValueError
     8. if coefs.shape[0] != delays.shape[0], raises ValueError
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> import numpy as np
     >>> from tdspy.common.quasipoly import compress_qp
     >>> coefs = np.array([[0.0, 1.0], [0.0, 2.0], [0.0, 0.0]])
@@ -117,14 +121,16 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
 
     Converts quasipolynomial defined via `coefs` and `delays`
 
-                 m-1                    n
-        QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
-                 i=0                   j=0
+    ..  math::
+
+        QP(s) =  \\sum\\limits_{i=0}^{m-1} exp(-delays[i]*s) \\sum\\limits_{j=0}^{n} coefs[i,j] * s^j
 
     into NDDE represented via arrays A, hA, H, hH
 
-        dxdt(t) = A[:,:,0]*x(t - hA[0]) + ... + A[mA]*x(t - hA[mA])
-            - H[:,:,0] * dxdt(t - hH[0]) - ... - H[:,:,mH] * dxdt(t - hH[mH])
+    .. math::
+
+        \dot{x}(t) = A_0*x(t - hA_0) + ... + A_{mA}*x(t - hA_{mA})
+            - H_0* \dot{x}(t - hH_0) - ... - H_{mH}* \dot{x}(t - hH_{mH})
 
     with mA number of delays associated with A and mH number of delays
     associated with H.
