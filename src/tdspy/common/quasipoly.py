@@ -3,8 +3,9 @@ Set of functions for necessary quasipolynomial manipulation
 -----------------------------------------------------------
 
 Implemented functions:
-    1. compress_qp -> converts a quasipolynomial to minimal form
-    2. qp_to_ndde -> returns an ndde represented by (H,hH,A,hA) given a quasipolynomial of the representation (coeffs,delays)
+
+1. `compress_qp`: converts a quasipolynomial to minimal form
+2. `qp_to_ndde`: returns an ndde represented by `(H,hH,A,hA)` given a quasipolynomial of the representation (coeffs,delays)
 
 """
 

@@ -2,7 +2,8 @@
 Set of functions for TDS composition
 
 Implemented functions:
-1. concatenate_2x2_by_delays -> creates a concatenated DDAE (E*, A*, hA*) given a DDAE representation (E,A,B,C,D) and the repective delay matrices (hA, hB, hC, hD).
+
+1. `concatenate_2x2_by_delays`: creates a concatenated DDAE ``(E*, A*, hA*)`` given a DDAE representation ``(E,A,B,C,D)`` and the repective delay matrices ``(hA, hB, hC, hD)``.
 
 """
 
@@ -19,7 +20,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     Parameters
     ----------
     E : array
-        RHS matrix
+        LHS matrix
     A : array
         left hand side matrices of DDAE, assumed non-empty
     B : array
@@ -73,21 +74,25 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     
         E^* \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
     
-    where:
+    with
 
+    :math:`x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix}`, :math:`x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}`, 
+    :math:`hA^* = [hA \quad hB \quad hC \quad hD]`, and :math:`n^* = n+m+p+q`.
+    
     .. math::
-
         x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix},
-        \\qquad
+        \quad
         x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}
 
     and therefore:
 
     .. math::
-        hA^* &= [hA \quad hB \quad hC \quad hD]
+    
+        h_A^* = [hA \quad hB \quad hC \quad hD],
+        \quad
+        n^* = n+m+p+q
 
-        n^* &= n+m+p+q
-
+    with the new
     left-hand side matrix:
 
     .. math::
@@ -97,11 +102,8 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     right-hand side array:
     
     :math:`A^*\{:,:, :n\} := \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n:n+m\} := \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n+m:n+m+p\} := \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}`,
-
     :math:`A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}`.
                          
     - Assumes all input arrays are non-empty

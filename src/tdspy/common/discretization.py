@@ -5,7 +5,7 @@ Set of functions for discretizing a DDAE into a DAE
 
 Implemented functions:
 
-    1. discretize_ddae -> returns a discretized DAE represented by (E*,A*) given a ddae represented by (E,A,hA)
+1. `discretize_ddae`: returns a discretized DAE represented by ``(E*,A*)`` given a ddae represented by ``(E,A,hA)``
 """
 
 import logging

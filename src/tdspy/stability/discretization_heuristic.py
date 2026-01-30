@@ -69,7 +69,41 @@ cubic_spline_a_rect = interpolate.CubicSpline(THETA_RECT, A_THETA_RECT)
 cubic_spline_b_rect = interpolate.CubicSpline(THETA_RECT, B_THETA_RECT)
 
 def grid_generator(m: int, n_grid_points:int=10):
-    """ Generator for m-dimensional space grid points in [0, pi] x [-pi, pi]^{m-1} """
+    """ Generator for m-dimensional space grid points in [0, pi] x [-pi, pi]^{m-1} 
+    
+    Parameters
+    ----------
+    m : int
+        number of dimensions
+    n_grid_points : int
+        number of grid points in each dimension (default 10)
+
+    Returns
+    -------
+    generator
+        generator yielding m-dimensional grid points
+
+    Notes
+    -----
+    1. first dimension is in [0, pi]
+    2. other dimensions are in [-pi, pi]
+    3. total number of points generated is n_grid_points**m
+
+    Examples
+    --------
+    >>> for point in grid_generator(2, 3):
+    ...     print(point)
+    [0.         0.        ]
+    [0.         3.14159265]
+    [0.         -3.14159265]
+    [1.57079633 0.        ]
+    [1.57079633 3.14159265]
+    [1.57079633 -3.14159265]
+    [3.14159265 0.        ]
+    [3.14159265 3.14159265]
+    [3.14159265 -3.14159265]
+    
+    """
     if m < 1:
         raise ValueError("m must be >= 1")
 

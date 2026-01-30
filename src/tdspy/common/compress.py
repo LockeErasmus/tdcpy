@@ -6,9 +6,9 @@ compression := obtaining minimal sorted representation of "something"
 
 Implemented functions:
 
-    1. compress_matrices_delays -> creates a compressed matrix representation (A*, hA*) by removing duplicate delays
-    2. compress_bool_matrices_delays -> removes delay duplicates and sorts matrices in ascending of delays
-    3. sort_matrices_delays -> sorts the matrices in ascending order of the delays
+1. `compress_matrices_delays`: creates a compressed matrix representation ``(A*, hA*)`` by removing duplicate delays
+2. `compress_bool_matrices_delays`: removes delay duplicates and sorts matrices in ascending of delays
+3. `sort_matrices_delays`: sorts the matrices in ascending order of the delays
 
 TODO:
     ---

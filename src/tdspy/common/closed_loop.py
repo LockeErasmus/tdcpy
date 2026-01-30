@@ -4,7 +4,7 @@ Closed-loop and controller related functionality
 
 Implemented functions:
 
-    1. controller_reprezentation -> creates empty controller reprezentation (E, K, hK) given order, number of inputs and outputs, and delays for matrices A, B, C, D (if applicable)
+1. `controller_reprezentation`: creates an empty controller representation ``(E, K, hK)`` given the order, number of inputs and outputs, and delays for matrices ``(Ac, Bc, Cc, Dc)`` (if applicable)
 
 """
 
@@ -51,6 +51,25 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
 
     Notes
     ------
+    Given the order of the controller, number of inputs and outputs, and
+    optional delay vectors for matrices A, B, C, D, this function creates
+    an empty controller representation of a dynamic controller (order > 0) or
+    static controller (order = 0).
+
+    .. math::
+
+        E x' = \sum_{k=0}^{hK} K_k x(t - hK_k)
+
+    where K is constructed for controller matrices A, B, C, D as:
+    .. math::
+
+        K = \begin{bmatrix}
+            A & B \\
+            C & D
+        \end{bmatrix}
+
+    and hK is the concatenated vector of delays i.e. :math:`hK = [hA_c \quad hB_c \quad hC_c \quad hD_c]`
+
     - For static controller (order=0) only hD is used, other delay vectors
       are ignored (and a warning is issued if they are provided)
     - If order > 0 and user does not provide delay vectors, they are set to

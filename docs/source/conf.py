@@ -34,6 +34,7 @@ release = '0.1.0'           # Version of your package
 
 extensions = [
     'sphinx.ext.autodoc',          # Automatically document docstrings
+    'sphinx.ext.intersphinx',      # Link to other projects' documentation
     'sphinx.ext.napoleon',         # Google / NumPy style docstrings
     "sphinx.ext.autodoc.typehints",
     # 'sphinx_autodoc_typehints',    # Include type hints in docs
@@ -42,6 +43,12 @@ extensions = [
     'sphinx_gallery.gen_gallery',  # This is for examples
     "sphinxcontrib.bibtex",        # LaTeX like citations
 ]
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+}
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -117,3 +124,6 @@ bibtex_bibfiles = ["refs.bib"]
 bibtex_reference_style = "author_year"
 bibtex_scan_rst = True
 bibtex_overwrite_cache = True
+
+# -- Treat single backticks as Python cross-references -----------------------------------------------------------
+default_role = "py:obj"

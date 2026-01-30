@@ -219,7 +219,17 @@ Set of functions for representing compressions i.e. obtaining a minimally sorted
 
 sub-functions
 
-- `compress_matrices_delays` compresses the matrices-delays representation. Removes delay duplicates, sorts the delays into ascending order and removes the matrices close to zero
+- `compress_matrices_delays` compresses the matrices-delays representation. 
+    Removes delay duplicates, sorts delays into ascending order and removes
+    matrices close to zero, i.e. converts the representation (A, hA):
+
+    .. math::
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           
+    
+    into representation (A*, hA*), where:
+        1. matrices A*[i] are NOT close to zero
+        2. hA* does not contain duplicates
+    
 - `compress_bool_matrices_delays` compresses boolean matrices - delays representation
 
     removes delay duplicates, and sorts delays into ascendinging

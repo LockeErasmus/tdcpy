@@ -3,13 +3,13 @@ Set of functions for obtaining and manipulation of delay difference equations
 -----------------------------------------------------------------------------
 
 Implemented functions:
-    1. ddae_to_diff -> extracts the delay-difference equation represented by 
-        (D,hD) from the delay-differential algebraic equation represented by
-        (E,A,hA)
-    2. ndde_to_diff -> extracts the associated delay-difference equation 
-        represented by (D,hD) given an NDDE represented by matrices (H,hH)
-    3. normalize_diff -> obtained the normalized ADDE with the leading matrix
-        corresponding to the zero-delay term equal to the identity matrix
+1. `ddae_to_diff`: extracts the delay-difference equation represented by 
+    `(D,hD)` from the delay-differential algebraic equation represented by
+    `(E,A,hA)`
+2. `ndde_to_diff`: extracts the associated delay-difference equation 
+    represented by `(D,hD)` given an NDDE represented by matrices `(H,hH)`
+3. `normalize_diff`: obtained the normalized ADDE with the leading matrix
+    corresponding to the zero-delay term equal to the identity matrix
 
 Notes:
     1. these functions are internal, they do not operate via high level API
