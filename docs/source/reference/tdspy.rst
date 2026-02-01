@@ -6,7 +6,7 @@ time-delay system representation, analysis and control.
 
 
 Subpackages
-----------
+-----------
 
 =================  ==============================================
 `tdspy.common`       Common functions and utilities

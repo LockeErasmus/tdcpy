@@ -1,5 +1,5 @@
 tdspy.stability package
-====================
+============================
 
 Submodules
 ----------
@@ -13,7 +13,7 @@ tdspy.stability.bounds module
    :show-inheritance:
 
 tdspy.stability.characteristic\_roots module
--------------------------------------------
+---------------------------------------------
 
 .. automodule:: tdspy.stability.characteristic_roots
    :members:
@@ -21,7 +21,7 @@ tdspy.stability.characteristic\_roots module
    :show-inheritance:
 
 tdspy.stability.discretization\_heuristic module
-----------------------------
+------------------------------------------------
 
 .. automodule:: tdspy.stability.discretization_heuristic
    :members:
