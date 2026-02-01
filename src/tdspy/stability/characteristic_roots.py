@@ -4,12 +4,12 @@ Characteristic roots
 Set of functionalities connected to characteristic roots of DDAE
 
 Implemented functions:
-    1. roots_ddae -> characteristic roots of DDAE
-    2. rightmost_root -> right most root and necessary things for gradient
+1. roots_ddae: characteristic roots of DDAE
+2. rightmost_root: right most root and necessary things for gradient
 
 TODO:
-1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
-    higher logic into high level API (tdspy.roots)
+1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move 
+higher logic into high level API (tdspy.roots)
 """
 
 from collections import namedtuple

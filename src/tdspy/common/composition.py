@@ -80,6 +80,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     :math:`hA^* = [hA \quad hB \quad hC \quad hD]`, and :math:`n^* = n+m+p+q`.
     
     .. math::
+    
         x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix},
         \quad
         x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}

@@ -16,7 +16,7 @@ Users already familiar with ``TDS-Control`` will find the basic functionality si
 ``TDSpy`` however utilizes additional Python libraries, mainly ``NumPy`` for arrays and array operations, ``Scipy`` for scientific computations and ``Matplotlib`` for plotting.
 
 This tutorial will guide users through the important features of ``TDSpy`` and will illustrate how to use them.
-For more detailed information on the individual functions and classes, please refer to the :ref:`api_reference` section of the
+For more detailed information on the individual functions and classes, please refer to the :doc:`../reference/api_reference` section of the
 ``TDSpy`` manual and in the references listed at the end of this document.      
 For the related theory on the topic, we refer the ``TDS-Control`` manual :cite:`appeltans2023analysis`.
 

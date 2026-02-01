@@ -61,14 +61,15 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
         E x' = \sum_{k=0}^{hK} K_k x(t - hK_k)
 
     where K is constructed for controller matrices A, B, C, D as:
+
     .. math::
 
-        K = \begin{bmatrix}
-            A & B \\
+        K = \\begin{bmatrix}
+            A & B \\\\
             C & D
-        \end{bmatrix}
+        \\end{bmatrix}
 
-    and hK is the concatenated vector of delays i.e. :math:`hK = [hA_c \quad hB_c \quad hC_c \quad hD_c]`
+    and hK is the concatenated vector of delays i.e. :math:`hK = [hA_c \quad hB_c \quad hC_c \quad hD_c]`.
 
     - For static controller (order=0) only hD is used, other delay vectors
       are ignored (and a warning is issued if they are provided)
