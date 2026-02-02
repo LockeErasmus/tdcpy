@@ -12,5 +12,6 @@ Welcome to the user guide for **tdspy**!
    discretization
    analysis
    controller_design
+   references
 
 
