@@ -94,8 +94,8 @@ into their own code, for example in optimization routines, users can directly ac
 .. * `tdspy.stabopt`: Tools for stabilization and controller design.
 .. * `tdspy.plot`: Visualization tools.
 
-For example, for computing the characteristic roots of a time-delay system, the below code snippet uses the **high-level** function ``tds.roots``, to provide a similar 
-functionality as the TDS-Control MATLAB function ``tds_roots``.
+For example, for computing the characteristic roots of a time-delay system, the below code snippet uses the **high-level** function :func:`tdspy.roots`, to provide a similar 
+functionality as the TDS-Control MATLAB function `tds_roots`.
 
     >>> import numpy as np
     >>> import tdspy as tds
