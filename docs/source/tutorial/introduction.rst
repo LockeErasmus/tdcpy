@@ -144,10 +144,3 @@ More details on the structure of the ``TDSpy`` object can be found in the next s
 
 
 
-
-
-References
-----------
-
-.. bibliography::
-

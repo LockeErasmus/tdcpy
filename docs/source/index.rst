@@ -10,4 +10,4 @@ Welcome to the documentation for **tdspy**!
    tutorial/index
    reference/api_reference
    auto_examples/index
-   citing
+   credits
