@@ -51,3 +51,30 @@ TDS_CONTROL_MANUAL_NEUTRAL_CASES = [
         id="tds_control_manual_example_2_6_tau2=2.05",
     ),
 ]
+
+
+
+STABOPT_NEUTRAL_EXAMPLES = [
+    pytest.param(
+        (
+            A0 = np.array([
+        [   -0.08,  -0.03,  0.2     ],
+        [   0.2,    -0.04,  -0.005  ],
+        [   -0.06,  0.2,    -0.07    ],
+    ])
+    A = np.stack([A0], axis=2)
+    hA = np.array([0])
+    Bu = np.array([ [-0.1],[-0.2],[0.1]    ])
+    B = np.stack([Bu],axis=2)
+    hB = np.array([5.])
+    C = np.array(np.eye(3))
+    C = np.stack([C],axis=2)
+    hC = np.array([0])
+    D1 = np.array([ [3],[4],[1]    ])
+    D2 = np.array([ [0.4],[-0.4],[-0.4]])
+    D = np.stack([D1,D2],axis = 2)
+    hD = np.array([2.5,5.])
+        )
+        id="01" # TODO
+    ),
+]

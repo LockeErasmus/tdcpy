@@ -16,12 +16,12 @@ import numpy.typing as npt
 from scipy import linalg, optimize
 
 from tdspy.common.delay_difference_equation import normalize_diff
-from .gamma_r import gamma_normalized_diff
+from .gamma_r import gamma_normalized_diff, GammaInfo
 
 logger = logging.getLogger(__name__)
 
 # DEFINITIONS OF METADATA CLASSES
-CDInfo = namedtuple("CDInfo", ["a"]) # TODO fill with metadata
+CDInfo = GammaInfo # TODO fill with metadata
 
 def spectral_abscissa():
     raise NotImplementedError(".")
@@ -52,15 +52,63 @@ def func(r, DD, hDD, gamma_kwargs):
     gamma_r, gamma_info = gamma_normalized_diff(DD, hDD, r, **gamma_kwargs)
     th, M, s, u, v = gamma_info # "th", "M", "s", "u", "v"
 
-    num = (np.conj(u)[np.newaxis,:] @ DD[:,:,0] @ v[:, np.newaxis]) * hDD[0]*np.exp(-r*hDD[0])*np.exp(1j*th[0])
-    for i in range(1, DD.shape[2]):
-        num += (np.conj(u)[np.newaxis,:] @ DD[:,:,i] @ v[:, np.newaxis]) * hDD[i]*np.exp(-r*hDD[i])*np.exp(1j*th[i])
-    print(f"{num=}")
-    print(np.ravel(num))
+    # Evaluate numerator
+    num = np.sum(
+       (
+           np.einsum( # evalueate SUM uH @ Di @ v 
+                'ijk,jn->ink',
+                np.einsum('ni,ijk->njk', np.conj(u)[np.newaxis, :], DD),
+                v[:, np.newaxis],
+            )
+            * hDD * np.exp(-r*hDD) * np.exp(1j*th)
+        )
+    )
     df = -np.real( np.conj(s) * np.ravel(num) / np.inner(np.conj(u), v) ) / gamma_r
-    print(f"{df=}")
     fval = gamma_r - 1
     return fval, df
+
+class CdRootProblem:
+
+    root_options = {
+        "jac": True,
+        "scipy_root_method": "hybr",
+        "scipy_root_tol": None,
+        "scipy_root_callback": None,
+        "scipy_root_options": None,
+
+    }
+    gamma_kwargs = {}
+
+    def __init__(self, DD, hDD):
+        self._DD = DD
+        self._hDD = hDD
+
+        self._gamma_info_star = None
+        self._fval_star = np.inf
+
+    def fun(self, r) -> tuple[float, float]:
+
+        gamma_r, gamma_info = gamma_normalized_diff(self._DD, self._hDD, r, **self.gamma_kwargs)
+        th, M, s, u, v = gamma_info # "th", "M", "s", "u", "v"
+
+        # Evaluate numerator
+        num = np.sum(
+        (
+            np.einsum( # evalueate SUM uH @ Di @ v 
+                    'ijk,jn->ink',
+                    np.einsum('ni,ijk->njk', np.conj(u)[np.newaxis, :], self._DD),
+                    v[:, np.newaxis],
+                )
+                * self._hDD * np.exp(-r*self._hDD) * np.exp(1j*th)
+            )
+        )
+        df = -np.real( np.conj(s) * np.ravel(num) / np.inner(np.conj(u), v) ) / gamma_r
+        fval = gamma_r - 1
+
+        if abs(fval) < self._fval_star: # current best r -> save metadata from gamma computation
+            self._gamma_info_star = gamma_info
+
+        return fval, df
 
 def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple[float, CDInfo]:
     """ Computes strong spectral abscissa of normalized delay difference
@@ -106,29 +154,38 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
     assert hDD.shape[0] > 0, "empty delay difference equation not allowed"
     assert hDD.shape[0] == DD.shape[2], "len of DD and hDD has to match"
 
+    if DD.shape[1] == 0:
+        # case one delay -> cd = -INF
+        return -np.inf, None # TODO
+
     if DD.shape[2] == 1:
         # case only one delay: the strong spectral abscissa is equal to
         #   cd = ln( rho(DD[0]]) ) / hDD[0]
-        gamma0, _ = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
+        gamma0, info = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
         cd = np.log(gamma0) / hDD[0]
-        return cd, None # TODO info return, as of now None
+        return cd, info # TODO info return, as of now None
 
     # gamma(r) == 0, degenerate case
-    gamma0, _ = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
+    gamma0, info = gamma_normalized_diff(DD, hDD, 0, **gamma_kwargs)
     if gamma0 == 0.0:
         return -np.inf, None # TODO metadata
     
     # gamma(r) =/= 0, use fsolve to find zero crossings of f(r) = gamma(r) - 1
+
+    problem = CdRootProblem(DD, hDD)
     sol = optimize.root(
-        fun=func,
+        fun=problem.fun,
         x0=cd0,
-        args=(DD, hDD, gamma_kwargs),
         jac=True,
         method=kwargs.get("scipy_root_method", "hybr"),
         tol=kwargs.get("scipy_root_tol", None),
         callback=kwargs.get("scipy_root_callback", None),
         options=kwargs.get("scipy_root_options", None),
     )
+
+    logger.debug(f"Root Problem solved via `scipy.optimize.root` with settings: {problem.root_options}")
+    logger.debug(f"Solution\n---------\n{sol}")
+    logger.debug(f"Corresponding {problem._gamma_info_star}")
 
     # logic for handling solution
     if not sol.success: # i.e. root-finding algorithm failed
@@ -138,7 +195,9 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
             cd_star = np.inf
         else:
             cd_star = -np.inf
+        raise NotImplementedError(f"NO gamma_info")
     else:
         cd_star = float(sol.x)
+        cd_info = problem._gamma_info_star
     
-    return cd_star, None # TODO metadata
+    return cd_star, cd_info

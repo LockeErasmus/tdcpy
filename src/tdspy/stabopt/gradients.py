@@ -21,7 +21,9 @@ from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootIn
 from tdspy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
 from tdspy.common.compress import compress_matrices_delays
 from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
-from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
+from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff, _normalize_diff
+
+from .utils import diff_dependency_mask
 
 logger = logging.getLogger("__name__")
 
@@ -87,7 +89,7 @@ def func_sa(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
     # gradient needs to be vectorized to match shape of x
     return fval, fgrad.reshape(-1)
 
-def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, Kmask: npt.NDArray, hK: npt.NDArray, B: npt.NDArray, C: npt.NDArray, 
+def func_cd_old(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, Kmask: npt.NDArray, hK: npt.NDArray, B: npt.NDArray, C: npt.NDArray, 
             uE: npt.NDArray, vE: npt.NDArray, out: tuple, cd: float) -> tuple[float, npt.NDArray]:
     """ function for strong spectral abscissa of associated delay difference
     equation and its gradient with respect to controller parameters
@@ -242,6 +244,78 @@ def func_gamma(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, 
             - grad (array): TODO
     """
     raise NotImplementedError(".") # TODO implement
+
+def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
+           Kmask: npt.NDArray, hK: npt.NDArray, B: npt.NDArray, C: npt.NDArray, 
+           uE: npt.NDArray, vE: npt.NDArray, **kwargs):
+    """ TODO
+
+    Assumptions:
+        1. cd is a function of x (and can be changed via changing p)
+        2. hP[0] == 0.0, hP are unique and sorted len > 1
+    """
+    # extract kwargs
+
+    # reshape vector x into 3D array K
+    K = x.reshape((B.shape[1], C.shape[0], hK.shape[0])) # 3d aray from (1)
+
+    ## TODO: allow to pass these pre-computed matrices
+    KA = np.einsum(# more efficient way to obtain uE.T @ K[:,:,i] @ vE
+        'ijk,jn->ink',
+        np.einsum('ni,ijk->njk', B, K),
+        C,
+    )
+    A = np.concatenate([P, KA], axis=2)
+    hA = np.r_[hP, hK] # 1d array containing all closed loop delays
+    D = np.einsum(# more efficient way to obtain uE.T @ K[:,:,i] @ vE
+        'ijk,jn->ink',
+        np.einsum('ni,ijk->njk', uE.T, A),
+        vE,
+    )
+
+    # TODO filter out D[:,:,i] close to zero??? TODO
+    H, hH = normalize_diff(D, hA)
+
+    # compute cd: TODO filter out H[:,:, i] close to zero?
+    cd, cd_info = spectral_abscissa_diff(H, hH)
+
+    # unpack precomputed values from cd function
+    theta = cd_info.th # critical values of theta, 0 is prepended -> same length as hH
+    u = cd_info.u
+    v = cd_info.v
+    s = cd_info.s
+    # M = cd_info.M
+
+    # evaluate denumerator
+    dM = np.sum(
+        (
+        np.einsum( # evalueate SUM uH @ Di @ v 
+                'ijk,jn->ink',
+                np.einsum('ni,ijk->njk', np.conj(u)[np.newaxis,:], H),
+                v[:, np.newaxis],
+            )
+            * hH * np.exp(-cd * hH) * np.exp(1j*theta)
+        )
+    )
+    den = np.real(np.conj(s) * dM / np.inner(np.conj(u), v))
+
+    # evaluate u* D_0^{-1} U^T B
+    lu, piv = linalg.lu_factor(D[:,:,0])
+    left_matrix = np.conj(u)[np.newaxis,:] @ linalg.lu_solve((lu, piv), uE.T @ B)
+    
+    # evaluate (C V v)^T
+    right_matrix = C @ vE @ v[:, np.newaxis]
+
+    ix = len(hP)
+    matrix = left_matrix.T @ right_matrix.T
+    vector = np.conj(s) * np.exp(-cd*hH[ix-1:]) * np.exp(1j * theta[ix-1:]) # shape(mH,)
+    array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
+
+    dK = (1./den) * np.real(array)
+
+    # mask gradients
+    dKmasked = np.where(Kmask, dK, 0)
+    return dKmasked
 
 def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, tolerance: float=1e-6):
     """ function to test the numerical accuracy of the computed gradient using central differences
