@@ -292,7 +292,7 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     tuple
         A tuple containing
 
-        D : array
+        DD : array
             3D array representing matrices:
             [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
         hDD : array

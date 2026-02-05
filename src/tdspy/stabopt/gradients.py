@@ -84,7 +84,7 @@ def func_sa(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, hK:
 
     # only real part, see spectral abscissa definition
     fval = np.real(rmr)
-    fgrad = np.real(1/den * (Kmask * np.exp(-rmr*hK)) * matrix[:,:,np.newaxis])
+    fgrad = np.real(1/den * (Kmask * np.exp(-rmr*hK)) *matrix[:,:,np.newaxis])
     
     # gradient needs to be vectorized to match shape of x
     return fval, fgrad.reshape(-1)
@@ -114,7 +114,7 @@ def func_cd_old(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
             with respect to closed loop, see (1)
         C(array): right 2d matrix defining the position of controller matrices
             with respect to closed loop, see (1)
-
+ 
     Returns:
         tuple containing:
 
@@ -317,6 +317,125 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     dKmasked = np.where(Kmask, dK, 0)
     return dKmasked
 
+
+def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray, 
+                Kmask: npt.NDArray, hK: npt.NDArray, 
+                BU: npt.NDArray, CV: npt.NDArray) -> tuple[float, npt.NDArray]:
+    """ gradient of gamma0 function for delay-difference equations
+
+    Computes the gradient of the function :math:`\gamma_0` of the delay-difference
+    equation defined by matrices D and delays hD with respect to controller
+    parameters.
+    For the normalized DDE defined as
+    .. math::
+        0 = I x(t) + H_1(p) x(t-h_1) + ... + H_m(p) x(t-h_m),
+
+        with H_i = linalg.solve(D[:, :, 0], D[:, :, i]), hH_i = hD[i].
+
+    the gradient is given by
+
+    .. math::
+    
+        \nabla_{p_k} \gamma_0(p) = \frac{1}{|\lambda|} \text{Re} \left( \bar{\lambda} u^* \left( \frac{\partial H_1(p)}{\partial p_k} +
+                         \sum_{i=2}^m \frac{\partial H_i}{\partial p_k} e^{j\theta_i}  \right) w \right).
+
+    Parameters
+    ----------
+    x : npt.NDArray
+        optimization variables
+    DP : npt.NDArray
+        difference equation matrices 
+    hDP : npt.NDArray
+        difference equation delays
+    Kmask : npt.NDArray
+        mask for the controller entries
+    hK : npt.NDArray
+        controller delays
+    BU : npt.NDArray
+        left matrix defining position of controller in DDE (= U.T @ B)
+    CV : npt.NDArray
+        right matrix defining position of controller in DDE (= C @ V)
+
+    Returns
+    -------
+    A tuple containing:
+
+        - fval : float 
+                spectral abscissa
+        - grad : array
+                gradient, 1d array matching shape of x
+
+    Notes
+    -----
+    The function computes the gradient of the function :math:`\gamma_0` of the delay-difference equation defined by matrices D and delays hD with respect to controller
+    parameters.
+    For the normalized DDE defined as
+    .. math::
+        0 = I x(t) + H_1 x(t-h_1) + ... + H_m x(t-h_m),
+
+        with H_i = linalg.solve(D[:, :, 0], D[:, :, i]), hH_i = hD[i].
+
+    Examples
+    --------
+    
+
+    """
+    from tdspy.stabopt.utils import diff_dependency_mask
+    from tdspy.common.delay_difference_equation import normalize_diff
+    from tdspy.stability.gamma_r import gamma_normalized_diff
+    from scipy import linalg, optimize
+
+    # unpack arguments
+    n, nh, nu, ny = DP.shape[0], DP.shape[2], BU.shape[1], CV.shape[0]
+    
+    # set controller parameters
+    K = x.reshape((nu, ny, hK.shape[0]))
+    
+    # form D = D_P + B_D @ K_D @ C_D
+    BK  = np.einsum('lm,mki->lki', BU, K)   # B @ K_i for all i
+    BKC = np.einsum('lki,kn->lni', BK, CV)  # (B @ K_i) @ C
+
+    D, hD = np.concatenate([DP, BKC], axis=2), np.concatenate([hDP, hK], axis=0)
+    DD, hDD = normalize_diff(D, hD)
+
+    # compute gamma0 and associated info
+    g0, gInfo = gamma_normalized_diff(DD, hDD, r=0, correction=True, n_theta=10)
+    s, u, v, th = gInfo.s, gInfo.u, gInfo.v, gInfo.th
+
+    # initialize gradient
+    grad = np.zeros_like(x)
+
+    ###################### Gradient computation ######################
+
+    # The DDE is of the form
+    # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
+    # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
+
+    # uDBU = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T
+    # # uDBU = np.einsum('i,ij->j', np.conj(u).T, linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
+    uDBU = (np.conj(u).T @ linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
+
+    # # CVv = ((C @ V) @ v).T
+    # # CVv = np.einsum('ij,j->i', CV, v).T # dimensions (ny,)
+    CVv = np.sum((CV @ v).T*np.exp(1j*th)).T # dimensions (ny,)
+    
+    # # u * dH/dp v = uDBU * CVv * SUM(exp(j*th))
+    # udH_dpv = (uDBU * CVv)  # dimensions (nu, ny)
+
+    if s == 0:
+        logger.warning("WARNING: s == 0, gradient is ill-defined")
+        return g0, grad
+
+    m = len(th)
+    for i in range(0, m+1):
+        grad += np.real(np.conj(s) * uDBU * CVv * np.exp(1j*th[i-1])) / np.abs(s)
+    grad = grad.reshape(-1)
+
+
+    return g0, grad
+
+
+
 def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, tolerance: float=1e-6):
     """ function to test the numerical accuracy of the computed gradient using central differences
     The method uses central differences for testing the numerical gradient.
@@ -325,6 +444,41 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
         func:   cost function
         h:      step size
         E, P, hP, hK, Kmask, B, C:  arguments
+
+
+    Returns:
+
+        tuple containing:
+            - fgrad : npt.NDArray
+                analytical gradient
+            - fgrad_num : npt.NDArray
+                numerical gradient
+
+    Notes
+    -----
+    The function computes the numerical gradient using central differences and compares it to the analytical gradient provided by the function ``func``.
+    If the norm of the difference between the two gradients is less than the specified tolerance, the test is considered passed.   
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.stabopt.gradients import gradient_test
+    >>> def func_example(x, E, P, hP, hK, Kmask, B, C):
+    ...     # example function returning cost and gradient
+    ...     cost = np.sum(x**2)  # simple quadratic cost
+    ...     grad = 2*x           # gradient of the cost
+    ...     return cost, grad
+    >>> x0 = np.array([1.0, 2.0, 3.0])
+    >>> E = np.eye(2)
+    >>> P = np.random.rand(2, 2, 2)
+    >>> hP = np.array([0.1, 0.2])
+    >>> hK = np.array([0.1, 0.2])
+    >>> Kmask = np.ones((2, 2, 2), dtype=bool)
+    >>> B = np.random.rand(2, 2)
+    >>> C = np.random.rand(2, 2)
+    >>> fgrad, fgrad_num = gradient_test(func_example, x0, (E, P, hP, hK, Kmask, B, C))
+    Gradient test passed norm=0.0 < 1e-06
+
     """
 
     # analytical gradient
@@ -356,3 +510,5 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
         print(f"Gradient test failed. Difference: {diff}")
 
     return fgrad, fgrad_num
+
+

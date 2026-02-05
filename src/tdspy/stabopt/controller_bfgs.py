@@ -8,9 +8,10 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
+from tdspy.common.delay_difference_equation import ddae_to_diff
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 from tdspy.common.compress import compress_matrices_delays
-from .gradients import func_sa, func_cd, func_gamma
+from .gradients import func_sa, func_cd, func_gamma, grad_gamma0
 from tdspy.controller import create_static_controller, interconnect3
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy import DDAE, ClosedLoop  
@@ -214,6 +215,106 @@ def stab_opt(ddae,nc,**kwargs):
         
 
         pass
+
+    def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
+        """
+        function to find a feasible point for the optimization problem
+
+        .. :math::
+
+            minimize    gamma_0(K)
+            subject to  gamma_inf(K) < 1
+
+        for a DDAE of the form:
+        
+        .. :math::
+            E \dot{x}(t) = (P_0 + B K_0 C) x(t) + \sum_{i=1}^{m} (P_i + B K_i C) x(t - \tau_i)
+
+        Args:
+            E:      E matrix of closed-loop system
+            P:      system matrix of open-loop system
+            hP:     system delays of open-loop system
+            K0:     initial controller gain matrix
+            hK:     controller delays
+            B:      input matrix of closed-loop system
+            C:      output matrix of closed-loop system
+        kwargs:
+            options:    options for the optimization solver
+            
+        """
+        
+        from scipy import linalg, optimize
+        from tdspy.common.delay_difference_equation import ddae_to_diff
+        from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff
+        from tdspy.common.delay_difference_equation import normalize_diff
+        from tdspy.stabopt.utils import diff_dependency_mask
+        from tdspy.stabopt.gradients import grad_gamma0
+
+        # unpack arguments
+        n, nu, ny = E.n, B.shape[1], C.shape[0]
+
+        # get mask
+        Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
+        options = kwargs.get("options",{"disp": True, "eps":0.1})   # get_options
+
+        # extract uE and vE from E
+        uE = linalg.null_space(E.T,rcond=1e-12)
+        vE = linalg.null_space(E,rcond=1e-12)
+
+        ########################## Step 1: Precomputation ##########################
+
+        # extract delay-difference equation without controller contribution
+        DP, hDP = ddae_to_diff(E,P,hP)
+
+        # extract controller parameters affecting the delay-difference equation
+        r = diff_dependency_mask(Kmask, uE=uE, vE=vE, B=B, C=C)
+        indices = np.where(r == True) # rows, cols, delays
+
+        # precompute BD, CD
+        BD = uE.T @ B
+        CD = C @ vE
+        x0 = K0[indices].reshape(-1)
+
+
+        ########################## Step 2: Preliminary checks ##########################
+        # obtain A, hA from P+K, hP+hK
+        BKC = np.einsum('lm,mki,kn -> lni', B, K0, C)
+        A = np.stack([P, BKC], axis=2)
+        hA = np.stack([hP, hK], axis=0)
+
+        # Retarded or neutral system check
+        D, hD = ddae_to_diff(E,A,hA)
+        if hD.shape[0] == 1 and hD[0] == 0.0:    # system is retarded
+            raise ValueError("The closed-loop system is retarded, no need to find a feasible point.")
+        else:                   # system is neutral
+            pass
+
+        # Feasibility check
+        DD,hDD = normalize_diff(D,hD)
+        gamma0, info = gamma_diff(D[:,:,1:], hD[1:], 0, correction=True, n_theta=10)
+        
+        if gamma0 < 1:
+            print("Initial controller parameters are already feasible.")
+            return None
+        
+        # Dependency check
+        if not np.any(r):
+            raise ValueError("The delay difference equation is independent of the controller parameters, no feasible point exists.")    
+        
+        # # control parameters affecting the delay difference equation
+        # KD = np.zeros_like(Kmask, dtype=float)
+        # np.place(KD, indices, x0)
+
+        sol = optimize.minimize(
+            grad_gamma0,
+            x0,
+            args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
+            jac=True,
+            method=kwargs.get("method", "L-BFGS-B"),
+            options=options,
+            callback=kwargs.get("callback", None)
+        )
+        return sol
 
     def check_feasibility(diff):
         """
