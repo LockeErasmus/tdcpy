@@ -52,7 +52,6 @@ intersphinx_mapping = {
 
 templates_path = ['_templates']
 exclude_patterns = []
-add_function_parentheses = False  # Do not add () to function references
 
 # -- HTML output -------------------------------------------------------------
 

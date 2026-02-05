@@ -234,68 +234,39 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
             rho( SUM for all k DD[k]*exp(-r*hDD[k])*exp(1j*theta[k]) )     (2)
         where rho(.) is spectral radius of its matrix argument.
 
-    Parameters
-    ----------
+    Args:
+        DD (array): coefficient matrices packed into 3D array shaped (n,n,m),
+            note that coefficients for x(t) are assumed to be identity matrix
+            and therefore omitted (see functions for converting DDAE to delay
+            difference equation and normalizing)
+        hDD (array): delays represented by 1D array shaped (m,), note that delay
+            0 is omitted
+        r (float): point from complex plane
 
-    DD : ndarray
-        Coefficient matrices packed into 3D array shaped (n,n,m),
-        note that coefficients for x(t) are assumed to be identity matrix
-        and therefore omitted (see functions for converting DDAE to delay
-        difference equation and normalizing).
-    hDD : ndarray
-        Delays represented by 1D array shaped (m,), note that delay 
-        0 is omitted.
-    r : float
-        Point from complex plane.
-    kwargs:
-        n_theta (int): theta discretization, has to be > 0, default 10
-        correction (bool): if correction is applied, default True
-        scipy_root_method (str): scipy.optimize.root method, default 'lm',
-            i.e. Levenberg-Marquardt algorithm, note: carefull, not all
-            methods attempt to solve problem
-        scipy_root_tol (float): Tolerance for termination. For detailed
-            control, use `scipy_root_options`, default None
-        scipy_root_callback (function): Optional callback function. It is
-            called on every iteration as `callback(x, f)` where x is the
-            current solution and f the corresponding residual. For all
-            methods but 'hybr' and 'lm'.
-        scipy_root_options (dict): a dictionary of solver options (method),
-            default None
+        kwargs:
+            n_theta (int): theta discretization, has to be > 0, default 10
+            correction (bool): if correction is applied, default True
+            scipy_root_method (str): scipy.optimize.root method, default 'lm',
+                i.e. Levenberg-Marquardt algorithm, note: carefull, not all
+                methods attempt to solve problem
+            scipy_root_tol (float): Tolerance for termination. For detailed
+                control, use `scipy_root_options`, default None
+            scipy_root_callback (function): Optional callback function. It is
+                called on every iteration as `callback(x, f)` where x is the
+                current solution and f the corresponding residual. For all
+                methods but 'hybr' and 'lm'.
+            scipy_root_options (dict): a dictionary of solver options (method),
+                default None
     
-    Returns
-    -------
-    tuple containing:
+    Returns:
+        tuple containing:
             
-        - gamma (float): quantity gamma(r, DD, hDD)
-        - info (GammaInfo): gamma metadata
+            - gamma (float): quantity gamma(r, DD, hDD)
+            - info (GammaInfo): gamma metadata
 
-    Notes
-    -----
-    1. for all kwargs starting with 'scipy_*' check the following documentation
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
-    2. uses grid search + optional correction via scipy.optimize.root
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from tdspy.stability.gamma_r import gamma_normalized_diff
-    >>> DD = np.zeros((2,2,2), dtype=complex)
-    >>> DD[:,:,0] = np.array([[0.7, 0], [0, 0.7]])
-    >>> DD[:,:,1] = np.array([[0.1, 0], [0, 0.1]])
-    >>> hDD = np.array([1.0, 2.0])
-    >>> r = 0.5 + 0.5j
-    >>> gamma, info = gamma_normalized_diff(DD, hDD, r, n_theta=5, correction=True)
-    >>> print(f"gamma: {gamma}")
-    gamma: 0.4613594059159876
-    >>> print(f"theta: {info.th}")
-    theta: [0.  0.5]
-    >>> print(f"dominant eigenvalue: {info.s}")
-    dominant eigenvalue: (0.40488096939597285-0.22118748167138752j)
-    >>> print(f"right eigenvector: {info.v}")
-    right eigenvector: [0.-0.j 1.-0.j]
-    >>> print(f"left eigenvector: {info.u}")
-    left eigenvector: [ 0.        +0.j         -0.68163876-0.73168887j]
-
+    Notes:
+        1. for all kwargs starting with 'scipy_*' check the following documentation
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
     """
 
     assert hDD.size > 0 and DD.size > 0, "empty delay-difference equation not allowed"
@@ -432,7 +403,6 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
         gamma_info = GammaInfo(np.r_[0, th_star], M_star, eig_star, u_star, v_star)
         return gamma_r, gamma_info
 
-
 def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
     """ Computes gamma(r) of delay difference equation (DIFF)
 
@@ -447,54 +417,25 @@ def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[flo
                 omit first delay = 0 and first normalized matrix = identity
             2b. call `gamma_diff_normalized`
     
-    Parameters
-    ----------
-
-    D : array
-        Coefficient matrices packed into 3D array shaped (n, n, m).
-    hD : array
-        Delays represented by 1D array shaped (m,).
-    r : float
-        Point from complex plane.
-    kwargs:
-        kwargs passed into `gamma_diff_normalized` function.
+    Args:
+        D (array): coefficient matrices packed into 3D array shaped (n,n,m)
+        hDD (array): delays represented by 1D array shaped (m,)
+        r (float): point from complex plane
+        **kwargs: kwargs passed into `gamma_diff_normalized` function
     
-    Returns
-    -------
-
-    tuple containing:
-
-        - gamma (float): quantity gamma(r, D, hD)
-        - info (GammaInfo): gamma metadata
+    Returns:
+        tuple containing:
+            
+            - gamma (float): quantity gamma(r, D, hD)
+            - info (GammaInfo): gamma metadata
     
-    Notes
-    -----
-
-    1. if compressed version of DIFF contains 2 or more delays,
-        invertibility of D[0] is assumed.
-    2. DIFF representation (D, hD) can be emtpy, result will be
-        gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
-    3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
-        see implementation of `gamma_diff_normalized`
-    
-    Examples
-    --------
-
-    >>> import numpy as np
-    >>> from tdspy.stability.gamma_r import gamma_diff
-    >>> D = np.zeros(shape=(2,2,3))
-    >>> D[:,:,0] = np.array([[1.0, 0.0], [0.0, 1.0]])
-    >>> D[:,:,1] = np.array([[0.5, 0.0], [0.0, 0.5]])
-    >>> D[:,:,2] = np.array([[0.2, 0.0], [0.0, 0.2]])
-    >>> hD = np.array([0.0, 1.0, 2.0])
-    >>> r = 0.0
-    >>> gamma_val, gamma_info = gamma_diff(D, hD, r)
-    >>> print(gamma_val)
-    0.7
-    >>> print(gamma_info)
-    GammaInfo(th=array([0., 0.]), M=array([[0.7.+0.j , 0. +0.j ],
-            [0. +0.j , 0.7+0.j ]]), s=(0.7+0j), u=array([0.+0.j, 1.+0.j]), 
-            v=array([0.-0.j, 1.-0.j]))
+    Notes:
+        1. if compressed version of DIFF contains 2 or more delays,
+            invertibility of D[0] is assumed.
+        2. DIFF representation (D, hD) can be emtpy, result will be
+            gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
+        3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
+            see implementation of `gamma_diff_normalized`
     """
     # Perform necessary tests - TODO
     assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray)
