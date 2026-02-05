@@ -6,12 +6,8 @@ Introduction
 ..    :depth: 2
 
 .. As of now, I will put testing stuff here:
-``TDSpy`` is a Python package for analysis and control of time-delay systems. 
-The package provides tools for modeling of time-delay systems, supporting systems of retarded type,
-neutral type and delay descriptor systems. Next to modeling, ``TDSpy`` offers functionalities for spectral analysis, 
-and controller design.
 
-The software is modelled around the ``TDS-Control`` MATLAB toolbox developed and published by the team of Wim Michiels in KU Leuven.
+``TDSPy`` is modelled around the ``TDS-Control`` MATLAB toolbox developed and published by the team of Wim Michiels in KU Leuven.
 Users already familiar with ``TDS-Control`` will find the basic functionality similar to the MATLAB toolbox.
 ``TDSpy`` however utilizes additional Python libraries, mainly ``NumPy`` for arrays and array operations, ``Scipy`` for scientific computations and ``Matplotlib`` for plotting.
 
@@ -39,8 +35,10 @@ Similarly, the plotting package `Matplotlib <https://matplotlib.org/>`_ is used 
 
     >>> import matplotlib.pyplot as plt
 
-Once the packages have been imported, the user can then proceed to create ``TDSpy`` objects, perform spectral analysis and controller design. 
-Kindly refer to the below sections for an overview of the contents.
+Once the packages have been imported, the user can create ``TDSpy`` objects, perform spectral analysis and design appropriate controllers. 
+In the remaining part of this tutorial, we assume that the above main packages have been imported already.
+
+Kindly follow the below links for the next steps of this tutorial.
 
 ==================================    ==============================================================
 Section                                 Description
@@ -49,7 +47,7 @@ Section                                 Description
 :doc:`analysis`                         Spectral analysis of time-delay systems 
 :doc:`discretization`                   Spectral discretization
 :doc:`controller_design`                Stabilization and controller design
-:doc:`../reference/api_reference`       Detailed description of all functions and classes available
+:doc:`../reference/api_reference`       Detailed description of all functions and classes
 :ref:`general_examples`                 Examples of usage of TDSpy
 ==================================    ==============================================================
 
@@ -68,7 +66,7 @@ TDSpy Structure
 --------------------
 
 ``TDSpy`` functions can be called using the low-level API or the high-level API. 
-The high-level API is most often sufficient for most users wanting to work directly with high-level functionalities such as spectral analysis and stabilization.
+The high-level API is most often sufficient for users wanting to work directly with high-level functionalities such as spectral analysis and stabilization.
 Internally, the high-level API makes use of the low-level API to perform the necessary computations.
 For users wanting to gain a deeper insight in the workings of the software, or wanting to include the basic functions 
 into their own code, for example in optimization routines, users can directly access the low-level API, which provides the necessary building blocks.
@@ -111,7 +109,7 @@ functionality as the TDS-Control MATLAB function `tds_roots`.
     >>> rdde = tds.RDDE(A = [A0, A1], hA=hA)
     >>> roots, info = tds.roots(rdde, r=-1.0)
 
-Computing the roots can alternately be performed using the **low-level** function ``roots_ddae`` from the submodule ``tdspy.stability.characteristic_roots`` as follows:
+Computing the roots can alternately be performed using the **low-level** function :func:`roots_ddae` from the submodule `tdspy.stability.characteristic_roots` as follows:
 
     >>> import numpy as np
     >>> from tdspy.stability.characteristic_roots import roots_ddae

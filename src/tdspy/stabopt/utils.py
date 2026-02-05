@@ -14,9 +14,48 @@ def diff_dependency_mask(Kmask: npt.NDArray, uE: npt.NDArray, vE: npt.NDArray, B
     """ Creates dependency mask for coefficients of delay difference eqations
     on controller parameters
 
-    Args:
-        Kmask (array): 3d boolean array of 
-    
+    Parameters
+    -----------
+    Kmask : npt.NDArray
+        3d boolean array of shape (p, q, hK) where p is the number of inputs, q the number of outputs and hK the number of controller delays. Kmask[:,:,i] is the mask for the i-th controller term.
+    uE : npt.NDArray
+        left null space of E matrix of the delay difference equation
+    vE : npt.NDArray
+        right null space of E matrix of the delay difference equation
+    B : npt.NDArray
+        input matrix of the delay difference equation
+    C : npt.NDArray
+        output matrix of the delay difference equation
+    **kwargs: additional arguments, currently not used
+
+    Returns
+    --------
+    npt.NDArray
+        3d boolean array of shape (p, q, hK) where p is the number of inputs, q the number of outputs and hK the number of controller delays. 
+        Kmask[:,:,i] is the mask for the i-th controller term, indicating which
+        coefficients of the delay difference equation depend on the controller
+        parameters.
+
+    Notes
+    -----
+    The dependency mask is computed by evaluating the expression
+        uE.T @ B @ K[:,:,i] @ C @ vE
+    for each controller term i, where K[:,:,i] is the mask for the i-th controller term.
+    If the result is non-zero, the corresponding coefficients of the delay difference
+    equation depend on the controller parameters.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.stabopt.utils import diff_dependency_mask
+    >>> Kmask = np.array([[[1, 0], [0, 1]], [[0, 1], [1, 0]]], dtype=bool)
+    >>> uE = np.array([[1], [0]])
+    >>> vE = np.array([[1], [0]])
+    >>> B = np.array([[1, 0], [0, 1]])
+    >>> C = np.array([[1, 0], [0, 1]])
+    >>> diff_dependency_mask(Kmask, uE, vE, B, C)
+    array([[[ True, False],
+            [False,  True]]])
     """
     # TODO what if uE, vE empty
     rtol = kwargs.get("rtol", 1e-10)
