@@ -26,3 +26,6 @@ from .zeros import zeros
 from .gamma import gamma
 from .spectral_abscissa import (spectral_abscissa, spectral_abscissa_diff, 
                                 strong_spectral_abscissa, sa, cd, strong_sa)
+
+## Utils
+from . import utils

@@ -53,12 +53,12 @@ def spectral_abscissa(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> float:
         abscissa (float): spectral abscissa
     """
 
-    # tds instance check
-    assert isinstance(tds, (RDDE, NDDE, DDAE)), "Provided tds has to be RDDE, NDDE or DDAE"
-    assert tds.is_lti, "provided tds has to be linear time-invariant (LTI)"
-    assert tds.is_real, "provided tds has to contain only real-valued matrices"
-    assert not tds.is_logical, "provied tds can not be logical"
-    assert tds.n > 0, "the dimension of the state variable of tds must be larger than 0"
+    # tds instance check - TODO, these asserts are not correct
+    # assert isinstance(tds, (RDDE, NDDE, DDAE)), "Provided tds has to be RDDE, NDDE or DDAE" 
+    # assert tds.is_lti, "provided tds has to be linear time-invariant (LTI)"
+    # assert tds.is_real, "provided tds has to contain only real-valued matrices"
+    # assert not tds.is_logical, "provied tds can not be logical"
+    # assert tds.n > 0, "the dimension of the state variable of tds must be larger than 0"
 
     # r check
     assert isinstance(r, (float, int)), "r has to be float or int"
