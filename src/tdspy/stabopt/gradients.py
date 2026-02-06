@@ -324,7 +324,7 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
                 BU: npt.NDArray, CV: npt.NDArray) -> tuple[float, npt.NDArray]:
     """ gradient of gamma0 function for delay-difference equations
 
-    Computes the gradient of the function :math:`\gamma_0` of the delay-difference
+    Computes the gradient of the function :math:`\gamma_0(p)` of the delay-difference
     equation defined by matrices D and delays hD with respect to controller
     parameters.
 
@@ -367,19 +367,21 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stabopt.gradients import grad_gamma0
+    >>> from tdspy.stabopt.gradients import grad_gamma0, gradient_test
+    >>> np.random.seed(0)
     >>> DP = np.random.rand(2, 2, 3)  # difference equation matrices
     >>> hDP = np.array([0.0, 0.1, 0.2])  # difference equation delays
     >>> Kmask = np.ones((2, 2, 3), dtype=bool)  # all controller parameters adjustable
     >>> hK = np.array([0.1, 0.2, 0.3])  # controller delays
     >>> BU = np.random.rand(2, 2)  # left matrix defining position of controller in DDE
     >>> CV = np.random.rand(2, 2)  # right matrix defining position of controller in DDE
-    >>> x = np.random.rand(*Kmask.shape)  # vectorized controller parameters
-    >>> fval, grad = grad_gamma0(x, DP, hDP, Kmask, hK, BU, CV)
-    >>> print(f"gamma0: {fval}, gradient: {grad}")
-    gamma0: 1.2345, gradient: [0.1, 0.2, 0.3, 0.4, 0.5, 0
-    
-
+    >>> K = np.random.rand(*Kmask.shape)  # random controller parameters
+    >>> x = K.reshape(-1)  # vectorized controller parameters
+    >>> grad_analytical, grad_numerical = gradient_test(grad_gamma0,x,(DP,hDP,Kmask,hK,BU,CV))
+    Gradient test passed norm=2.2243305180628638e-10 < 1e-06
+    Gradient computation peformance:
+        ANALYTICAL:     0.3299256430036621 [s]
+         NUMERICAL:     7.465598807000788 [s]
     """
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
@@ -407,40 +409,32 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     grad = np.zeros_like(x)
 
     ###################### Gradient computation ######################
+    ######################## DDE defined as ##########################
+    # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
 
     if s == 0:
         logger.warning("WARNING: s == 0, gradient is ill-defined")
         return g0, grad
-    
 
-    # The DDE is of the form
-    # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
     # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
+    uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # (u^* @ D^{-1} @ U.T @ B) ), dimensions (nu,)
 
-    # uDBU = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T
-    uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
+    CVv = (CV @ v[:,np.newaxis]) # CVv = ((C @ V) @ v).T, dimensions (ny,)
 
-    # # CVv = ((C @ V) @ v).T
-    CVv = (CV @ v[:,np.newaxis]) # dimensions (ny,)
-
-    # # u * dH/dp v = uDBU * CVv * SUM(exp(j*th))
-    # udH_dpv = (uDBU * CVv)  # dimensions (nu, ny)
     # grad = np.real(np.conj(s) * uDBU.T * CVv.T * np.sum(np.exp(1j*th[m-1:]))) / np.abs(s)
     
     # # the below divides by |u^* v| (not in the original formula, but needed for correct scaling)
     # grad = grad / np.real(np.conj(u).T @ v) 
-
     m = len(hDP)
 
     matrix = uDBU.T @ CVv.T
     vector = np.conj(s) * np.exp( 1j * th[m-1:] ) # shape (mH,)
     array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
 
-    # grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
+    grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
 
     # mask gradients
     grad_masked = np.where(Kmask, grad, 0)
-
 
     return g0, grad_masked.reshape(-1)
 
