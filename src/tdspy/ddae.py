@@ -37,6 +37,65 @@ class DDAE(TDSBase):
     :math:`u(t) \in \mathbb{R}^p` the input vector, and 
     :math:`y(t) \in \mathbb{R}^q` the output vector.
 
+    Parameters
+    ----------
+    A : npt.NDArray
+        3D array of shape (n, n, mA) containing system matrices A_k
+    hA : npt.NDArray
+        1D array of shape (mA,) containing system delays h_{A,k}
+    E : npt.NDArray, optional
+        2D array of shape (n, n) containing descriptor matrix E,
+        by default None, which is equivalent to identity matrix
+    B : npt.NDArray, optional
+        3D array of shape (n, p, mB) containing input matrices B_k,
+        by default None
+    hB : npt.NDArray, optional
+        1D array of shape (mB,) containing input delays h_{B,k},
+        by default None
+    C : npt.NDArray, optional
+        3D array of shape (q, n, mC) containing output matrices C_k,
+        by default None
+    hC : npt.NDArray, optional
+        1D array of shape (mC,) containing output delays h_{C,k},
+        by default None
+    D : npt.NDArray, optional
+        3D array of shape (q, p, mD) containing feed-through matrices D_k,
+        by default None
+    hD : npt.NDArray, optional
+        1D array of shape (mD,) containing feed-through delays h_{D,k},
+        by default None
+    **kwargs: additional arguments
+        tol_singular : float, optional
+            tolerance for considering matrix singular in null space computations,
+            by default 1e-12
+    
+    Returns
+    -------
+    DDAE
+        DDAE object
+
+    Notes
+    -----
+    The DDAE class represents a linear time-invariant delay differential-algebraic
+    equation (DDAE) of the form described above. 
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.ddae import DDAE
+    >>> A = np.array([[[1, 0], [0, 1]], [[0, 0], [0, 0]]], dtype=float).transpose((1,2,0))
+    >>> hA = np.array([0.0, 1.0], dtype=float)
+    >>> E = np.array([[1, 0], [0, 1]], dtype=float)
+    >>> B = np.array([[[1], [0]], [[0], [1]]], dtype=float).transpose((1,2,0))
+    >>> hB = np.array([0.0], dtype=float)
+    >>> C = np.array([[[1, 0]], [[0, 1]]], dtype=float).transpose((1,2,0))
+    >>> hC = np.array([0.0], dtype=float)
+    >>> D = np.array([[[0]], [[0]]], dtype=float).transpose((1,2,0))
+    >>> hD = np.array([0.0], dtype=float)
+    >>> ddae = DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    >>> ddae.n
+    2
+    >>> ddae.n_inputs
     
     """
 
