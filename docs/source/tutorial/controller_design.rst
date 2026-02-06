@@ -203,6 +203,9 @@ where :math:`(\lambda, u, w, \theta)` are obtained from the function ``gamma_dif
 .. math::
     D_{P_0} x(t) + \sum_{i=1}^m D_{P_i} x(t-\tau_i) = 0, \quad i = 0,1,\ldots,m
 
+
+.. code-block:: python
+    
     >>> DP, hDP = ddae_to_diff(E, P, hP)
 
 

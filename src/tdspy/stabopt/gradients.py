@@ -315,7 +315,7 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
 
     # mask gradients
     dKmasked = np.where(Kmask, dK, 0)
-    return dKmasked
+    return cd, dKmasked
 
 
 def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray, 
@@ -382,7 +382,7 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     """
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
-    from tdspy.stability.gamma_r import gamma_normalized_diff
+    from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
     from scipy import linalg, optimize
 
     # unpack arguments
@@ -407,32 +407,35 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
 
     ###################### Gradient computation ######################
 
+    if s == 0:
+        logger.warning("WARNING: s == 0, gradient is ill-defined")
+        return g0, grad
+    
+
     # The DDE is of the form
     # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
     # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
 
     # uDBU = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T
-    # # uDBU = np.einsum('i,ij->j', np.conj(u).T, linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
-    uDBU = (np.conj(u).T @ linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
+    uDBU = np.einsum('i,ij->j', np.conj(u).T, linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
+    # uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
 
     # # CVv = ((C @ V) @ v).T
-    # # CVv = np.einsum('ij,j->i', CV, v).T # dimensions (ny,)
-    CVv = np.sum((CV @ v).T*np.exp(1j*th)).T # dimensions (ny,)
-    
+    CVv = np.einsum('ij,j->i', CV, v) # dimensions (ny,)
+    # CVv = (CV @ v[:,np.newaxis]) # dimensions (ny,)
+
     # # u * dH/dp v = uDBU * CVv * SUM(exp(j*th))
     # udH_dpv = (uDBU * CVv)  # dimensions (nu, ny)
 
-    if s == 0:
-        logger.warning("WARNING: s == 0, gradient is ill-defined")
-        return g0, grad
+    m = len(hDP)
 
-    m = len(th)
-    for i in range(0, m+1):
-        grad += np.real(np.conj(s) * uDBU * CVv * np.exp(1j*th[i-1])) / np.abs(s)
-    grad = grad.reshape(-1)
+    grad = np.real(np.conj(s) * uDBU.T * CVv.T * np.sum(np.exp(1j*th[m-1:]))) / np.abs(s)
+    
+    # the below divides by |u^* v| (not in the original formula, but needed for correct scaling)
+    grad = grad / np.real(np.conj(u).T @ v) 
 
 
-    return g0, grad
+    return g0, grad.reshape(-1)
 
 
 
