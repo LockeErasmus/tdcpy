@@ -310,6 +310,7 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     matrix = left_matrix.T @ right_matrix.T
     vector = np.conj(s) * np.exp(-cd*hH[ix-1:]) * np.exp(1j * theta[ix-1:]) # shape(mH,)
     array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
+    # array[:,:,k] = matrix * vector[k]\ 
 
     dK = (1./den) * np.real(array)
 

@@ -63,14 +63,14 @@ def gamma(tds: DDAE, r: float,  **kwargs) -> tuple[float, GammaInfo]:
     
     # unpack system and compress
     E = tds.E 
-    A, hA = compress_matrices_delays(tds.A, tds.hA)
+    # A, hA = compress_matrices_delays(tds.A, tds.hA)
     # obtain DIFF
-    D, hD = ddae_to_diff(E, A, hA) # TODO tol, rcond KWARGS
+    D, hD = ddae_to_diff(E, tds.A, tds.hA) # TODO tol, rcond KWARGS
 
     if hD.shape[0] < 2: # solve trivial case
         g_info = GammaInfo(
             th=np.zeros((0,)),
-            M=np.zeros((1,1,hA.shape[0])),
+            M=np.zeros((1, 1, tds.hA.shape[0])),
             s=0.+0j,
             u=np.zeros((0,)),
             v=np.zeros((0,)),

@@ -98,10 +98,16 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
 
         if residuals[i] <= tol:
             logger.debug(f"Root: s0={roots[i]} already fullfils ||M(s0)@v0||={residuals[i]} <= tol={tol}")
+        elif np.any(np.real(roots[i]*hA[1:]) < -700 ): # bound is np.log(np.finfo(np.float64).max) = 709.782712893384
+            logger.warning(f"Evaluating of EXP( -s*tau ) would result in overflow. Stopping iterations for root: s0={roots[i]} and skipping newton corrections.")
+            large_correction_mask[i] = True
+            converged_mask[i] = False
+            residuals[i] = np.inf
         else:
             logger.debug(f"Envoking Newton corrections for root: s0={roots[i]} ||M(s0)@ v0||={residuals[i]} > tol={tol}")
             v[:] = v0 # initial v <- v0
-            for j in range(max_iterations):   
+            for j in range(max_iterations):
+                logger.debug(f"  it: {j} | residual={residuals[i]}, root={roots[i]}")   
                 dM[:,:] = E + np.sum(A[:,:,1:]*(hA[1:]*np.exp(-roots[i]*hA[1:])), axis=2)               
                 
                 # update jacobian
@@ -113,20 +119,27 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
                 # update value of functions
                 f_val[:n] = (M @ v[:, np.newaxis])[:,0]
                 f_val[-1] = (np.inner(np.conj(v0), v) - 1)
-                
+
                 # obtain update `dx = [dv.T, ds].T ` by solving LS problem
                 (dx, _, _, _) = linalg.lstsq(jacobian, f_val[:,np.newaxis])
+                
                 
                 # update roots and right eigen-vector
                 v -= dx[:n, 0]
                 roots[i] -= dx[-1, 0]
 
+                if np.any(np.real(roots[i]*hA[1:]) < -700 ): # bound is np.log(np.finfo(np.float64).max) = 709.782712893384
+                    logger.warning(f"Evaluating of EXP( -s*tau ) would result in overflow. Stopping iterations for root: s0={roots[i]} and skipping newton corrections.")
+                    large_correction_mask[i] = True
+                    residuals[i] = np.inf
+                    break # stop newton iterations for this root
+
                 # update characteristic matrix M
                 M[:,:] = (roots[i] * E - A[:,:,0] - np.sum(A[:,:,1:]*np.exp(-roots[i]*hA[1:]), axis=2))
-                
+
                 # check if residual <= desired tolerance
                 residuals[i] = linalg.norm(M @ v[:, np.newaxis], ord=None, axis=None)
-                logger.debug(f"  it: {j} | residual={residuals[i]}, root={roots[i]}")
+                # logger.debug(f"  it: {j} | residual={residuals[i]}, root={roots[i]}")
                 if residuals[i] <= tol: # converged
                     # check for large newton correction
                     if linalg.norm(v, ord=None, axis=None) > tol and np.abs(roots0[i] - roots[i]) / np.max([(np.abs(roots0[i]) + np.abs(roots[i]))/2,1]) > 0.1:
