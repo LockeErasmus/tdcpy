@@ -418,25 +418,31 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
 
     # uDBU = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T
-    uDBU = np.einsum('i,ij->j', np.conj(u).T, linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
-    # uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
+    uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # dimensions (nu,)
 
     # # CVv = ((C @ V) @ v).T
-    CVv = np.einsum('ij,j->i', CV, v) # dimensions (ny,)
-    # CVv = (CV @ v[:,np.newaxis]) # dimensions (ny,)
+    CVv = (CV @ v[:,np.newaxis]) # dimensions (ny,)
 
     # # u * dH/dp v = uDBU * CVv * SUM(exp(j*th))
     # udH_dpv = (uDBU * CVv)  # dimensions (nu, ny)
+    # grad = np.real(np.conj(s) * uDBU.T * CVv.T * np.sum(np.exp(1j*th[m-1:]))) / np.abs(s)
+    
+    # # the below divides by |u^* v| (not in the original formula, but needed for correct scaling)
+    # grad = grad / np.real(np.conj(u).T @ v) 
 
     m = len(hDP)
 
-    grad = np.real(np.conj(s) * uDBU.T * CVv.T * np.sum(np.exp(1j*th[m-1:]))) / np.abs(s)
-    
-    # the below divides by |u^* v| (not in the original formula, but needed for correct scaling)
-    grad = grad / np.real(np.conj(u).T @ v) 
+    matrix = uDBU.T @ CVv.T
+    vector = np.conj(s) * np.exp( 1j * th[m-1:] ) # shape (mH,)
+    array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
+
+    grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
+
+    # mask gradients
+    grad_masked = np.where(Kmask, grad, 0)
 
 
-    return g0, grad.reshape(-1)
+    return g0, grad_masked.reshape(-1)
 
 
 
