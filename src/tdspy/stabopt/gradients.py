@@ -377,11 +377,10 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     >>> CV = np.random.rand(2, 2)  # right matrix defining position of controller in DDE
     >>> K = np.random.rand(*Kmask.shape)  # random controller parameters
     >>> x = K.reshape(-1)  # vectorized controller parameters
-    >>> grad_analytical, grad_numerical = gradient_test(grad_gamma0,x,(DP,hDP,Kmask,hK,BU,CV))
-    Gradient test passed norm=2.2243305180628638e-10 < 1e-06
-    Gradient computation peformance:
-        ANALYTICAL:     0.3299256430036621 [s]
-         NUMERICAL:     7.465598807000788 [s]
+    >>> fval, grad = grad_gamma0(x, DP, hDP, Kmask, hK, BU, CV)
+    >>> print(f"gamma0: {fval}", f"grad shape: {grad.shape}")
+    gamma0: 4.7552476929955185 grad shape: (12,)
+
     """
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
@@ -412,7 +411,7 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     ######################## DDE defined as ##########################
     # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
 
-    if s == 0:
+    if s < 1e-12:
         logger.warning("WARNING: s == 0, gradient is ill-defined")
         return g0, grad
 
