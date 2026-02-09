@@ -27,18 +27,18 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
             region via 4 coordinates [Re_min, Re_max, Im_min, Im_max], default r=0.0
         kwargs:
             discretization (int): discretization for discretizing DDAE into DAE,
-                optional, default None, if not specified, heuristic will be used
-                to obtain sufficient discretization
+                optional, default None, if not specified, heuristic from [1]
+                will be used to obtain sufficient discretization
             max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
                 optional, default 600
-            basic_delay (float): base delay in case delays are commensurate,
+            base_delay (float): base delay in case delays are commensurate,
                 optional, default None, used in discretization heuristic
     
     Returns:
         tuple containing
 
             - cr (array): vector of obtained roots
-            - roots_info (RootsInfo): RMR metadata containing:
+            - roots_info (RootsInfo): Roots metadata containing:
                 discretization (int): discretization used for obtaining EVP
                 gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
                 index_exceeds_one (bool): flag that index exceeds one

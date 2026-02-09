@@ -68,7 +68,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
             to obtain sufficient discretization
         max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
             optional, default 600
-        basic_delay (float): base delay in case delays are commensurate,
+        base_delay (float): base delay in case delays are commensurate,
             optional, default None, used in discretization heuristic
         cd (float): c_D value of provided DDAE, optional, default None, if not
             provided condition c_D < r will be checked in case of RHP region
@@ -262,7 +262,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
                 #   (b) gamma(r) < 1.0
                 #   (c) user knows what he is doing by specifing `cd`
                 # => act as region RHP contains finitely many roots and heuristic can be applied
-                basic_delay = kwargs.get("basic_delay", None)
+                basic_delay = kwargs.get("base_delay", None)
                 discretization = compute_n_rhp(E, B, C, tau=hA, basic_delay=basic_delay)
             
             # check if discretization does exceed limit
