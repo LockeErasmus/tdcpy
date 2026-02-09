@@ -316,7 +316,7 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
 
     # mask gradients
     dKmasked = np.where(Kmask, dK, 0)
-    return dKmasked
+    return cd, dKmasked
 
 
 def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray, 
@@ -324,21 +324,9 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
                 BU: npt.NDArray, CV: npt.NDArray) -> tuple[float, npt.NDArray]:
     """ gradient of gamma0 function for delay-difference equations
 
-    Computes the gradient of the function :math:`\gamma_0` of the delay-difference
+    Computes the gradient of the function :math:`\gamma_0(p)` of the delay-difference
     equation defined by matrices D and delays hD with respect to controller
     parameters.
-    For the normalized DDE defined as
-    .. math::
-        0 = I x(t) + H_1(p) x(t-h_1) + ... + H_m(p) x(t-h_m),
-
-        with H_i = linalg.solve(D[:, :, 0], D[:, :, i]), hH_i = hD[i].
-
-    the gradient is given by
-
-    .. math::
-    
-        \nabla_{p_k} \gamma_0(p) = \frac{1}{|\lambda|} \text{Re} \left( \bar{\lambda} u^* \left( \frac{\partial H_1(p)}{\partial p_k} +
-                         \sum_{i=2}^m \frac{\partial H_i}{\partial p_k} e^{j\theta_i}  \right) w \right).
 
     Parameters
     ----------
@@ -378,12 +366,25 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
 
     Examples
     --------
-    
+    >>> import numpy as np
+    >>> from tdspy.stabopt.gradients import grad_gamma0, gradient_test
+    >>> np.random.seed(0)
+    >>> DP = np.random.rand(2, 2, 3)  # difference equation matrices
+    >>> hDP = np.array([0.0, 0.1, 0.2])  # difference equation delays
+    >>> Kmask = np.ones((2, 2, 3), dtype=bool)  # all controller parameters adjustable
+    >>> hK = np.array([0.1, 0.2, 0.3])  # controller delays
+    >>> BU = np.random.rand(2, 2)  # left matrix defining position of controller in DDE
+    >>> CV = np.random.rand(2, 2)  # right matrix defining position of controller in DDE
+    >>> K = np.random.rand(*Kmask.shape)  # random controller parameters
+    >>> x = K.reshape(-1)  # vectorized controller parameters
+    >>> fval, grad = grad_gamma0(x, DP, hDP, Kmask, hK, BU, CV)
+    >>> print(f"gamma0: {fval}", f"grad shape: {grad.shape}")
+    gamma0: 4.7552476929955185 grad shape: (12,)
 
     """
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
-    from tdspy.stability.gamma_r import gamma_normalized_diff
+    from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
     from scipy import linalg, optimize
 
     # unpack arguments
@@ -407,33 +408,34 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     grad = np.zeros_like(x)
 
     ###################### Gradient computation ######################
-
-    # The DDE is of the form
+    ######################## DDE defined as ##########################
     # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
-    # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
 
-    # uDBU = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T
-    # # uDBU = np.einsum('i,ij->j', np.conj(u).T, linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
-    uDBU = (np.conj(u).T @ linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
-
-    # # CVv = ((C @ V) @ v).T
-    # # CVv = np.einsum('ij,j->i', CV, v).T # dimensions (ny,)
-    CVv = np.sum((CV @ v).T*np.exp(1j*th)).T # dimensions (ny,)
-    
-    # # u * dH/dp v = uDBU * CVv * SUM(exp(j*th))
-    # udH_dpv = (uDBU * CVv)  # dimensions (nu, ny)
-
-    if s == 0:
+    if s < 1e-12:
         logger.warning("WARNING: s == 0, gradient is ill-defined")
         return g0, grad
 
-    m = len(th)
-    for i in range(0, m+1):
-        grad += np.real(np.conj(s) * uDBU * CVv * np.exp(1j*th[i-1])) / np.abs(s)
-    grad = grad.reshape(-1)
+    # u* dH/dp v = (u^* @ linalg.solve(D[:,:,0], U.T @ B) ).T @ ((C @ V) @ v).T * np.sum(exp(j*th[0])),
+    uDBU = (np.conj(u).T[np.newaxis,:] @ linalg.solve(D[:,:,0], BU)) # (u^* @ D^{-1} @ U.T @ B) ), dimensions (nu,)
 
+    CVv = (CV @ v[:,np.newaxis]) # CVv = ((C @ V) @ v).T, dimensions (ny,)
 
-    return g0, grad
+    # grad = np.real(np.conj(s) * uDBU.T * CVv.T * np.sum(np.exp(1j*th[m-1:]))) / np.abs(s)
+    
+    # # the below divides by |u^* v| (not in the original formula, but needed for correct scaling)
+    # grad = grad / np.real(np.conj(u).T @ v) 
+    m = len(hDP)
+
+    matrix = uDBU.T @ CVv.T
+    vector = np.conj(s) * np.exp( 1j * th[m-1:] ) # shape (mH,)
+    array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
+
+    grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
+
+    # mask gradients
+    grad_masked = np.where(Kmask, grad, 0)
+
+    return g0, grad_masked.reshape(-1)
 
 
 
@@ -445,7 +447,6 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
         func:   cost function
         h:      step size
         E, P, hP, hK, Kmask, B, C:  arguments
-
 
     Returns:
 
@@ -502,7 +503,7 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
         fgrad_num[i] = (f_forward - f_backward)/(2*h)
     perf_numerical = time.perf_counter() - s
     
-
+    fgrad_num = fgrad_num.reshape(fgrad.shape)
     diff = np.linalg.norm(fgrad - fgrad_num)
     if diff < tolerance:
         print(f"Gradient test passed norm={diff} < {tolerance}")

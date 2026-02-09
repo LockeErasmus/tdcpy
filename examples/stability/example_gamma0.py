@@ -1,4 +1,6 @@
 """
+Gamma0 computation for delay-difference equations
+==================================================
 
 """
 

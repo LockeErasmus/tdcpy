@@ -203,6 +203,9 @@ where :math:`(\lambda, u, w, \theta)` are obtained from the function ``gamma_dif
 .. math::
     D_{P_0} x(t) + \sum_{i=1}^m D_{P_i} x(t-\tau_i) = 0, \quad i = 0,1,\ldots,m
 
+
+.. code-block:: python
+    
     >>> DP, hDP = ddae_to_diff(E, P, hP)
 
 
@@ -238,7 +241,7 @@ with ``grad_gamma0``
 
     >>> g0, grad = grad_gamma0(p, DP, hDP, Kmask, hK, BU, CV)
 
-1. Gradient computation - precomputation:
+1. **Gradient computation - precomputation:**
 
 i. Form the matrices of the DDE with controller parameters :math:`p`
 
@@ -272,7 +275,7 @@ iii. Compute the quantities :math:`(\lambda, u, v, \theta)` associated with :mat
     >>> g0, gammaInfo = gamma_normalized_diff(DD, hDD,r=0)
     >>> s, u, v, th = gammaInfo.s, gammaInfo.u, gammaInfo.v, gammaInfo.th
 
-2. Gradient computation - initialization:
+2. **Gradient computation - initialization:**
 
 Initialize the gradient vector as zeros
 
@@ -280,7 +283,7 @@ Initialize the gradient vector as zeros
 
     >>> grad = np.zeros_like(p)
 
-3. Gradient computation - closed-form expression:
+3. **Gradient computation - closed-form expression:**
 
 .. math::
 

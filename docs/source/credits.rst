@@ -2,7 +2,10 @@
 Credits
 =======
 
-This project originaly 
+This project was initiated and developed by Adam Peichl during the development of input shapers and delay-based controllers, which relies heavily on spectral methods for time-delay systems. 
+The motivation was to create a Python alternative to the MATLAB toolbox ``TDS-Control``, and was intended for Python users or for those without access to MATLAB.
+The software is currently in its early stages of development, and we are actively working on adding new features and improving the existing ones. 
+We welcome contributions from the community, and we encourage users to report any issues or suggest new features that they would like to see in the software. 
 
 
 Citing this work
@@ -34,6 +37,10 @@ Team
    :alt: Adam Peichl
 
 - **Adrian Saldanha**: Apertince, Czech Technical University, KU Leuven
+
+  .. image:: _static/team/adrian.jpg
+   :width: 100
+   :alt: Adrian Saldanha
 
 Contributors
 ------------
