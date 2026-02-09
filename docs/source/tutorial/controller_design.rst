@@ -6,18 +6,99 @@ We consider the stabilization of time-delay systems described by the DDAE:
 
 .. math::
     
+    E \dot{x}(t) = P_0 x(t) + \sum_{i=1}^{m} P_i x(t - \tau_i)
+
+using a controller of the form
+
+.. math::
+    
+    \dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i) 
+         u(t) = \sum_{i=0}^{m_{C_c}} C_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{D_c}} D_{c_i} y(t - \tau_i)
+
+where :math:`y(t) = C x(t)` is the system output, and :math:`p \in \mathbb{R}^{n_p}` are the controller parameters.
+
+By defining an augmented state vector :math:`\tilde{x}(t)`, the resulting closed-loop system can be written as
+
+.. math::
+    
     E \dot{x}(t) = \underbrace{(P_0 + B K_0(p) C)}_{A_0(p)} x(t) + \sum_{i=1}^{m} \underbrace{(P_i + B K_i(p) C)}_{A_i(p)} x(t - \tau_i)
 
-where the system matrices :math:`P_0, P_1, \ldots, P_m` are the plant matrices and :math:`K` the respective controller gains with :math:`p \in \mathbb{R}^{n_p}`.
+where the system matrices :math:`P_0, P_1, \ldots, P_m` are the plant matrices and :math:`K_i` the respective controller gains corresponding to delays :math:`\tau_i`, with :math:`p \in \mathbb{R}^{n_p}`.
 The stabilization objective is to find controller parameters :math:`p` such that the closed-loop system is stable, i.e., all characteristic roots have negative real part.
 
+In `TDSpy`, the controller is by default a :class:`tdspy.ddae` object, which allows for a more generic controller structure. 
+The above formulation allows for the design of controllers of the following types:
 
-Approach 1: Minimization of the strong spectral abscissa
+- Static feedback controllers
+- Dynamic controllers
+- Delayed feedback controllers
+
+
+Pre-checking the system type
+----------------------------
+
+Before proceeding with the stabilization procedure, it is important to determine whether the system is of retarded type or neutral type, as this will determine the choice of stabilization approach.
+
+.. code-block:: python
+
+    >>> is_neutral = ddae.is_essentially_neutral
+
+
+Case 1: Retarded system
+------------------------
+
+If the system is of **retarded** type, then the stabilization problem can be solved by minimizing the spectral abscissa of the closed-loop system using a gradient-based optimization algorithm, for example the BFGS quasi-Newton method.
+The function ``design_bfgs`` from the :mod:`tdspy.stabopt.controller_bfgs` module can be used for this purpose.
+
+.. code-block:: python
+
+    >>> sol = design_bfgs(E, P, hP, K0, hK, B, C)
+
+
+Case 2: Neutral system
+-------------------------
+
+If the system is of **neutral** type, then the stabilization problem is more challenging, as the spectral abscissa may be sensitive to small perturbations.
+In this case, we can either minimize the strong spectral abscissa of the closed-loop system, or we can solve a constrained optimization problem where the objective is to minimize the spectral abscissa.
+
+
+**Pre-requisites**
+The stabilization procedure relies on the following assumptions:
+
+1. The system is stabilizable with the selected controller structure. This can be checked using the following command:
+
+    .. code-block:: python
+
+        # extract controller parameters affecting the delay-difference equation
+        from tdspy.stabopt.utils import diff_dependency_mask
+        r = diff_dependency_mask(Kmask, uE=uE, vE=vE, B=B, C=C)
+        
+        if not np.any(r):
+            raise ValueError("The delay difference equation is independent of the controller parameters, no feasible point exists.")    
+    
+    Note that the above condition ensures that the selected controller structure can influence the neutral dynamics. 
+    If the above condition is not satisfied, then we check if the spectrum of the delay-difference equation is stable. If yes, then proceed to minimize the spectral abscissa. 
+    If not, the system cannot be stabilized with the selected controller structure.
+
+2. The gradient exists and is finite. This can be checked by computing :math:`\gamma_0` and :math:`C_D` at the initial controller parameters and checking if the value is finite.
+
+    .. code-block:: python
+
+        from tdspy.stability.gamma_r import gamma_diff
+        g0, gammaInfo = gamma_diff(DD, hDD,r=0)
+        if not np.isfinite(g0):
+            raise ValueError("The gradient is not finite at the initial controller parameters, please choose a different initial point.")
+
+
+If the above conditions are satisfied, then we can proceed with the stabilization procedure, which consists of two :
+
+
+Option 1: Minimization of the strong spectral abscissa
 --------------------------------------------------------
 
 Under the control paradigm, to achieve exponential stability of the closed-loop, it is required to find controller parameters :math:`p` 
 such that the spectral abscissa :math:`\alpha` of the closed-loop is strictly negative.  
-Furthermore for systems with neutral dynamics, the spectral abscissa may be sensitive to small perturbations, in which case, we consider the strong spectral abscissa :math:`C_D`.
+Furthermore since the closed-loop bears neutral dynamics, the spectral abscissa may be sensitive to small perturbations, in which case, we consider the strong spectral abscissa :math:`C_D`.
 
 The requirement for attaining strong stability of the closed-loop can thus be formulated as a constrained optimization problem of the form:
 
@@ -29,10 +110,12 @@ where :math:`C` denotes the strong spectral abscissa of the closed-loop system, 
 
 
 
-Approach 2: Stabilization via constrained optimization
+
+Option 2: Stabilization via constrained optimization
 -------------------------------------------------------
 
-Alternately, the above stabilization objective can be formulated as a constrained optimization problem,
+
+The optimization problem can be stated as:
 
 .. math::
 
@@ -40,7 +123,6 @@ Alternately, the above stabilization objective can be formulated as a constraine
     \text{subject to} \quad & \gamma_0(p) < \gamma,
 
 where :math:`\gamma_0` denotes the spectral radius of the difference operator of the neutral system, and :math:`\gamma < 1` is a prescribed upper bound.
-If the objective is strictly negative spectral abscissa, i.e., :math:`\alpha < 0`, then the closed-loop system is exponentially stable.
 
 
 Solution approach

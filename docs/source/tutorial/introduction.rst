@@ -70,8 +70,8 @@ Section                                 Description
 
 .. 3. Examples of usage can be found in :ref:`general_examples`.
 
-TDSpy Structure
---------------------
+High-level API vs Low-level API
+--------------------------------
 
 ``TDSpy`` functions can be called using the low-level API or the high-level API. 
 The high-level API is most often sufficient for users wanting to work directly with high-level functionalities such as spectral analysis and stabilization.

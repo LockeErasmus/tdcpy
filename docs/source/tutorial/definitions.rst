@@ -75,7 +75,7 @@ The above works similar to the `TDS-Control` MATLAB function `tds_create('A',{A0
 .. note::
     :collapsible:
 
-    While in the above syntax, the system matrices are provided as a list of 2D NumPy arrays, the function internally converts the system matrices into a 3D NumPy array format internally, where the third dimension corresponds to the different delays.
+    While in the above syntax, the system matrices are provided as a list of 2D NumPy arrays, the function internally converts the system matrices into a 3D NumPy array, where the third dimension corresponds to the delays.
     The system matrices can also be created directly using the 3D NumPy array format, which is important when using the equivalent low-level API functions. 
     Equivalent to the above code snippet, the following code snippet also creates the system matrices can be defined using the 3D NumPy array format as:
 
@@ -145,6 +145,12 @@ how to create a neutral time-delay system in ``TDSpy``.
 
         adde = ndde.get_delay_difference_equation()
 
+    Alternately, one can use the low-level API :func:`ndde_to_diff` function from the `tdspy.common.delay_difference_equation` module as:
+
+    .. code-block:: python
+
+        adde = ndde_to_diff(H=ndde.H, hH=ndde.hH)
+
 
 Delay-differential algebraic equations (DDAEs)
 -----------------------------------------------
@@ -199,3 +205,9 @@ In ``TDSpy``, a DDAE can be created using the :class:`tdspy.DDAE` class.
     .. code-block:: python
 
         adde = ddae.get_delay_difference_equation()
+
+    Alternately, one can use the low-level API :func:`ddae_to_diff` function from the `tdspy.common.delay_difference_equation` module as:
+
+    .. code-block:: python
+
+        adde = ddae_to_diff(E = ddae.E, A=ddae.A, hA=ddae.hA)

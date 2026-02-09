@@ -108,7 +108,7 @@ def design_granso(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, *
 
     return sol
 
-def stab_opt(ddae,nc,**kwargs):
+def minimize_spectral_abscissa(ddae,nc,**kwargs):
     """
     function to optimize the closed-loop spectral abscissa of:
         ddae
@@ -122,6 +122,11 @@ def stab_opt(ddae,nc,**kwargs):
         mask (array):   gradient mask
         options:        stabilization options
     """
+
+    # import necessary functions
+    from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+    from tdspy.stability.spectral_abscissa import spectral_abscissa_diff
+    from tdspy.stabopt.controller_bfgs import design_bfgs
 
     # unpack arguments
     n, nu, ny = ddae.n, ddae.n_inputs, ddae.n_outputs
@@ -138,6 +143,10 @@ def stab_opt(ddae,nc,**kwargs):
     # stability options: nstart, Ntheta, fvalquit, w1, w2
     # options = kwargs.get("options",{})  
 
+    # get mask
+    Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
+    options = kwargs.get("options",{"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # get_options
+    
     # verify existing controller mask, ny, nu, nc
     assert initial.shape[0]==nu+nc, "dimension of input channels must match controller dimension"
     assert initial.shape[1]==ny+nc, "dimension of output channels must match controller dimension"
@@ -161,8 +170,9 @@ def stab_opt(ddae,nc,**kwargs):
     if cl_ddae.is_essentially_retarded:
         # tds is retarded, minimize the spectral abscissa function c
         # however, this does not take into account infinitesimal delay perturbations
-        func = func_sa
-        pass
+        
+        sol = design_bfgs(E, P, hP, K0, hK, B, C)
+        return sol
 
     else:
         # tds is neutral, check dependency
@@ -172,13 +182,6 @@ def stab_opt(ddae,nc,**kwargs):
         diff = cl_ddae.get_delay_difference_equation()
         r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
         
-        # case 1: dde 
-        if diff.A.shape[2] == 1:  # system is retarded
-            func = func_sa          
-        else:                       # system is neutral
-            func = func_cd          
-
-
         if all(~r):
             dependency_flag = 0     # diff is independent of controller parameters
 
@@ -334,6 +337,8 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     # KD = np.zeros_like(Kmask, dtype=float)
     # np.place(KD, indices, x0)
 
+    ############################# Step 3: Optimization ##########################
+
     sol = optimize.minimize(
         grad_gamma0,
         x0,
@@ -343,4 +348,5 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
         options=options,
         callback=kwargs.get("callback", None)
     )
+
     return sol
