@@ -68,8 +68,15 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
             to obtain sufficient discretization
         max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
             optional, default 600
-        basic_delay (float): base delay in case delays are commensurate,
+        base_delay (float): base delay in case delays are commensurate,
             optional, default None, used in discretization heuristic
+        cd (float): c_D value of provided DDAE, optional, default None, if not
+            provided condition c_D < r will be checked in case of RHP region
+            and heuristic for obtaining discretization will be envoked if
+            condition is not satisfied, if provided, condition c_D < r will be
+            checked and warning will be raised if not satisfied. If you want to
+            skip this check, provide any value of `cd` smaller then `r`,
+            setting `cd=-np.inf` makes sure check will never be performed.
 
     Returns
     -------
@@ -158,6 +165,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
         hA = np.r_[0, hA] # prepend 0.0 delay
         A = np.concatenate([np.zeros(shape=(n,n,1), dtype=E.dtype), A], axis=2)
 
+    D, hD = ddae_to_diff(E, A, hA) # use non-compressed form for DIFF
     A, hA = compress_matrices_delays(A, hA)
 
     # CASE 1: ODE or DAE (no delays)
@@ -208,6 +216,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
     max_size_evp_enforced = False # flag to indicate that size of EVP > max_size_evp
     assert n <= max_size_evp, "The size of the delay differential equation exceeds max_size_evp"
     discretization_max = int(np.floor(max_size_evp / n) - 1)
+    gamma_r_exceeds_one = None # flag to indicate that gamma(r) > 1, i.e., RHP contains infinitely many roots
     
     if case == "rhp":
         # rescale r
@@ -215,33 +224,46 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
         # introduce shift of the origin, shifted matrices B, C
         B = K[:,:,0] + (-rs)*E
         C = K[:,:,1:] * np.exp(-rs * tau_s[1:])
-        if discretization is None: # envoke heuristic
-            if False: # TODO line 289 - 295, as of now unimportant, later KWARG
-                # condition C_D > r is assumed to be already checked
-                ...
+        
+        if discretization is None: # no discretization -> envoke heuristic
+            logger.debug(f"Discretization not provided, envoking heuristic for RHP with r={r}")
+            # step 0: check c_D
+            cd = kwargs.get("cd", None)
+            if cd is not None: # line 289 - 295, as of now unimportant, later KWARG
+                gamma_r_exceeds_one = False
+                if cd >= r:
+                    logger.warning((f"Condition c_D < r is not satisfied: (c_D={cd} >= r={r}) for user supplied value "
+                                    f"of `cd`. This indicates that RHP contains infinitely many roots (assuming "
+                                    "provided `cd` is correct and heuristic can not be used)"))
+                    gamma_r_exceeds_one = True
             else:
                 D, hD = ddae_to_diff(E, A, hA)
                 if hD.size != 0: # delay difference equation exists (E is singular)
-                    # DD, hDD = normalize_diff(D, hD)
-                    if hD[0] != 0 or False: # TODO
+                    if hD[0] != 0 or np.linalg.matrix_rank(D[0]) < D[0].shape[0]:
+                        # first delay is not zero or matrix D0 is not full row rank -> raise value error
+                        # TODO: this is original error text from tds-control, should we change it to something like
+                        # "provided DDAE is of advanced type" ?
                         raise ValueError("The provided DDAE does not satisfy assumption 2.1.")
 
                     gamma_val, gamma_info = gamma_diff(D, hD, r)
                     if gamma_val >= 1.0:
+                        gamma_r_exceeds_one = True
                         discretization = 30
-                        logger.warning((f"gamma(r; ...)= {gamma_val} exceeds 1 (i.e., CD>r). Spectral "
-                                        "discretization with N = 30 (lowered if maximum size of "
-                                        "eigenvalue problem is exceeded). Try specifying a "
-                                        "rectangular region instead."))
+                        logger.warning((f"gamma({r=}; ...)= {gamma_val} exceeds 1 (i.e., CD > r). Spectral "
+                                        "discretization with N = 30 (lowered if maximum size of eigenvalue problem is "
+                                        "exceeded). You can (i) provide better `r` (2) provide rectangular region"
+                                        "instead of RHP or (3) calculate cd and use r > cd"))
+                    else:
+                        gamma_r_exceeds_one = False
                 
-                if discretization is None:
-                    # discretization is still undefined, reason:
-                    #   (a) - no underlying delay-difference equation or
-                    #   (b) - gamma(r) < 1.0
-                    # => region RHP contains finitely many roots and heuristic
-                    #    can be applied
-                    basic_delay = kwargs.get("basic_delay", None)
-                    discretization = compute_n_rhp(E, B, C, tau=hA, basic_delay=basic_delay)
+            if discretization is None:
+                # discretization is still undefined, reason:
+                #   (a) no underlying delay-difference equation or
+                #   (b) gamma(r) < 1.0
+                #   (c) user knows what he is doing by specifing `cd`
+                # => act as region RHP contains finitely many roots and heuristic can be applied
+                basic_delay = kwargs.get("base_delay", None)
+                discretization = compute_n_rhp(E, B, C, tau=hA, basic_delay=basic_delay)
             
             # check if discretization does exceed limit
             if discretization > discretization_max:
