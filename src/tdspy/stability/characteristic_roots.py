@@ -146,7 +146,19 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
     # 2. real E, A, hA
     # 3. dimensions E.shape[:2] == A.shape[:2] and A.shape[2] == hA.shape[0]
 
-    # TODO checks for region definition or leave to HIGH level API???
+    # checks for region definition
+    if isinstance(r, (int, float)):
+        # all OK
+        case = "rhp"
+    elif isinstance (r, (list, tuple, np.ndarray)):
+        assert len(r) == 4, "region has to be defined in form [a,b,c,d]"
+        assert r[0] < r[1] and r[2] < r[3], "region has to be defined as [a,b,c,d], a<b, c<d"
+        assert np.all(~np.isinf(r)), "region has to be finite rectangle"
+        case = "rect"
+    else:
+        raise ValueError(("Region (argument `r`) has to be defined as number, "
+                          "example `r=-5.1` or rectangular region, example "
+                          "`[-5, 10.5, 0, 100]`."))
 
     n = E.shape[0]
     if hA[0] > 0:
