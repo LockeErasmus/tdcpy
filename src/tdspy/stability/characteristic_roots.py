@@ -150,7 +150,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
     if isinstance(r, (int, float)):
         # all OK
         case = "rhp"
-    elif isinstance (r, list):
+    elif isinstance (r, (list, tuple, np.ndarray)):
         assert len(r) == 4, "region has to be defined in form [a,b,c,d]"
         assert r[0] < r[1] and r[2] < r[3], "region has to be defined as [a,b,c,d], a<b, c<d"
         assert np.all(~np.isinf(r)), "region has to be finite rectangle"

@@ -56,7 +56,7 @@ cl_ddae = tdspy.DDAE(E=closed_loop.E, A=closed_loop.A, hA=closed_loop.hA)
 cl_roots, rootsInfo = tdspy.roots(closed_loop, r=[-1, 1, -100, 100])
 cl_roots, rootsInfo = tdspy.roots(cl_ddae, r=[-1, 1, -100, 100])
 print(f"mas RE of roots of closed-loop: {np.max(np.real(cl_roots))}, Adrian value= -0.0309 ")
-print(f"SA: {tdspy.spectral_abscissa(cl_ddae, r=-0.1)}, Adrian value= -0.0309")
+# print(f"SA: {tdspy.spectral_abscissa(cl_ddae, r=-0.1)}, Adrian value= -0.0309")
 
 tdspy.utils.print_system_matrices(cl_ddae)
 

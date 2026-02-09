@@ -88,6 +88,6 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
         A = tds.A
         
     # find all roots via discretization
-    cr, cr_info = roots_ddae(E, A, hA, r, **kwargs)
+    cr, cr_info = roots_ddae(E, A, hA, r=r, **kwargs)
 
     return cr, cr_info
