@@ -1,8 +1,8 @@
-"""
-Strong stability
-================
+r"""
+Prelude to strong stability - gradient of $c_D$
+===============================================
 
-First, we consider Example 13 from :cite:`michiels2010spectrum`
+First, we consider Example 13 from :cite:`michiels2011spectrum`
 
 .. math::
 
@@ -20,7 +20,7 @@ First, we consider Example 13 from :cite:`michiels2010spectrum`
     +
     \begin{bmatrix}
         0 & 0\\
-        0 & a
+        0 & -a
     \end{bmatrix}
     x(t-\tau_1)
     +
@@ -28,7 +28,7 @@ First, we consider Example 13 from :cite:`michiels2010spectrum`
         0 & 0\\
         0 & \frac{1}{2}
     \end{bmatrix}
-    x(t-\tau_1)
+    x(t-\tau_2)
 
 and show that for certain values of :math:`a` the system is not strongly
 stable. Next, we show how dradient of spectral abscissa of associated 
@@ -41,7 +41,7 @@ from scipy import linalg
 import tdspy
 import tdspy.plot
 
-
+# Define system descriptor matrices
 E = np.array([
     [1, 0.],
     [0, 0],
@@ -59,53 +59,54 @@ A2 = np.array([
     [0, 0.5],
 ])
 
-
+# Create DDAE systems with a=0.25 with tau1=1 and tau1=0.99
 ddae1 = tdspy.DDAE(A=[A0, A1, A2], hA=np.array([0, 1, 2]), E=E)
 ddae1_perturbed = tdspy.DDAE(A=[A0, A1, A2], hA=np.array([0, 0.99, 2]), E=E)
 
+# Create DDAE systems with a=0.75 with tau1=1 and tau1=0.99
 A1[1,1] = -0.75
 ddae2 = tdspy.DDAE(A=[A0, A1, A2], hA=np.array([0, 1, 2]), E=E)
 ddae2_perturbed = tdspy.DDAE(A=[A0, A1, A2], hA=np.array([0, 0.99, 2]), E=E)
 
 region = [-1, 0.5, -200, 200]
-if False:
-    fig, (ax1, ax2) = plt.subplots(1,2, sharex=True, sharey=True)
 
-    # Solve a=0.25
-    cr1, _ = tdspy.roots(ddae1, r=region)
-    cr1_perturbed, _ = tdspy.roots(ddae1_perturbed, r=region)
-    sa1 = tdspy.sa(ddae1)
-    cd1, _ = tdspy.cd(ddae1)
+# Solve a=0.25
+cr1, _ = tdspy.roots(ddae1, r=region)
+cr1_perturbed, _ = tdspy.roots(ddae1_perturbed, r=region)
+sa1 = tdspy.sa(ddae1)
+cd1, _ = tdspy.cd(ddae1)
 
-    # solve a=0.75
-    cr2, _ = tdspy.roots(ddae2, r=region)
-    cr2_perturbed, _ = tdspy.roots(ddae2_perturbed, r=region)
-    sa2 = tdspy.sa(ddae2)
-    cd2, _ = tdspy.cd(ddae2)
+# solve a=0.75
+cr2, _ = tdspy.roots(ddae2, r=region)
+cr2_perturbed, _ = tdspy.roots(ddae2_perturbed, r=region)
+sa2 = tdspy.sa(ddae2)
+cd2, _ = tdspy.cd(ddae2)
 
-    ax1.set_title("Case $a=0.25$")
-    tdspy.plot.complex_scatter_axplot(cr1, ax=ax1, marker="+", color="green", label="nominal")
-    tdspy.plot.complex_scatter_axplot(cr1_perturbed, ax=ax1, marker="o", edgecolor="blue", facecolor="none", label="perturbed")
-    ax1.axvline(x=cd1, color='b', linestyle='--', alpha=0.5, label=r"$c_D$")
-    ax1.axvline(x=sa1, color='r', linestyle='--', alpha=0.5, label=r"$\alpha$")
-    ax1.set_xlabel(r"$\Re$")
-    ax1.set_ylabel(r"$\Im$")
-    ax1.set_xlim(region[0], region[1])
-    ax1.set_ylim(region[2], region[3])
-    ax1.legend()
+fig, (ax1, ax2) = plt.subplots(1,2, sharex=True, sharey=True)
 
-    ax2.set_title("Case $a=0.75$")
-    tdspy.plot.complex_scatter_axplot(cr2, ax=ax2, marker="+", color="green", label="nominal")
-    tdspy.plot.complex_scatter_axplot(cr2_perturbed, ax=ax2, marker="o", edgecolor="blue", facecolor="none", label="perturbed")
-    ax2.axvline(x=cd2, color='b', linestyle='--', alpha=0.5, label=r"$c_D$")
-    ax2.axvline(x=sa2, color='r', linestyle='--', alpha=0.5, label=r"$\alpha$")
-    ax1.set_xlabel(r"$\Re$")
-    ax1.set_ylabel(r"$\Im$")
-    ax2.set_xlim(region[0], region[1])
-    ax2.set_ylim(region[2], region[3])
-    ax2.legend()
+ax1.set_title("Case $a=0.25$")
+tdspy.plot.complex_scatter_axplot(cr1, ax=ax1, marker="+", color="green", label="nominal")
+tdspy.plot.complex_scatter_axplot(cr1_perturbed, ax=ax1, marker="o", edgecolor="blue", facecolor="none", label="perturbed")
+ax1.axvline(x=cd1, color='b', linestyle='--', alpha=0.5, label=r"$c_D$")
+ax1.axvline(x=sa1, color='r', linestyle='--', alpha=0.5, label=r"$\alpha$")
+ax1.set_xlabel(r"$\Re$")
+ax1.set_ylabel(r"$\Im$")
+ax1.set_xlim(region[0], region[1])
+ax1.set_ylim(region[2], region[3])
+ax1.legend()
 
-    plt.show()
+ax2.set_title("Case $a=0.75$")
+tdspy.plot.complex_scatter_axplot(cr2, ax=ax2, marker="+", color="green", label="nominal")
+tdspy.plot.complex_scatter_axplot(cr2_perturbed, ax=ax2, marker="o", edgecolor="blue", facecolor="none", label="perturbed")
+ax2.axvline(x=cd2, color='b', linestyle='--', alpha=0.5, label=r"$c_D$")
+ax2.axvline(x=sa2, color='r', linestyle='--', alpha=0.5, label=r"$\alpha$")
+ax1.set_xlabel(r"$\Re$")
+ax1.set_ylabel(r"$\Im$")
+ax2.set_xlim(region[0], region[1])
+ax2.set_ylim(region[2], region[3])
+ax2.legend()
+
+plt.show()
 # %%
 # Next, let us show how gradient of :math:`c_D` can be computed and used to
 # minimize :math:`c_D` and obtain strong stability (assuming right most root is
@@ -155,9 +156,6 @@ num = np.real(np.conj(s) * uHv / np.inner(np.conj(u), v))
 
 da = num / denum # derivative of cd w.r.t. a
 
-
-print(da)
-
 # %%
 progress = {
     "a": [],
@@ -166,9 +164,7 @@ progress = {
     "cd": [],
 }
 
-print(a * B @ C)
-
-for i in range(10):
+for i in range(10): # just a few steps for demonstration
     cd, cd_info = spectral_abscissa_diff(np.stack([H1 * a, H2], axis=2), hH)
     A1[1,1] = -a # a * B @ C
     cr, _ = tdspy.roots(tdspy.DDAE(A=[A0, A1, A2], hA=np.array([0, 1, 2]), E=E), r=region)
@@ -192,83 +188,40 @@ for i in range(10):
 
     da = num / denum # derivative of cd w.r.t. a
 
-    a -= 0.1 * np.ravel(da)[0] # TODO
-    print(f"cd: {cd}, da: {da}, a: {a}")
+    a -= 0.05 * np.ravel(da)[0] # TODO
+    print(f"Step {i}: c_d={cd}, a={a}")
 
+
+# %% Visualize the progress as animation
+import matplotlib.animation as animation
 
 fig, ax = plt.subplots()
-s = ax.scatter([], [], marker="+", color="green", label="nominal")
-sp = ax.scatter([], [], marker="o", edgecolor="blue", facecolor="none", label="perturbed")
+
+# plot the starting roots of system and perturbed system
+s = ax.scatter(np.real(progress["roots"][0]), np.imag(progress["roots"][0]),
+               marker="+", color="green", label=r"nominal $\tau_1=1$",
+               linewidth=0.5)
+sp = ax.scatter(np.real(progress["roots_perturbed"][0]),
+                np.imag(progress["roots_perturbed"][0]), marker="o",
+                edgecolor="blue", facecolor="none",
+                label=r"perturbed $\tau_1=0.99$", linewidth=1)
+cdline = ax.axvline(x=progress["cd"][0], color='r', linestyle='--', alpha=0.5,
+                    label=r"$c_D$")
+title = ax.set_title(rf"Step 0, $a={progress['a'][0]:.4f}$, $c_D={progress['cd'][0]:.4f}$")
 ax.set_xlabel(r"$\Re (\lambda)$")
 ax.set_ylabel(r"$\Im (\lambda)$")
-legend = ax.legend()
-
 ax.set_xlim(region[0], region[1])
 ax.set_ylim(region[2], region[3])
+legend = ax.legend(loc="lower left", bbox_to_anchor=(0, 0))
 
 def update(n):
+    """ Update function for animation"""
     cr = progress["roots"][n]
     crp = progress["roots_perturbed"][n]
     s.set_offsets(np.column_stack([np.real(cr), np.imag(cr)]))
     sp.set_offsets(np.column_stack([np.real(crp), np.imag(crp)]))
-    ax.axvline(x=progress["cd"][n], color='b', linestyle='--', alpha=0.5, label=r"$c_D$")
-    # legend.get_texts()[1].set_text("Solution of EVP N={}".format(n))
+    cdline.set_xdata(progress["cd"][n])
+    title.set_text(rf"Step {n}, $a={progress['a'][n]:.4f}$, $c_D={progress['cd'][n]:.4f}$")
 
-import matplotlib.animation as animation
-ani = animation.FuncAnimation(fig, update, frames=range(10), interval=500)
-
-plt.show()
-
-
-
-
-raise
-
-
-print(B @ K0[:,:,0] @ C)
-
-from tdspy.stabopt.gradients import func_cd
-import tdspy
-import tdspy.plot
-import matplotlib.pyplot as plt
-
-tdspy.init_logger(level="INFO")
-
-
-
-print(uE)
-print(vE)
-
-stepsize = 1e-2
-K = np.copy(K0)
-for i in range(100):
-    dK = func_cd(K.reshape(-1), E, P, hP, np.full_like(K0, fill_value=True), hK, B, C, uE, vE)
-
-    K -= stepsize * dK
-
-ddae_0 = tdspy.DDAE(A=[P0, P1, B @ K0[:,:,0] @ C], hA=np.r_[hP, hK], E=E)
-ddae_star = tdspy.DDAE(A=[P0, P1, B @ K[:,:,0] @ C], hA=np.r_[hP, hK], E=E)
-
-region = [-1, 1, -200, 200]
-
-cd_star, _ = tdspy.cd(ddae_star)
-cr_star, _ = tdspy.roots(ddae_star, r=region)
-
-cd_0, _ = tdspy.cd(ddae_0)
-cr_0, _ = tdspy.roots(ddae_0, r=region)
-
-
-fig, (ax1, ax2) = plt.subplots(1,2, sharex=True, sharey=True)
-
-tdspy.plot.eigen_plot(cr_0, ax=ax1)
-ax1.axvline(x=cd_0, color='r', linestyle='--', alpha=0.5)
-ax1.set_title("nominal")
-
-tdspy.plot.eigen_plot(cr_star, ax=ax2)
-ax2.axvline(x=cd_star, color='r', linestyle='--', alpha=0.5)
-ax2.set_title("optimized")
-
-plt.show()
-
-
-
+ani = animation.FuncAnimation(fig, update, frames=range(1, len(progress["roots"])), interval=500)
+ani.save("strong_stability.gif", writer="pillow")

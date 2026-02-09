@@ -116,7 +116,7 @@ sphinx_gallery_conf = {
     # 'backreferences_dir': None,     # optional
     'run_stale_examples': False,     # force re-execution set True
     'download_all_examples': False,  # optional, button for download all .zip
-    # 'matplotlib_animations': (True, 'html5'), # (True, 'mp4') - to save .rst size
+    "matplotlib_animations": True,   # 'matplotlib_animations': (True, 'html5'), # (True, 'mp4') - to save .rst size
 }
 
 # -- Bibtex settings ---------------------------------------------------------
