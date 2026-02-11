@@ -151,9 +151,6 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
     """
     # TODO perform necessary checks
-    assert A.size > 0 and B.size > 0 and C.size > 0 and D.size > 0, "Only non-empty arrays are supported!"
-    assert hA.size > 0 and hB.size > 0 and hC.size > 0 and hD.size > 0, "Only non-empty delay vectors are supported!"
-    assert E.size > 0, "Only non-empty arrays are supported!"
     assert A.ndim == 3 and B.ndim == 3 and C.ndim == 3 and D.ndim == 3, "A, B, C, D must be 3D arrays!"
     assert E.ndim == 2, "E must be a 2D array!"
     assert hA.ndim == 1 and hB.ndim == 1 and hC.ndim == 1 and hD.ndim == 1, "Delay vectors must be 1D!"

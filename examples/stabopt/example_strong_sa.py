@@ -191,7 +191,6 @@ for i in range(10): # just a few steps for demonstration
     a -= 0.05 * np.ravel(da)[0] # TODO
     print(f"Step {i}: c_d={cd}, a={a}")
 
-
 # %% Visualize the progress as animation
 import matplotlib.animation as animation
 
@@ -220,7 +219,7 @@ def update(n):
     crp = progress["roots_perturbed"][n]
     s.set_offsets(np.column_stack([np.real(cr), np.imag(cr)]))
     sp.set_offsets(np.column_stack([np.real(crp), np.imag(crp)]))
-    cdline.set_xdata(progress["cd"][n])
+    cdline.set_xdata([progress["cd"][n]])
     title.set_text(rf"Step {n}, $a={progress['a'][n]:.4f}$, $c_D={progress['cd'][n]:.4f}$")
 
 ani = animation.FuncAnimation(fig, update, frames=range(1, len(progress["roots"])), interval=500)
