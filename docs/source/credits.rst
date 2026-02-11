@@ -2,8 +2,9 @@
 Credits
 =======
 
-This project was initiated and developed by Adam Peichl during the development of input shapers and delay-based controllers, which relies heavily on spectral methods for time-delay systems. 
-The motivation was to create a Python alternative to the MATLAB toolbox ``TDS-Control``, and was intended for Python users or for those without access to MATLAB.
+This project was initiated and developed by Adam Peichl during the design of development of input shapers and delay-based controllers, which relies heavily on spectral methods for time-delay systems. 
+The software is based on the `TDS-CONTROL <https://gitlab.kuleuven.be/u0011378/tds-control>` (:cite:`appeltans2023analysis`) in Matlab , developed by Prof. Dr. ir. Wim Michiels and Dr. ir. Pieter Appeltans in 2023. 
+The initial motivation for creating ``TDSpy`` was to create a Python version of the toolbox intended for Python users or for those without access to MATLAB.
 The software is currently in its early stages of development, and we are actively working on adding new features and improving the existing ones. 
 We welcome contributions from the community, and we encourage users to report any issues or suggest new features that they would like to see in the software. 
 
@@ -17,7 +18,7 @@ the repository
 .. code-block:: bibtex
 
    @misc{tdspy,
-     author    = {Peichl, Adam and Saldanha, Adrian},
+     author    = {Peichl, Adam, Saldanha, Adrian, Garcia, Diego},
      title     = {TDSpy},
      year      = {2026},
      version   = {1.0.0},
@@ -36,16 +37,34 @@ Team
    :width: 100
    :alt: Adam Peichl
 
-- **Adrian Saldanha**: Apertince, Czech Technical University, KU Leuven
+- **Adrian Saldanha**: Aprentice, Czech Technical University, KU Leuven
 
   .. image:: _static/team/adrian.jpg
    :width: 100
    :alt: Adrian Saldanha
 
+- **Diego Garcia**: The Optimizer, KU Leuven
+
+  .. image:: _static/team/diego.jpg
+   :width: 100
+   :alt: Diego Garcia
+
 Contributors
 ------------
 
 Place for contributors outside of team.
+
+Scientific Advisors
+---------------------
+- **Prof. Dr. ir. Wim Michiels**: KU Leuven
+
+  .. image:: _static/team/wim.jpg
+   :width: 100
+   :alt: Wim Michiels
+
+- **Prof. Ing. Tomaš Vyhlídal**: Czech Technical University
+
+
 
 Acknowledgements
 ----------------

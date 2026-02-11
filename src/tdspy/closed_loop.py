@@ -86,8 +86,8 @@ class ClosedLoop(TDSBase):
             y_indices = [0]
         if u_indices is None:
             u_indices = [0]
-        self._y_indices = y_indices # system exposed measurements
-        self._u_indices = u_indices # system outputs exposed to control
+        self._y_indices = list(y_indices) # system exposed measurements
+        self._u_indices = list(u_indices) # system outputs exposed to control
 
         if hK is None:
             hK = np.array([0.])

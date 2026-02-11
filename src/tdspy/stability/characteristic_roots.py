@@ -239,7 +239,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
             else:
                 D, hD = ddae_to_diff(E, A, hA)
                 if hD.size != 0: # delay difference equation exists (E is singular)
-                    if hD[0] != 0 or np.linalg.matrix_rank(D[0]) < D[0].shape[0]:
+                    if hD[0] != 0 or np.linalg.matrix_rank(D[:,:,0]) < D[:,:,0].shape[0]:
                         # first delay is not zero or matrix D0 is not full row rank -> raise value error
                         # TODO: this is original error text from tds-control, should we change it to something like
                         # "provided DDAE is of advanced type" ?

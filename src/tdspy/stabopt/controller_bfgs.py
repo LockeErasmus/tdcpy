@@ -145,7 +145,7 @@ def design_granso(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, *
 
     return sol
 
-def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
+def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     """
     function to controller parameters for minimizing the spectral abscissa of a ddae
     
@@ -155,8 +155,6 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
         DDAE object representing the open-loop system 
     order : int
         Degree of the dynamic controller
-    n_delays : int
-        Number of controller delays
     kwargs : dict
         initial (array):    initial controller parameters, shape (nc+nu, nc+ny, nd)
         y_indices (array):  indices of system outputs used for feedback
@@ -190,9 +188,17 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
     n, nu, ny = ddae.n, ddae.n_inputs, ddae.n_outputs
 
     # get default settings
+    n_delays = kwargs.get("n_delays", 1)                                                     # number of controller delays, default is 1 (zero-delay)
     K0 = kwargs.get("K0", np.zeros(shape=(order+nu,order+ny,n_delays),dtype=float))         # initial controller parameters, default is all zeros
-    hK = kwargs.get("hK", np.zeros(shape=(n_delays,), dtype=float))                         # controller delays, default is no delay
+    hK = kwargs.get("hK", np.zeros(shape=(n_delays+1,), dtype=float))                         # controller delays, default is no delay
+    assert hK.shape[0] == n_delays, "hK must have length n_delays!"                     # check hK shape 
+
     Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))               # get mask for controller parameters, default is all True
+    assert Kmask.shape == K0.shape, "Mask shape must match K0 shape!"                       
+
+    callback = kwargs.get("callback", None)                                                     # callback function for optimization, default is None
+    method = kwargs.get("method", "L-BFGS-B")                                                     # optimization method, default is L-BFGS-B
+    options = kwargs.get("options", {"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
 
     # verify existing controller mask, ny, nu, nc
     assert K0.shape[0]==nu+order, "dimension of input channels must match controller dimension"
@@ -205,9 +211,9 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
             # Adjust the third dimension to match n_delays
             K0 = np.resize(K0, (K0.shape[0], K0.shape[1], n_delays))
 
-    y_indices = kwargs.get("y_indices",np.arange(0,ny-1))                               # y_indices for closed-loop
-    u_indices = kwargs.get("u_indices",np.arange(0,nu-1))                               # u_indices for closed-loop
-    nc = kwargs.get("nc",0)                                                             # nc
+    y_indices = kwargs.get("y_indices",np.arange(0,ny))                               # y_indices for closed-loop
+    u_indices = kwargs.get("u_indices",np.arange(0,nu))                               # u_indices for closed-loop
+    nc = kwargs.get("order",0)                                                             # nc
     options = kwargs.get("options",{"nstart",1,"Ntheta",10,"w1",0.001,"w2",0.001,"fvalquit",-np.inf})   # get_options
     # Ntheta: 
     # w1: acceptable region for gamma0, i.e., gamma0 < 1 - w1, default is 0.001
@@ -228,7 +234,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
         K0[:order,:order,:] = 0.1*np.ones(shape=(order,order,n_delays))       # initial Ac = 0.1*I
         K0[:order,order:order+ny,:] = np.zeros(shape=(order,ny,n_delays))     # initial Bc
         K0[order:order+nu,:order,:] = np.ones(shape=(nu,order,n_delays))      # initial Cc
-        K0[order:order+nu,order:order+ny,:] = 0.1*np.ones(shape=(nu,ny,n_delays)) # initial Dc
+        K0[order:order+nu,order:order+ny,:] = 0.01*np.ones(shape=(nu,ny,n_delays)) # initial Dc
 
     # form closed loop, ddae + controller
     cl = ClosedLoop(ddae, order, y_indices, u_indices, K0=K0, hK=hK)
@@ -257,7 +263,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, n_delays: int, **kwargs):
         
         ################################# Optimization #####################################
 
-        sol = design_bfgs(E, P, hP, K0, hK, B, C)
+        sol = design_bfgs(E, P, hP, K0, hK, B, C, method=method, options={"disp": True}, callback=None)
         return sol
 
     else:
