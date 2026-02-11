@@ -40,15 +40,16 @@ Besides these subpackages, several high-level modules are provided for direct us
 Kindly refer to the individual sections for more details on each of these subpackages and modules.
 
 
-Tutorial
----------
+Quick-start Guide
+-----------------
+
+The following sections will guide you through the basic functionalities of ``TDSpy``.
 
 .. toctree::
    :maxdepth: 1
 
    introduction
    definitions
-   discretization
    analysis
    controller_design
    references

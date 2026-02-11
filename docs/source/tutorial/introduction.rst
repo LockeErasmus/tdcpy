@@ -46,14 +46,13 @@ Similarly, the plotting package `Matplotlib <https://matplotlib.org/>`_ is used 
 Once the packages have been imported, the user can create ``TDSpy`` objects, perform spectral analysis and design appropriate controllers. 
 In the remaining part of this tutorial, we assume that the above main packages have been imported already.
 
-Kindly follow the below links for the next steps of this tutorial.
+Kindly follow the below links for the next steps of this guide.
 
 ==================================    ==============================================================
 Section                                 Description
 ==================================    ==============================================================
 :doc:`definitions`                      Defining a time-delay system
 :doc:`analysis`                         Spectral analysis of time-delay systems 
-:doc:`discretization`                   Spectral discretization
 :doc:`controller_design`                Stabilization and controller design
 :doc:`../reference/api_reference`       Detailed description of all functions and classes
 :ref:`general_examples`                 Examples of usage of TDSpy

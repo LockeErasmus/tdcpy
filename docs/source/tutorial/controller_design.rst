@@ -12,7 +12,8 @@ using a controller of the form
 
 .. math::
     
-    \dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i) 
+    \dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i)  \\
+    
          u(t) = \sum_{i=0}^{m_{C_c}} C_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{D_c}} D_{c_i} y(t - \tau_i)
 
 where :math:`y(t) = C x(t)` is the system output, and :math:`p \in \mathbb{R}^{n_p}` are the controller parameters.
@@ -34,8 +35,8 @@ The above formulation allows for the design of controllers of the following type
 - Delayed feedback controllers
 
 
-Pre-checking the system type
-----------------------------
+Pre-checks
+-------------
 
 Before proceeding with the stabilization procedure, it is important to determine whether the system is of retarded type or neutral type, as this will determine the choice of stabilization approach.
 
@@ -75,10 +76,10 @@ The stabilization procedure relies on the following assumptions:
         
         if not np.any(r):
             raise ValueError("The delay difference equation is independent of the controller parameters, no feasible point exists.")    
-    
-    Note that the above condition ensures that the selected controller structure can influence the neutral dynamics. 
-    If the above condition is not satisfied, then we check if the spectrum of the delay-difference equation is stable. If yes, then proceed to minimize the spectral abscissa. 
-    If not, the system cannot be stabilized with the selected controller structure.
+
+Note that the above condition ensures that the selected controller structure can influence the neutral dynamics. 
+If the above condition is not satisfied, then we check if the spectrum of the delay-difference equation is stable. If yes, then proceed to minimize the spectral abscissa. 
+If not, the system cannot be stabilized with the selected controller structure.
 
 2. The gradient exists and is finite. This can be checked by computing :math:`\gamma_0` and :math:`C_D` at the initial controller parameters and checking if the value is finite.
 
