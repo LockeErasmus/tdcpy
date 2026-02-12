@@ -190,7 +190,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     # get default settings
     n_delays = kwargs.get("n_delays", 1)                                                     # number of controller delays, default is 1 (zero-delay)
     K0 = kwargs.get("K0", np.zeros(shape=(order+nu,order+ny,n_delays),dtype=float))         # initial controller parameters, default is all zeros
-    hK = kwargs.get("hK", np.zeros(shape=(n_delays+1,), dtype=float))                         # controller delays, default is no delay
+    hK = kwargs.get("hK", np.zeros(shape=(n_delays,), dtype=float))                         # controller delays, default is no delay
     assert hK.shape[0] == n_delays, "hK must have length n_delays!"                     # check hK shape 
 
     Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))               # get mask for controller parameters, default is all True
@@ -281,8 +281,8 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
         # precomputations
         BU = uE.T @ B
         CV = C @ vE
-        DP = cl._A
-        hDP = cl._hA
+        P = cl._A
+        hP = cl._hA
         x0 = K0.reshape(-1)
         
         # check if delay diff equation depends on K
@@ -290,7 +290,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
         DD, hDD = normalize_diff(diff.A, diff.hA)       # normalize the delay difference equation, extract DD and hDD
         r = diff_dependency_mask(Kmask, uE, vE, B, C)     # get mask for controller parameters affecting the delay difference equation
         
-        if all(~r): 
+        if np.all(~r): 
             
             ############################# Case 1: No dependency on controller parameters #############################
             
@@ -320,40 +320,49 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                 # find a feasible point
                 x0 = find_feasible_point(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
 
-                if x0 is not None: # found a feasible point => let's start optimization from there
+                if x0 is None:
+                    print("Could not find a feasible point, trying minimize_CD instead.")
+                    return None 
+                
 
-                    ############################### Optimization ######################################
-                    ################ f_objective = alpha - w2*log(1 - w1 - gamma0(p))##################
-                    ################ gradient = grad_alpha + w2*1/(1 - w1 - gamma0(p)) * grad_gamma0 ##################
+            ############################### Optimization ######################################
+            ################ f_objective = alpha - w2*log(1 - w1 - gamma0(p))##################
+            ################ gradient = grad_alpha + w2*1/(1 - w1 - gamma0(p)) * grad_gamma0 ##################
 
-                    w2 = options.get("w2", 0.001)
-                    w1 = options.get("w1", 0.001)
+            w2 = options.get("w2", 0.001)
+            w1 = options.get("w1", 0.001)
 
-                    gamma0_args = (DP, hDP, Kmask, hK, BU, CV)
-                    sa_args = (E, P, hP, hK, Kmask, B, C)
-                    
-                    def obj_fn(x, gamma0_args, sa_args):
+            gamma0_args = (DP, hDP, Kmask, hK, BU, CV)
+            sa_args = (E, P, hP, hK, Kmask, B, C)
 
-                        g0, grad_g0 = grad_gamma0(x, *gamma0_args)
-                        sa, grad_sa = func_sa(x, *sa_args)         
-                        f = sa - w2*np.log(1 - w1 - g0)
-                        grad = grad_sa + w2*1/(1 - w1 - g0)*grad_g0
-                        return f, grad
-                    
-                    sol = optimize.minimize(
-                        obj_fn,
-                        x0,
-                        args=(gamma0_args, sa_args),
-                        method=kwargs.get("method", "L-BFGS-B"),
-                        options=optmization_options,
-                        callback=kwargs.get("callback", None)
-                    )
+            log_points = np.logspace(-3,3,7)
 
-                    return sol
+            def obj_fn(x, gamma0_args, sa_args, options):
 
-                else:   # give up, use minimize_CD instead
-                    print("Could not find a feasible point, try another method.")
-                    return None        
+                g0, grad_g0 = grad_gamma0(x, *gamma0_args)
+                sa, grad_sa = func_sa(x, *sa_args)         
+                f = sa - w2*np.log(1 - w1 - g0)
+                grad = grad_sa + w2*1/(1 - w1 - g0)*grad_g0
+                return f, grad
+
+            for w2 in log_points:
+                print(f"Optimizing with w2={w2}...")
+                sol = optimize.minimize(
+                    obj_fn,
+                    x0,
+                    args=(gamma0_args, sa_args, {"w1": w1, "w2": w2}),
+                    jac=True,
+                    method=method,
+                    options=optmization_options,
+                    callback=None
+                )
+
+                logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={func_gamma(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
+                x0 = sol.x  # update initial point for next optimization with different w2
+
+            return sol
+
+                       
 
         pass
 
@@ -431,7 +440,17 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     
     Examples
     --------
-    TODO
+    >>> import numpy as np
+    >>> from tdspy.stabopt.controller_bfgs import find_feasible_point
+    >>> E = np.array([[1,0,0],[0,1,0],[0,0,0]])
+    >>> P = np.zeros((3,3,1))
+    >>> hP = np.array([0])
+    >>> K0 = np.zeros((1,3,1))
+    >>> hK = np.array([0])
+    >>> B = np.eye(3)[:,:,np.newaxis]
+    >>> C = np.eye(3)[:,:,np.newaxis]
+    >>> K_feasible = find_feasible_point(E, P, hP, K0, hK, B, C)
+    >>> print(K_feasible)
 
     """
     
@@ -479,8 +498,6 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     if hD.shape[0] == 1 and hD[0] == 0.0:    # system is retarded
         print("The closed-loop system is retarded, no need to find a feasible point.")
         return x0
-    else:    # system is neutral
-        pass
 
     # Feasibility check
     DD,hDD = normalize_diff(D,hD)
@@ -508,7 +525,7 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
         sol = optimize.minimize(
             grad_gamma0,
             x0,
-            args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
+            args=(E, P, hP, Kmask, hK, B, C),
             jac=True,
             method=kwargs.get("method", "L-BFGS-B"),
             options=options,
@@ -525,3 +542,4 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
         return None
     else:
         return sol
+        return sol.x
