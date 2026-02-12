@@ -9,11 +9,11 @@ This module configures Sphinx documentation generation including:
 - Autodoc and Napoleon options
 """
 
+import importlib.metadata
 import os
 import sys
 
 from sphinx_gallery.sorting import FileNameSortKey
-
 
 # -- Path setup --------------------------------------------------------------
 
@@ -27,8 +27,8 @@ sys.path.insert(0, SRC_PATH) # package root
 project = 'tdspy'       # Your package name
 author = 'Adam Peichl'        # Your name
 copyright = '2025, Adam Peichl'  # Copyright info
-release = '0.1.0'           # Version of your package
-
+release = importlib.metadata.version("tdspy")
+version = release
 
 # -- General configuration ---------------------------------------------------
 
