@@ -416,8 +416,9 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
         input matrix of closed-loop system
     C :     array
         output matrix of closed-loop system
-     kwargs:
+    kwargs :
         options:    options for the optimization solver
+        gamma0_threshold: threshold for gamma0 to consider a point feasible, default is 1.0
 
     Returns
     -------
@@ -446,8 +447,9 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
 
     # get mask
     Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
-    options = kwargs.get("options",{"disp": True, "eps":0.1, 
-                                    "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # get_options
+    options = kwargs.get("options",{"disp": True})   # get_options
+    gamma_threshold = kwargs.get("gamma0_threshold", 1.0)
+    nstart = kwargs.get("nstart", 1)
 
     # extract uE and vE from E
     uE = linalg.null_space(E.T,rcond=1e-12)
@@ -482,10 +484,10 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
 
     # Feasibility check
     DD,hDD = normalize_diff(D,hD)
-    gamma0, gammaInfo = gamma_normalized_diff(DD[:,:,1:], hDD[1:], 0, correction=True, n_theta=10)
+    g0, gInfo = gamma_normalized_diff(DD, hDD, r=0, correction=True, n_theta=10)
     # gamma0, info = gamma_diff(D[:,:,1:], hD[1:], 0, correction=True, n_theta=10)
     
-    if gamma0 < 1:
+    if g0 < 1:
         print("Initial controller parameters are already feasible.")
         return x0
     
@@ -499,18 +501,27 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
 
     ############################# Step 3: Optimization ##########################
 
-    sol = optimize.minimize(
-        grad_gamma0,
-        x0,
-        args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
-        jac=True,
-        method=kwargs.get("method", "L-BFGS-B"),
-        options=options,
-        callback=kwargs.get("callback", None)
-    )
+    for i in range(nstart):
 
-    if sol.fun >= 1:
-        print(f"Optimization did not find a feasible point, gamma0={sol.fun} >= 1 at optimal controller parameters.")
+        print(f"Finding a feasible point, start {i+1}/{nstart}...")
+
+        sol = optimize.minimize(
+            grad_gamma0,
+            x0,
+            args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
+            jac=True,
+            method=kwargs.get("method", "L-BFGS-B"),
+            options=options,
+            callback=kwargs.get("callback", None)
+        )
+
+        if sol.fun < gamma_threshold:
+            break
+
+        x0 = np.random.uniform(low=-1., high=1., size=x0.shape)  # random restart
+
+    if sol.fun >= gamma_threshold:
+        print(f"Optimization did not find a feasible point, gamma0={sol.fun} >= {gamma_threshold} at optimal controller parameters.")
         return None
     else:
-        return sol.x0
+        return sol
