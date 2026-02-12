@@ -1,0 +1,504 @@
+{
+ "A0": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "Bu": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "C": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "D1": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "D2": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "K": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "cl_ddae": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.ddae",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  }
+ ],
+ "cl_roots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "closed_loop": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.closed_loop",
+   "module_short": "tdspy",
+   "name": "ClosedLoop"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop"
+  }
+ ],
+ "closed_loop.A": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.closed_loop",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.A"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.A"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase.A"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase.A"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC.A"
+  }
+ ],
+ "closed_loop.E": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.closed_loop",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.E"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.E"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase.E"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase.E"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC.E"
+  }
+ ],
+ "closed_loop.hA": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.closed_loop",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.hA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop.hA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase.hA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase.hA"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC.hA"
+  }
+ ],
+ "hD": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "hK": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "np.array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "array"
+  }
+ ],
+ "np.eye": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "eye"
+  }
+ ],
+ "np.max": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "max"
+  }
+ ],
+ "np.real": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "real"
+  }
+ ],
+ "np.stack": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "_ArrayFunctionDispatcher"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "stack"
+  }
+ ],
+ "plant": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.ddae",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  }
+ ],
+ "plt.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "show"
+  }
+ ],
+ "rootsInfo": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.stability.characteristic_roots",
+   "module_short": "tdspy.stability.characteristic_roots",
+   "name": "RootsInfo"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.stability",
+   "module_short": "tdspy.stability",
+   "name": "RootsInfo"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RootsInfo"
+  }
+ ],
+ "tdspy.ClosedLoop": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.closed_loop",
+   "module_short": "tdspy",
+   "name": "ClosedLoop"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "ClosedLoop"
+  }
+ ],
+ "tdspy.DDAE": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.ddae",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "DDAE"
+  }
+ ],
+ "tdspy.plot.eigen_plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
+  }
+ ],
+ "tdspy.roots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "roots"
+  }
+ ],
+ "tdspy.utils.print_system_matrices": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.utils",
+   "module_short": "tdspy.utils",
+   "name": "print_system_matrices"
+  }
+ ]
+}

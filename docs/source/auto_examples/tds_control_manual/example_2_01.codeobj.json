@@ -1,0 +1,224 @@
+{
+ "A0": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "A1": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "RDDE": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "RDDE"
+  }
+ ],
+ "appeltans2023analysis": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "appeltans2023analysis"
+  }
+ ],
+ "cr": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "info": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.stability.characteristic_roots",
+   "module_short": "tdspy.stability.characteristic_roots",
+   "name": "RootsInfo"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.stability",
+   "module_short": "tdspy.stability",
+   "name": "RootsInfo"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RootsInfo"
+  }
+ ],
+ "np.array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "array"
+  }
+ ],
+ "plt.show": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.pyplot",
+   "module_short": "matplotlib.pyplot",
+   "name": "show"
+  }
+ ],
+ "rdde": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.rdde",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  }
+ ],
+ "tdspy.RDDE": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.rdde",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  }
+ ],
+ "tdspy.plot.eigen_plot": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "eigen_plot"
+  }
+ ],
+ "tdspy.roots": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "roots"
+  },
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "roots"
+  }
+ ],
+ "verheyden2008efficient": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "verheyden2008efficient"
+  }
+ ]
+}

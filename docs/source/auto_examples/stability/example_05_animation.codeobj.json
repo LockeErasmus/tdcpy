@@ -1,0 +1,206 @@
+{
+ "A0": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "A1": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "ndarray"
+  }
+ ],
+ "ani": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.animation",
+   "module_short": "matplotlib.animation",
+   "name": "FuncAnimation"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "FuncAnimation"
+  }
+ ],
+ "ani.save": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.animation",
+   "module_short": "matplotlib.animation",
+   "name": "FuncAnimation.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "FuncAnimation.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.animation",
+   "module_short": "matplotlib.animation",
+   "name": "TimedAnimation.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "TimedAnimation.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib.animation",
+   "module_short": "matplotlib.animation",
+   "name": "Animation.save"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "matplotlib",
+   "module_short": "matplotlib",
+   "name": "Animation.save"
+  }
+ ],
+ "jarlebring2010krylov": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "jarlebring2010krylov"
+  }
+ ],
+ "np.array": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "numpy",
+   "module_short": "numpy",
+   "name": "array"
+  }
+ ],
+ "rdde": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.rdde",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  }
+ ],
+ "tdspy.RDDE": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.rdde",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy.base",
+   "module_short": "tdspy.base",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "TDSBase"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "abc",
+   "module_short": "abc",
+   "name": "ABC"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy",
+   "module_short": "tdspy",
+   "name": "RDDE"
+  }
+ ],
+ "tdspy.plot.discretization_animation": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "discretization_animation"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "tdspy.plot",
+   "module_short": "tdspy.plot",
+   "name": "discretization_animation"
+  }
+ ],
+ "tdspy.plot.discretization_animation(.)": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "tdspy.plot.discretization_animation(",
+   "module_short": "tdspy.plot.discretization_animation(",
+   "name": ")"
+  }
+ ],
+ "verheyden2008efficient": [
+  {
+   "is_class": false,
+   "is_explicit": true,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "verheyden2008efficient"
+  }
+ ]
+}
