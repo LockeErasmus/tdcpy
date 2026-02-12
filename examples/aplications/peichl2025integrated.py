@@ -19,21 +19,23 @@ where :math:`x=[x_a, x_1, x_2, x_3]` is a vector of displacement,
 are damping and stiffness matrices, respectively, defined as
 
 .. math::
-
-    C =
-     \begin{bmatrix}
-         c_a & -c_a & 0 & 0 \\
-         -c_a & c_1 + c_2 + c_a & -c_2 & 0\\
-         0 & -c_2 & c_2 + c_3 & -c_3 \\
-         0 & 0 & -c_3 & c_3 + c_4
-     \end{bmatrix}
-     K =
-     \begin{bmatrix}
-         k_a & -k_a & 0 & 0 \\
-         -k_a & k_1 + k_2 + k_a & -k_2 & 0 \\
-         0 & -k_2 & k_2 + k_3 & -k_3 \\
-         0 & 0 & -k_3 & k_3 + k_4
-     \end{bmatrix},
+    
+    \begin{align}
+        C &=
+        \begin{bmatrix}
+            c_a & -c_a & 0 & 0 \\
+            -c_a & c_1 + c_2 + c_a & -c_2 & 0\\
+            0 & -c_2 & c_2 + c_3 & -c_3 \\
+            0 & 0 & -c_3 & c_3 + c_4
+        \end{bmatrix}, \\
+        K &=
+        \begin{bmatrix}
+            k_a & -k_a & 0 & 0 \\
+            -k_a & k_1 + k_2 + k_a & -k_2 & 0 \\
+            0 & -k_2 & k_2 + k_3 & -k_3 \\
+            0 & 0 & -k_3 & k_3 + k_4
+        \end{bmatrix},
+    \end{align} 
 
 input matrices are defined as
 
@@ -42,13 +44,13 @@ input matrices are defined as
     B_u =
      \begin{bmatrix}
          1 \\ -1 \\ 0 \\ 0
-     \end{bmatrix}
+     \end{bmatrix}, \quad
      B_d =
      \begin{bmatrix}
          0 \\ 0 \\ 0 \\ 1
      \end{bmatrix}.
 
-Control law is position delayed resonater parametrized via gain :math:`g` and
+Control law is position delayed resonator parametrized via gain :math:`g` and
 delay :math:`\tau`
 
 .. math::
@@ -57,10 +59,9 @@ delay :math:`\tau`
     
 vector :math:`E_a^T = [1, 0, 0, 0]` encodes position of absorber mass.
 
-Given the nominal parameters :cite:`peichl2025integrated` construct the closed
-loop as retarded delay differential equations (RDDE) and check poles and zeros.
-Closing the loop and writing and going from second order to first order yields
-retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
+Given the nominal parameters from the article, we construct closed loop
+as retarded delay differential equations (RDDE) defined by matrices
+:math:`A_0, A_1` and delay :math:`\tau`
 
 .. math::
 
@@ -68,7 +69,7 @@ retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
      \begin{bmatrix}
         O_{4} & I \\
         -M^{-1} K & -M^{-1} C
-     \end{bmatrix}
+     \end{bmatrix}, \quad
     A_1 = g
      \begin{bmatrix}
          o_4 \\ M^{-1} B_u
@@ -77,6 +78,8 @@ retarded system with two matrices :math:`A_0, A_1` and delays :math:`0, \tau`
          o_4  & E_a
      \end{bmatrix},
 
+We then check stability and plot position of the right-most roots. Finally
+we also check that a transmission zeros are placed at :math:`\pm j \omega`.
 """
 
 import matplotlib.pyplot as plt
@@ -111,14 +114,15 @@ C = np.array([
     [0, 0, -c3, c3+c4],
 ])
 
-Minv = np.linalg.inv(M)
+Minv = np.linalg.inv(M) # prepare inverse, mass are positive, always possible
+Du = np.array([[1.], [-1], [0], [0]])
+Dd = np.array([[0.], [0], [0], [1]])
+
+# System matrices from modal form
 A0 = np.block([
     [np.zeros(shape=(4,4)), np.eye(4)],
     [-Minv @ K, -Minv @ C],
 ])
-Du = np.array([[1.], [-1], [0], [0]])
-Dd = np.array([[0.], [0], [0], [1]])
-
 Bu = np.block([
     [np.zeros(shape=(4,1))],
     [Minv @ Du],
@@ -129,31 +133,45 @@ Bd = np.block([
 ])
 Ea = np.array([[1], [0], [0], [0], [0], [0], [0], [0],])
 Et = np.array([[0], [0], [1], [0], [0], [0], [0], [0],])
-
 A1 = g * Bu @ Ea.T
 
-rdde = tdspy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0], D=[np.array([[0.]])], hD=[0.])
+# %%
+# When matrices and delays are ready, we form
+# the descriptor and find right most roots. Regarding the position of zeros,
+# we can use `tdspy.zeros` with specified rectangular region as our system is
+# SISO. In the case of multiple inputs and/or outputs, we recommend passing
+# `input_index` and `output_index` arguments explicitly as by default it is
+# assumed user is interested in transmission zeros between first input and
+# first output.
+rdde = tdspy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0],
+                  D=[np.array([[0.]])], hD=[0.])
 cr, info = tdspy.roots(rdde, r=-350)
 z, _ = tdspy.zeros(rdde, r=[-350, 5, -4500, 4500])
 
+# %%
+# Finally, plot the results using `tdspy.plot.eigen_plot` function and
+# a little bit of additional styling.
 fig, ax1 = plt.subplots(1,1)
 
-ax1.scatter(np.real(z), np.imag(z), marker="o", facecolors='none', edgecolors='blue', alpha=0.8, label="zeros")
+ax1.scatter(np.real(z), np.imag(z), marker="o", facecolors='none',
+            edgecolors='blue', alpha=0.8, label="zeros")
 tdspy.plot.eigen_plot(cr, ax=ax1)
-ax1.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker="x", color="black", label=rf"$\omega=-j{omega_target}\pi$")
+ax1.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker=".",
+            color="black", label=rf"$\omega=-j{omega_target}\pi$")
 ax1.set_xlim((-340, 1))
 ax1.set_ylim((3000, -3000))
 ax1.legend(loc='lower right')
 
-# add second detail plot to show area around origin
+# second plot to show area around origin
 ax2 = fig.add_axes([0.55, 0.55, 0.3, 0.3])
-ax2.scatter(np.real(z), np.imag(z), marker="o", facecolors='none', edgecolors='blue', alpha=0.8)
+ax2.scatter(np.real(z), np.imag(z), marker="o", facecolors='none',
+            edgecolors='blue', alpha=0.8)
 tdspy.plot.eigen_plot(cr, ax=ax2)
-ax2.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker="x", color="black")
+ax2.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker=".",
+            color="black")
 ax2.set_xlim((-4, 1))
 ax2.set_ylim((100, -100))
 ax2.set_xlabel('')
 ax2.set_ylabel('')
 
 plt.show()
-
