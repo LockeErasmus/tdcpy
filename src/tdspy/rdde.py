@@ -18,23 +18,79 @@ class RDDE(TDSBase):
     TODO documentation
 
     """
-    def __init__(self, A, hA,
-                 B1=None, hB1=None, C1=None, hC1=None, D1=None, hD11=None,
-                 B2=None, hB2=None, C2=None, hC2=None, D12=None, hD12=None, D21=None, hD21=None, D22=None, hD22=None) -> None:
-        super().__init__()
+    def __init__(self, A: npt.NDArray, hA: npt.NDArray,
+                 B: npt.NDArray=None, hB: npt.NDArray=None, C: npt.NDArray=None, hC: npt.NDArray=None, 
+                 D: npt.NDArray=None, hD: npt.NDArray=None, **kwargs) -> None:
+        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=False,
+                                                              allow_negative_delays=False,
+                                                              allow_complex=False,
+                                                              add_zero_delay=True,
+                                                              sort_by_delays=True,
+                                                              dtype=kwargs.get("dtype", np.float64))
 
-        # TODO perform checks
-        assert len(A) > 0, "TODO"
+        # Input/Output matrices
+        if B is not None or hB is not None:
+            B, hB = self._prepare_system_descriptor_matrix_vector(B, hB,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if B.shape[0] != A.shape[0]:
+                raise ValueError("B shape does not match A shape")
+        
+        if C is not None or hC is not None:
+            C, hC = self._prepare_system_descriptor_matrix_vector(C, hC,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if C.shape[1] != A.shape[1]:
+                raise ValueError("C shape does not match A shape")
+        
+        if D is not None or hD is not None:
+            if C is None or hC is None:
+                raise ValueError("C, hC needs to be defined to define D, hD")
+            D, hD = self._prepare_system_descriptor_matrix_vector(D, hD,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if D.shape[0] != C.shape[0]:
+                raise ValueError("D shape does not match C shape")        
 
-        ## dynamics
+        # set all matrices and delays as class attributes
         self._A = A
         self._hA = hA
-        
-        # TODO rest of the system description
+        self._B = B
+        self._hB = hB
+        self._C = C
+        self._hC = hC
+        self._D = D
+        self._hD = hD
 
     @property
     def n(self) -> int:
         return self._A[0].shape[0]
+    
+    @property
+    def n_inputs(self) -> int:
+        """ number of inputs """
+        if self.B is None:
+            return 0
+        return self.B.shape[1]
+
+    @property
+    def n_outputs(self) -> int:
+        """ number of outputs """
+        if self.C is None:
+            return 0
+        return self.C.shape[0]
 
     @property
     def E(self) -> npt.NDArray:
@@ -54,6 +110,57 @@ class RDDE(TDSBase):
     def mA(self) -> int:
         """ number of delays """
         return len(self.hA)
+    
+    @property
+    def B(self) -> npt.NDArray | None:
+        """ input matrices """
+        return self._B
+    
+    @property
+    def hB(self) -> npt.NDArray | None:
+        """ input delays """
+        return self._hB
+    
+    @property
+    def mB(self) -> int:
+        """ number of input delays """
+        if self._hB is None:
+            return 0
+        return self.hB.shape[0]
+
+    @property
+    def C(self) -> npt.NDArray | None:
+        """ output matrices """
+        return self._C
+    
+    @property
+    def hC(self) -> npt.NDArray | None:
+        """ output delays """
+        return self._hC
+    
+    @property
+    def mC(self) -> int:
+        """ number of output delays """
+        if self._hC is None:
+            return 0
+        return self.hC.shape[0]
+
+    @property
+    def D(self) -> npt.NDArray | None:
+        """ feed-through matrices """
+        return self._D
+    
+    @property
+    def hD(self) -> npt.NDArray | None:
+        """ feed-through delays """
+        return self._hD
+    
+    @property
+    def mD(self) -> int:
+        """ number of feed-through delays """
+        if self._hD is None:
+            return 0
+        return self.hD.shape[0]
     
     @property
     def is_compressed(self) -> bool:

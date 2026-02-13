@@ -1,5 +1,11 @@
 """
 TODO
+Set of functions for discretizing a DDAE into a DAE
+---------------------------------------------------
+
+Implemented functions:
+
+1. `discretize_ddae`: returns a discretized DAE represented by ``(E*,A*)`` given a ddae represented by ``(E,A,hA)``
 """
 
 import logging
@@ -20,11 +26,15 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
 
     DDAE of form:
 
-        E x'(t) = A[0] x(t) + A[1] x(t-hA[1]) + .. + A[m] x(t-hA[m]),      (1)
+    .. math::
+
+        E \dot{x}(t) = A_0 x(t) + A_1 x(t - h_{A,1}) + ... + A_{m} x(t - h_{A,m}),          (1)
 
     is discretized into DAE of form:
-
-        E x'(t) = A x(t).                                                  (2)
+    
+    .. math::
+        
+        E \dot{x}(t) = A x(t),                                                              (2)
     
     When method == 'cheb', the code uses the companion-type reformulation of
     the spectral discretisaion of the infinitesimal generator of the solution
@@ -33,25 +43,73 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
     When method == 'legendre', the code uses a similar companion-type
     reformulation but now based on Legendre polynomials instead of Chebyshev
     polynomials.
+    
+    Parameters
+    ----------
+    E : array
+        right hand side matrix of DDAE, assumed non-empty
+    A : array
+        left hand side matrices of DDAE, assumed non-empty
+    hA : array
+        vector of delays, assumed non-empty, hA[0] == 0
+    discretization : int
+        degree of discretization > 0
+    s0 : complex, optional
+        point discretization is done around, default 0
+    method : str, optional
+        type of approximation, default 'cheb', allowed 'cheb',
+        'legendre'
 
-    [1] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
+    Returns
+    -------
+    tuple
+        A tuple containing
+        
+        E : array
+            left hand-side matrix of DAE
+        A : array
+            right hand-side matrix of DAE
+
+    Notes
+    -----
+    1. assumes hA is in compressed form, i.e. hA[0] == 0
+    2. if s0 != 0, the matrices A are shifted accordingly before and after
+        discretization
+    3. if method is not recognized, raises ValueError
+
+        
+    References
+    ----------
+
+    .. [1] Jarlebring, E., Meerbergen, K., & Michiels, W. (2010). A Krylov
         method for the delay eigenvalue problem. SIAM Journal on Scientific
         Computing, 32(6), pp. 3278-3300.  
-    
-    Args:
-        E (array): right hand side matrix of DDAE, assumed non-empty
-        A (array): left hand side matrices of DDAE, assumed non-empty
-        hA (array): vector of delays, assumed non-empty, hA[0] == 0
-        discretization (int): degree of discretization > 0
-        s0 (complex): point discretization is done around, default 0
-        method (str): type of approximation, default 'cheb', allowed 'cheb',
-            'legendre'
 
-    Returns:
-        tuple containing:
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.discretization import discretize_ddae
+    >>> E = np.array([[1,0],[0,1]])
+    >>> A = np.zeros(shape=(2,2,2))
+    >>> A[:,:,0] = np.array([[0,1],[0,0]])
+    >>> A[:,:,1] = np.array([[0,0],[1,0]])
+    >>> hA =  np.array([0,1])
+    >>> E_dae, A_dae = discretize_ddae(E,A,hA,discretization=2, method="cheb")
+    >>> E_dae
+    array([[ 0.5  ,  0.   ,  0.   ,  0.   , -0.25 , -0.   ],
+           [ 0.   ,  0.5  ,  0.   ,  0.   , -0.   , -0.25 ],
+           [ 0.   ,  0.   ,  0.125,  0.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.   ,  0.   ,  0.125,  0.   ,  0.   ],
+           [ 1.   ,  0.   ,  1.   ,  0.   ,  1.   ,  0.   ],
+           [ 0.   ,  1.   ,  0.   ,  1.   ,  0.   ,  1.   ]])
+    >>> A_dae
+    array([[ 0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j,  0.+0.j],
+           [ 0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  0.+0.j,  1.+0.j],
+           [ 0.+0.j,  1.+0.j,  0.+0.j,  1.+0.j,  0.+0.j,  1.+0.j],
+           [ 1.+0.j,  0.+0.j, -1.+0.j,  0.+0.j,  1.+0.j,  0.+0.j]])
 
-            - E (array): left hand-side matrix of DAE
-            - A (array): right hand-side matrix of DAE
     """
     # TODO perform checks
     assert A.shape[2] > 0
@@ -132,3 +190,8 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
         Sigma_N += s0 * Pi_N
     
     return Pi_N, Sigma_N # E, A
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

@@ -1,6 +1,11 @@
 """
 Closed-loop and controller related functionality
 ------------------------------------------------
+
+Implemented functions:
+
+1. `controller_reprezentation`: creates an empty controller representation ``(E, K, hK)`` given the order, number of inputs and outputs, and delays for matrices ``(Ac, Bc, Cc, Dc)`` (if applicable)
+
 """
 
 import numpy as np
@@ -14,18 +19,106 @@ from .compress import compress_matrices_delays, compress_bool_matrices_delays
 logger = logging.getLogger(__name__)
 
 def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt.NDArray = None, hB: npt.NDArray = None, hC: npt.NDArray = None, hD: npt.NDArray = None, **kwargs):
-    """ Creates empty controller reprezentation
+    """ Creates an empty controller reprezentation
     
-    TODO
-    
+    Parameters
+    -----------
+    order : int
+        Controller order (0 for static controller)
+    n_inputs : int
+        Number of controller inputs
+    n_outputs : int
+        Number of controller outputs
+    hA : npt.ndarray, optional
+        Vector of delays for A matrix
+    hB : npt.ndarray, optional
+        Vector of delays for B matrix
+    hC : npt.ndarray, optional
+        Vector of delays for C matrix
+    hD : npt.ndarray, optional
+        Vector of delays for D matrix
+    **kwargs: dict, optional
+        Additional arguments (not used)
+
+    Returns
+    -------
+    E : npt.NDArray
+        Descriptor matrix of the controller
+    K : npt.NDArray
+        System matrix of the controller
+    hK : npt.NDArray
+        Vector of delays for K matrix
+
+    Notes
+    ------
+    Given the order of the controller, number of inputs and outputs, and
+    optional delay vectors for matrices A, B, C, D, this function creates
+    an empty controller representation of a dynamic controller (order > 0) or
+    static controller (order = 0).
+
+    .. math::
+
+        E x' = \sum_{k=0}^{hK} K_k x(t - hK_k)
+
+    where K is constructed for controller matrices A, B, C, D as:
+
+    .. math::
+
+        K = \\begin{bmatrix}
+            A & B \\\\
+            C & D
+        \\end{bmatrix}
+
+    and hK is the concatenated vector of delays i.e. :math:`hK = [hA_c \quad hB_c \quad hC_c \quad hD_c]`.
+
+    - For static controller (order=0) only hD is used, other delay vectors
+      are ignored (and a warning is issued if they are provided)
+    - If order > 0 and user does not provide delay vectors, they are set to
+      [0.0] by default
+    - The resulting controller is fully connected (all entries in A, B, C, D
+      matrices are True)
+    - The resulting controller is in the form suitable for creating
+      ClosedLoop object
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.closed_loop import controller_reprezentation
+    >>> E, K, hK = controller_reprezentation(order=1, n_inputs=2, n_outputs=1)
+    >>> E.shape
+    (2, 3)
+    >>> K.shape
+    (2, 3, 1)
+    >>> hK
+    array([0.], dtype=float32)
+    >>> E, K, hK = controller_reprezentation(order=0, n_inputs=2, n_outputs=1, hD=np.array([0.0, 1.0]))
+    >>> E.shape
+    (1, 2)
+    >>> K.shape
+    (1, 2, 2)
+    >>> hK
+    array([0., 1.], dtype=float32)
+
     """
 
-    assert isinstance(order, int)
-    assert order >= 0
-    assert isinstance(n_inputs, int)
-    assert n_inputs > 0
-    assert isinstance(n_outputs, int)
-    assert n_outputs > 0
+    if not isinstance(order, int):
+        raise TypeError("order must be an integer")
+    if order < 0:
+        raise ValueError("order must be >= 0")
+    if not isinstance(n_inputs, int):
+        raise TypeError("n_inputs must be an integer")
+    if n_inputs <= 0:
+        raise ValueError("n_inputs must be > 0")
+    if not isinstance(n_outputs, int):
+        raise TypeError("n_outputs must be an integer")
+    if n_outputs <= 0:
+        raise ValueError("n_outputs must be > 0")
+    if n_inputs <= 0:
+        raise ValueError("n_inputs must be > 0")
+    if not isinstance(n_outputs, int):
+        raise TypeError("n_outputs must be an integer")
+    if n_outputs <= 0:
+        raise ValueError("n_outputs must be > 0")
 
     n, m = order + n_inputs, order + n_inputs
 
@@ -77,6 +170,13 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
 
     return E, K, hK
 
+
+if __name__ == "__main__":
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import doctest
+    doctest.testmod()
 
 
     

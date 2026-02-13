@@ -1,0 +1,5 @@
+sphinx >= 7.0
+sphinx-autodoc-typehints
+sphinx-gallery
+sphinxcontrib-bibtex
+pydata-sphinx-theme

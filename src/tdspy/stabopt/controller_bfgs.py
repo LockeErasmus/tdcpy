@@ -8,9 +8,10 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
+from tdspy.common.delay_difference_equation import ddae_to_diff
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 from tdspy.common.compress import compress_matrices_delays
-from .gradients import func_sa, func_cd, func_gamma
+from .gradients import func_sa, func_cd, func_gamma, grad_gamma0
 from tdspy.controller import create_static_controller, interconnect3
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy import DDAE, ClosedLoop  
@@ -21,10 +22,47 @@ logger = logging.getLogger("__name__")
 
 def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
     """
-    Args:
-        TODO
-        **kwargs:
-            mask (array): masking gradient
+    function for designing a controller via BFGS optimization
+
+    Parameters
+    ----------
+    E :      array
+        E matrix of closed-loop system
+    P :      array
+        system matrix of open-loop system
+    hP :     array
+        system delays of open-loop system
+    K0 :     array
+        initial controller gain matrix
+    hK :     array   
+        controller delays
+    B :      array
+        input matrix of closed-loop system
+    C :      array
+        output matrix of closed-loop system
+    kwargs : dict
+        options:    options for the optimization solver
+
+    Returns
+    -------
+    sol : OptimizeResult
+        Optimization result containing the optimal controller parameters and optimization information
+        x: optimal controller parameters
+        fun: optimal objective function value
+        success: whether the optimization was successful
+        message: description of the cause of the termination
+    
+    Notes
+    -----
+    1. This function assumes that the system is retarded.
+    2. The optimization problem is non-convex, and the solution may depend on the initial controller parameters K0.
+    3. The optimization is performed using the BFGS algorithm, which is a quasi-Newton method for unconstrained optimization. The objective function is the spectral abscissa of the closed-loop system, which is computed using the function `func_sa`. The gradient of the objective function is computed using the function `grad_sa`.
+    4. The optimization options can be specified via the `options` key in `kwargs`. 
+
+    Examples
+    --------
+    TODO
+
     """
 
     Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
@@ -33,50 +71,176 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
         K0.reshape(-1),
         args=(E, P, hP, hK, Kmask, B, C),
         jac=True,
-        method="L-BFGS-B",
+        method=kwargs.get("method", "L-BFGS-B"),
         options=kwargs.get("options", {}),
+        callback=kwargs.get("callback", None)
     )
     return sol
 
-def stab_opt(ddae,nc,**kwargs):
+def design_granso(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
     """
-    function to optimize the closed-loop spectral abscissa of:
-        ddae
-    returns the controller gain matrix K, CL
-    Args: 
-        ddae:   open-loop system
-        nc:     degree of the dynamic controller
-
-    kwargs: 
-        basis:          controller structure
-        mask (array):   gradient mask
-        options:        stabilization options
+    Args:
+        TODO
+        **kwargs:
+            mask (array): masking gradient
     """
 
+    import traceback
+    import time
+    import torch
+    from torch import linalg as LA
+    from pygranso.pygranso import pygranso as granso
+    import scipy.io
+    from pygranso.pygransoStruct import pygransoStruct
+
+    device = torch.device('cpu')
+    double_precision = True
+    torch_dtype = torch.double
+    print_level = 0
+
+    # variables and corresponding dimensions
+    # torch.zeros(p*m,1).to(device=device, dtype=torch.double)
+    n = K0.reshape(-1).shape[0]
+    var_in = {"x": [n,1]}
+    Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
+
+    # define user_options
+    opts = pygransoStruct()
+    # opts.x0 = torch.tensor(K0.reshape(-1), dtype=torch_dtype, device=device)
+    # opts.x0 = torch.zeros_like(K0.reshape(-1).to(torch_dtype), dtype=torch_dtype, device=device)
+    opts.x0 = 4*torch.ones(n,1, dtype=torch_dtype, device=device)    
+    opts.torch_device = device
+    opts.print_frequency = 10
+    opts.maxit = 200
+    opts.globalAD = False
+
+    # define obj. function
+    def obj_fn(X_struct,E,P,hP,hK,Kmask,B,C):
+        # decision variables
+        X = X_struct.x.detach().numpy()
+        n = X.shape[0]
+
+        # objective function
+        f, g = func_sa(X, E, P, hP, hK, Kmask, B, C)
+        
+        grad = torch.from_numpy(g.reshape([n,1]))
+
+        # inequality constraint
+        ci = None
+        ci_grad = None
+
+        # equality constraint
+        ce = None
+        ce_grad = None
+
+        return [f, grad, ci, ci_grad, ce, ce_grad]
+        
+    comb_fn = lambda X_struct : obj_fn(X_struct,E, P, hP, hK, Kmask, B, C)
+
+    start = time.time()
+    sol = granso(var_spec = var_in, combined_fn=comb_fn, user_opts=opts)
+    end = time.time()
+
+    print("Total Time: {}s".format(end-start))
+
+    return sol
+
+def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
+    """
+    function to controller parameters for minimizing the spectral abscissa of a ddae
+    
+    Parameters
+    ----------
+    ddae : DDAE
+        DDAE object representing the open-loop system 
+    order : int
+        Degree of the dynamic controller
+    kwargs : dict
+        initial (array):    initial controller parameters, shape (nc+nu, nc+ny, nd)
+        y_indices (array):  indices of system outputs used for feedback
+        u_indices (array):  indices of system inputs used for control
+        basis :             controller structure
+        mask (array):       gradient mask
+        options:            stabilization options
+
+    Returns
+    -------
+    sol : OptimizeResult
+        Optimization result containing the optimal controller parameters and optimization information
+
+    Notes
+    -----
+    
+
+    Examples
+    --------
+    TODO
+
+    """
+
+    # import necessary functions
+    from tdspy.ddae import DDAE
+    from tdspy.stabopt.controller_bfgs import design_bfgs
+
+    ##################################### Step 0: Preprocessing and unpacking arguments ######################################
+    
     # unpack arguments
     n, nu, ny = ddae.n, ddae.n_inputs, ddae.n_outputs
 
     # get default settings
-    initial = kwargs.get("initial", np.zeros(shape=(nc+nu,nc+ny,1),dtype=float))        # shape is not valid if there are controller delays!!!
-    hK = np.zeros([0.])
-    y_indices = kwargs.get("y_indices",np.arange(0,ny-1))                               # y_indices for closed-loop
-    u_indices = kwargs.get("u_indices",np.arange(0,nu-1))                               # u_indices for closed-loop
-    Kmask = kwargs.get("mask", np.full_like(initial, fill_value=True, dtype=bool))      # create mask
-    nc = kwargs.get("nc",0)                                                             # nc
-    options = kwargs.get("options",{"nstart",1,"r",-1,"Ntheta",10,"w1",0.001,"w2",0.001,"fvalquit",-np.inf})   # get_options
+    n_delays = kwargs.get("n_delays", 1)                                                     # number of controller delays, default is 1 (zero-delay)
+    K0 = kwargs.get("K0", np.zeros(shape=(order+nu,order+ny,n_delays),dtype=float))         # initial controller parameters, default is all zeros
+    hK = kwargs.get("hK", np.zeros(shape=(n_delays+1,), dtype=float))                         # controller delays, default is no delay
+    assert hK.shape[0] == n_delays, "hK must have length n_delays!"                     # check hK shape 
 
-    # stability options: nstart, Ntheta, fvalquit, w1, w2
-    # options = kwargs.get("options",{})  
+    Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))               # get mask for controller parameters, default is all True
+    assert Kmask.shape == K0.shape, "Mask shape must match K0 shape!"                       
+
+    callback = kwargs.get("callback", None)                                                     # callback function for optimization, default is None
+    method = kwargs.get("method", "L-BFGS-B")                                                     # optimization method, default is L-BFGS-B
+    options = kwargs.get("options", {"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
 
     # verify existing controller mask, ny, nu, nc
-    assert initial.shape[0]==nu+nc, "dimension of input channels must match controller dimension"
-    assert initial.shape[1]==ny+nc, "dimension of output channels must match controller dimension"
+    assert K0.shape[0]==nu+order, "dimension of input channels must match controller dimension"
+    assert K0.shape[1]==ny+order, "dimension of output channels must match controller dimension"
+    
+    if K0.ndim < 3 or K0.shape[2] != n_delays:  # Check if the third dimension is missing or not equal to n_delays  
+        if K0.ndim < 3:
+            K0 = K0[:, :, np.newaxis]   # Add the third dimension if it doesn't exist
+        if K0.shape[2] != n_delays:
+            # Adjust the third dimension to match n_delays
+            K0 = np.resize(K0, (K0.shape[0], K0.shape[1], n_delays))
 
-    # verify mask - to be programmed later
+    y_indices = kwargs.get("y_indices",np.arange(0,ny))                               # y_indices for closed-loop
+    u_indices = kwargs.get("u_indices",np.arange(0,nu))                               # u_indices for closed-loop
+    nc = kwargs.get("order",0)                                                             # nc
+    options = kwargs.get("options",{"nstart",1,"Ntheta",10,"w1",0.001,"w2",0.001,"fvalquit",-np.inf})   # get_options
+    # Ntheta: 
+    # w1: acceptable region for gamma0, i.e., gamma0 < 1 - w1, default is 0.001
+    # w2: weight for log-barrier term in the objective function, default is 0.001, meaning that we want to balance between minimizing spectral abscissa and ensuring feasibility (gamma0 < 1 - w1)
+    # fvalquit: objective function value to quit optimization, default is -inf, meaning no early stopping based on objective function value
+    # gn: target gamma for barrier optimization, default is 0.5
 
-    # create closed loop, ddae + controller
-    cl = ClosedLoop(ddae, nc, y_indices, u_indices, K0=initial, hK=hK)
+    optmization_options = kwargs.get("options",{"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # get_options
+    
+
+    #################################### Step 1: Initialization ######################################
+    
+    # if all initial parameters are zero, set initial Ac = 0.1*I, Dc = 0.1*I, Bc = 0, Cc = 1 as a default initial controller structure 
+    # this is to ensure that the initial controller is not identically zero, which can cause issues in the optimization (e.g., zero gradient, infeasibility)
+    
+    if np.all(K0==0): 
+
+        K0[:order,:order,:] = 0.1*np.ones(shape=(order,order,n_delays))       # initial Ac = 0.1*I
+        K0[:order,order:order+ny,:] = np.zeros(shape=(order,ny,n_delays))     # initial Bc
+        K0[order:order+nu,:order,:] = np.ones(shape=(nu,order,n_delays))      # initial Cc
+        K0[order:order+nu,order:order+ny,:] = 0.01*np.ones(shape=(nu,ny,n_delays)) # initial Dc
+
+    # form closed loop, ddae + controller
+    cl = ClosedLoop(ddae, order, y_indices, u_indices, K0=K0, hK=hK)
     E = cl.E
+    uE = cl.uE
+    vE = cl.vE
     P = cl._A
     hP = cl._hA
     K0 = K0
@@ -87,62 +251,109 @@ def stab_opt(ddae,nc,**kwargs):
     # extract cl_ddae and diff
     cl_ddae = DDAE(E=cl.E,A=cl.A,hA=cl.hA)
 
+    ################################### Step 2: Pre-checks ##################################
+    
     # check if cl is_retarded
     if cl_ddae.is_essentially_retarded:
+
+        ############################### Case 1: Retarded system ###############################
+        
         # tds is retarded, minimize the spectral abscissa function c
         # however, this does not take into account infinitesimal delay perturbations
-        func = func_sa
-        pass
+        
+        ################################# Optimization #####################################
+
+        sol = design_bfgs(E, P, hP, K0, hK, B, C, method=method, options={"disp": True}, callback=None)
+        return sol
 
     else:
-        # tds is neutral, check dependency
-        # check if delay diff equation depends on K
-        from tdspy.stabopt.utils import diff_dependency_mask
 
-        diff = cl_ddae.get_delay_difference_equation()
-        r = diff_dependency_mask(Kmask, cl.uE, cl.vE, cl.BB, cl.CC)
+        ################################## Case 2: Neutral system ###############################
         
-        # case 1: dde 
-        if diff.A.shape[2] == 1:  # system is retarded
-            func = func_sa          
-        else:                       # system is neutral
-            func = func_cd          
+        # import necessary functions
+        from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+        from tdspy.stability.spectral_abscissa import spectral_abscissa_diff
+        from tdspy.stabopt.utils import diff_dependency_mask
+        from tdspy.common.delay_difference_equation import normalize_diff
 
+        ################################# Step 2.1: Check feasibility and gradient existence #####################################
 
-        if all(~r):
-            dependency_flag = 0     # diff is independent of controller parameters
-
-            # compute cd, gamma0 just once
-            cd = cd(cl_ddae)
-            gamma0 = gamma_normalized_diff(diff.A[:,:,1:], diff.hA[1:], 0, correction=True)
+        # precomputations
+        BU = uE.T @ B
+        CV = C @ vE
+        DP = cl._A
+        hDP = cl._hA
+        x0 = K0.reshape(-1)
+        
+        # check if delay diff equation depends on K
+        diff = cl_ddae.get_delay_difference_equation()  # extract delay difference equation of closed-loop system
+        DD, hDD = normalize_diff(diff.A, diff.hA)       # normalize the delay difference equation, extract DD and hDD
+        r = diff_dependency_mask(Kmask, uE, vE, B, C)     # get mask for controller parameters affecting the delay difference equation
+        
+        if all(~r): 
+            
+            ############################# Case 1: No dependency on controller parameters #############################
+            
+            # compute cd for initial controller parameters, if cd > 0, system is not stabilizable, 
+            # if cd <= 0, system is stabilizable but no optimization can be done since diff is independent of controller parameters
+            
+            cd,_ = spectral_abscissa_diff(DD, hDD)
 
             if cd>0:    # system is not stabilizable, the system is unstable
                 print(f"cd={cd} and independent of controller parameters. System cannot be stabilized!")
                 pass
-            else:
+            else:       # delay-difference equation is stable, optimization conducted on spectral abscissa only 
                 sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
-               
-        else:
-            dependency_flag = 1     # diff is dependent on controller parameters
+                return sol
 
-            # check for feasibility
-            # extract the zero-delay terms from the dde - ??
+        else: # diff is dependent on controller parameters
 
-            feasibility_flag = check_feasibility(diff)
+            ############################# Case 2: Dependency on controller parameters #############################
 
-             # first make sure that CD is finite for initial optimization variables
-            # if gamma(inf)>1, then CD = inf and the grad cannot be computed
-            gInf, info = gamma_diff(diff0.A[:,:,1:], diff0.hA[1:], 0, correction=True, n_theta=10)
-            gInf0, ginfo = gamma_diff(A0,hA0,0)
-            cd = cd
-            if gInf0 >=1:
-                raise ValueError("gammaInf > 1, objective function is infeasible for all possible optimization variables")
-            else:
-                # compute cd
-                gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
-                cd, cd_info = spectral_abscissa_diff(diff.A,diff.hA)
-                
-        
+            # feasibility check - is gamma0 < 1?
+
+            gamma0,_ = gamma_normalized_diff(DD,hDD,0,correction=True,n_theta=10)
+
+            if gamma0 >=1:
+                # current controller parameters are infeasible
+                print(f"gamma0={gamma0} >= 1 at initial controller parameters. Finding a feasible point!")
+                # find a feasible point
+                x0 = find_feasible_point(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
+
+                if x0 is not None: # found a feasible point => let's start optimization from there
+
+                    ############################### Optimization ######################################
+                    ################ f_objective = alpha - w2*log(1 - w1 - gamma0(p))##################
+                    ################ gradient = grad_alpha + w2*1/(1 - w1 - gamma0(p)) * grad_gamma0 ##################
+
+                    w2 = options.get("w2", 0.001)
+                    w1 = options.get("w1", 0.001)
+
+                    gamma0_args = (DP, hDP, Kmask, hK, BU, CV)
+                    sa_args = (E, P, hP, hK, Kmask, B, C)
+                    
+                    def obj_fn(x, gamma0_args, sa_args):
+
+                        g0, grad_g0 = grad_gamma0(x, *gamma0_args)
+                        sa, grad_sa = func_sa(x, *sa_args)         
+                        f = sa - w2*np.log(1 - w1 - g0)
+                        grad = grad_sa + w2*1/(1 - w1 - g0)*grad_g0
+                        return f, grad
+                    
+                    sol = optimize.minimize(
+                        obj_fn,
+                        x0,
+                        args=(gamma0_args, sa_args),
+                        method=kwargs.get("method", "L-BFGS-B"),
+                        options=optmization_options,
+                        callback=kwargs.get("callback", None)
+                    )
+
+                    return sol
+
+                else:   # give up, use minimize_CD instead
+                    print("Could not find a feasible point, try another method.")
+                    return None        
 
         pass
 
@@ -175,4 +386,131 @@ def stab_opt(ddae,nc,**kwargs):
             gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
             cd, cd_info = spectral_abscissa_diff(diff.A,diff.hA)
 
+def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
+    """
+    function to find a feasible point for the optimization problem
+
+    .. :math::
+
+        minimize    gamma_0(K)
+        subject to  gamma_inf(K) < 1
+
+    for a DDAE of the form:
     
+    .. :math::
+        E \dot{x}(t) = (P_0 + B K_0 C) x(t) + \sum_{i=1}^{m} (P_i + B K_i C) x(t - \tau_i)
+
+    Parameters
+    ----------
+    E :     array
+        E matrix of closed-loop system
+    P :     array
+        system matrix of open-loop system
+    hP :    array
+        system delays of open-loop system
+    K0 :    array
+        initial controller gain matrix
+    hK :    array
+        controller delays
+    B :     array
+        input matrix of closed-loop system
+    C :     array
+        output matrix of closed-loop system
+     kwargs:
+        options:    options for the optimization solver
+
+    Returns
+    -------
+    K : array
+        feasible controller parameters, if found, otherwise None
+
+    Notes
+    -----
+
+    
+    Examples
+    --------
+    TODO
+
+    """
+    
+    from scipy import linalg, optimize
+    from tdspy.common.delay_difference_equation import ddae_to_diff
+    from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff
+    from tdspy.common.delay_difference_equation import normalize_diff
+    from tdspy.stabopt.utils import diff_dependency_mask
+    from tdspy.stabopt.gradients import grad_gamma0
+
+    # unpack arguments
+    n, nu, ny = E.shape[0], B.shape[1], C.shape[0]
+
+    # get mask
+    Kmask = kwargs.get("mask", np.full_like(K0, fill_value=True, dtype=bool))
+    options = kwargs.get("options",{"disp": True, "eps":0.1, 
+                                    "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # get_options
+
+    # extract uE and vE from E
+    uE = linalg.null_space(E.T,rcond=1e-12)
+    vE = linalg.null_space(E,rcond=1e-12)
+
+    ########################## Step 1: Precomputation ##########################
+
+    # extract delay-difference equation without controller contribution
+    DP, hDP = ddae_to_diff(E,P,hP)
+
+    # extract controller parameters affecting the delay-difference equation
+    r = diff_dependency_mask(Kmask, uE=uE, vE=vE, B=B, C=C)
+
+    # precompute BD, CD
+    BD = uE.T @ B
+    CD = C @ vE
+    x0 = K0.reshape(-1)
+
+
+    ########################## Step 2: Preliminary checks ##########################
+    # obtain A, hA from P+K, hP+hK
+    BKC = np.einsum('lm,mki,kn -> lni', B, K0, C)
+    A, hA = np.concatenate([P, BKC], axis=2), np.concatenate([hP, hK], axis=0)
+
+    # Retarded or neutral system check
+    D, hD = ddae_to_diff(E,A,hA)
+    if hD.shape[0] == 1 and hD[0] == 0.0:    # system is retarded
+        print("The closed-loop system is retarded, no need to find a feasible point.")
+        return x0
+    else:    # system is neutral
+        pass
+
+    # Feasibility check
+    DD,hDD = normalize_diff(D,hD)
+    gamma0, gammaInfo = gamma_normalized_diff(DD[:,:,1:], hDD[1:], 0, correction=True, n_theta=10)
+    # gamma0, info = gamma_diff(D[:,:,1:], hD[1:], 0, correction=True, n_theta=10)
+    
+    if gamma0 < 1:
+        print("Initial controller parameters are already feasible.")
+        return x0
+    
+    # Dependency check
+    if not np.any(r):
+        raise ValueError("The delay difference equation is independent of the controller parameters, no feasible point exists.")    
+    
+    # # control parameters affecting the delay difference equation
+    # KD = np.zeros_like(Kmask, dtype=float)
+    # np.place(KD, indices, x0)
+
+    ############################# Step 3: Optimization ##########################
+
+    sol = optimize.minimize(
+        grad_gamma0,
+        x0,
+        args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
+        jac=True,
+        method=kwargs.get("method", "L-BFGS-B"),
+        options=options,
+        callback=kwargs.get("callback", None)
+    )
+
+    if sol.fun >= 1:
+        print(f"Optimization did not find a feasible point, gamma0={sol.fun} >= 1 at optimal controller parameters.")
+        return None
+    else:
+        return sol.x0

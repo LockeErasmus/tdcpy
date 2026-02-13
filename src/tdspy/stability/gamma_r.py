@@ -30,6 +30,41 @@ logger = logging.getLogger(__name__)
 
 GammaInfo = namedtuple("GammaInfo", ["th", "M", "s", "u", "v"])
 
+def rho_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, theta: npt.NDArray) -> npt.NDArray:
+    """ Calculates spectral radius of matrix M
+
+    Matrix M is given as sum of rotations of normalized delay difference
+    equation.
+
+    Parameters
+    ----------
+    DD : ndarray
+        Coefficient matrices packed into 3D array of shape (n, n, m).
+        Note that coefficients for x(t) are assumed to be identity matrix
+        and therefore omitted (see functions for converting DDAE to delay
+        difference equation and normalizing).
+    hDD : ndarray
+        Delays represented by 1D array of shape (m,). Note that delay 0 is
+        omitted.
+    r : float
+        Point from complex plane.
+    theta : ndarray
+        Non-empty 1d array of rotations of shape (m-1,) in [0, 2*pi).
+
+    Returns
+    -------
+    ndarray
+        Spectral radius matrix.
+
+    Notes
+    -----
+    Does not check for valid inputs.
+
+    """
+    M = (DD[:,:, 0] * np.exp(-r*hDD[0]) # first therm rotation is fixed to 0
+         + np.sum(DD[:,:, 1:] * np.exp(-r * hDD[1:]) * np.exp(1j*theta), axis=2))
+    return M
+
 def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     """ Calculates value and jacobian of the vector function F(x)
 
@@ -72,9 +107,7 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
     th = x[4*n_diff+2:] # theta
 
     # construct M
-    M = DD[:,:,0] * np.exp(-r*hDD[0])
-    for i in range(n_opt):
-        M = M + DD[:,:,i+1] * np.exp(-r*hDD[i+1]) * np.exp(1j * th[i])
+    M = rho_normalized_diff(DD, hDD, r, th)
 
     # continue line 270
     M1 = M - s * np.eye(n_diff)
@@ -163,6 +196,32 @@ def l2_func(*args):
 
     return y_new, jac_new
 
+def theta_generator(n_opt: int, n_theta:int=10, is_real: bool=False):
+    """ Generator for theta grid points in [0, 2*pi)^{m} """
+    # make sure that n_theta is even
+    if n_theta % 2 == 1:
+        n_theta += 1
+    
+    # theta_1 can be restricted to [0, pi] for real matrices
+    endpoint = n_theta // 2 + 1 if is_real else n_theta
+
+    # create grid, preallocate vectors for indices and theta
+    theta_grid = np.linspace(0, 2*np.pi, num=n_theta, endpoint=False)
+    id = np.zeros((n_opt,), dtype=int)
+    theta = np.zeros((n_opt,), dtype=np.float64)
+    
+    while id[0] <= endpoint - 1:
+        theta[:] = theta_grid[id]
+        yield theta    
+        # form the next gridpoint
+        id[-1] = id[-1] + 1
+        for j in range(n_opt-1, 0, -1):
+            if id[j] < n_theta:
+                break
+            else:
+                id[j] = 0
+                id[j-1] += 1
+
 def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs) -> tuple[float, GammaInfo]:
     """ Computes gamma(r) of the normalized delay difference equation
     
@@ -175,39 +234,68 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
             rho( SUM for all k DD[k]*exp(-r*hDD[k])*exp(1j*theta[k]) )     (2)
         where rho(.) is spectral radius of its matrix argument.
 
-    Args:
-        DD (array): coefficient matrices packed into 3D array shaped (n,n,m),
-            note that coefficients for x(t) are assumed to be identity matrix
-            and therefore omitted (see functions for converting DDAE to delay
-            difference equation and normalizing)
-        hDD (array): delays represented by 1D array shaped (m,), note that delay
-            0 is omitted
-        r (float): point from complex plane
+    Parameters
+    ----------
 
-        kwargs:
-            n_theta (int): theta discretization, has to be > 0, default 10
-            correction (bool): if correction is applied, default True
-            scipy_root_method (str): scipy.optimize.root method, default 'lm',
-                i.e. Levenberg-Marquardt algorithm, note: carefull, not all
-                methods attempt to solve problem
-            scipy_root_tol (float): Tolerance for termination. For detailed
-                control, use `scipy_root_options`, default None
-            scipy_root_callback (function): Optional callback function. It is
-                called on every iteration as `callback(x, f)` where x is the
-                current solution and f the corresponding residual. For all
-                methods but 'hybr' and 'lm'.
-            scipy_root_options (dict): a dictionary of solver options (method),
-                default None
+    DD : ndarray
+        Coefficient matrices packed into 3D array shaped (n,n,m),
+        note that coefficients for x(t) are assumed to be identity matrix
+        and therefore omitted (see functions for converting DDAE to delay
+        difference equation and normalizing).
+    hDD : ndarray
+        Delays represented by 1D array shaped (m,), note that delay 
+        0 is omitted.
+    r : float
+        Point from complex plane.
+    kwargs:
+        n_theta (int): theta discretization, has to be > 0, default 10
+        correction (bool): if correction is applied, default True
+        scipy_root_method (str): scipy.optimize.root method, default 'lm',
+            i.e. Levenberg-Marquardt algorithm, note: carefull, not all
+            methods attempt to solve problem
+        scipy_root_tol (float): Tolerance for termination. For detailed
+            control, use `scipy_root_options`, default None
+        scipy_root_callback (function): Optional callback function. It is
+            called on every iteration as `callback(x, f)` where x is the
+            current solution and f the corresponding residual. For all
+            methods but 'hybr' and 'lm'.
+        scipy_root_options (dict): a dictionary of solver options (method),
+            default None
     
-    Returns:
-        tuple containing:
+    Returns
+    -------
+    tuple containing:
             
-            - gamma (float): quantity gamma(r, DD, hDD)
-            - info (GammaInfo): gamma metadata
+        - gamma (float): quantity gamma(r, DD, hDD)
+        - info (GammaInfo): gamma metadata
 
-    Notes:
-        1. for all kwargs starting with 'scipy_*' check the following documentation
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
+    Notes
+    -----
+    1. for all kwargs starting with 'scipy_*' check the following documentation
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html
+    2. uses grid search + optional correction via scipy.optimize.root
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.stability.gamma_r import gamma_normalized_diff
+    >>> DD = np.zeros((2,2,2), dtype=complex)
+    >>> DD[:,:,0] = np.array([[0.7, 0], [0, 0.7]])
+    >>> DD[:,:,1] = np.array([[0.1, 0], [0, 0.1]])
+    >>> hDD = np.array([1.0, 2.0])
+    >>> r = 0.5 + 0.5j
+    >>> gamma, info = gamma_normalized_diff(DD, hDD, r, n_theta=5, correction=True)
+    >>> print(f"gamma: {gamma}")
+    gamma: 0.4613594059159876
+    >>> print(f"theta: {info.th}")
+    theta: [0.  0.5]
+    >>> print(f"dominant eigenvalue: {info.s}")
+    dominant eigenvalue: (0.40488096939597285-0.22118748167138752j)
+    >>> print(f"right eigenvector: {info.v}")
+    right eigenvector: [0.-0.j 1.-0.j]
+    >>> print(f"left eigenvector: {info.u}")
+    left eigenvector: [ 0.        +0.j         -0.68163876-0.73168887j]
+
     """
 
     assert hDD.size > 0 and DD.size > 0, "empty delay-difference equation not allowed"
@@ -222,11 +310,10 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
 
     correction = kwargs.get("correction", True) # whether to apply correction
 
-    if n_theta % 2 == 1:
-        n_theta += 1
-
+    # CASE 1: number of delays equal to 1 in normalized DIFF
+    # this means no sensitivity to infinitesimal delay perturbations and
+    # theta would be therefore empty vector
     if hDD.shape[0] == 1:
-        # CASE 1: 1 delay -> no sensitivity to infinitesimal delay perturbations
         M = np.sum(DD * np.exp(-r * hDD), axis=2)
         vals = linalg.eig(M, left=False, right=False)
         vals_abs = np.abs(vals)
@@ -243,44 +330,19 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     n_opt = DD.shape[2] - 1 # number of free optimization parameters
     radius = 0 # store maximal value
 
-    id = np.zeros((n_opt,), dtype=int)
-    theta_grid = np.linspace(0, 2*np.pi, num=n_theta, endpoint=False)
-
-    if all(np.all(np.isreal(d)) for d in DD):
-        logger.debug("Delay-difference equation is real, theta1 can be restricted to [0, pi]")
-        endpoint = n_theta // 2 + 1
-    else:
-        endpoint = n_theta
-
-    while id[0] <= endpoint:
-        # the optimization variable theta = [0 theta_grid(id)]
-        # -> we do not need to explicitly form the search grid
-        # M = DD{1}*exp(-r*hDD(1))*exp(1j*theta(1)) + .. + DD{m}*exp(-r*hDD(m))*exp(1j*theta(m))
-
+    # iterate over cartesian product of theta grid [0, 2*pi)^{n_opt}]
+    for theta in theta_generator(n_opt, n_theta, is_real=all(np.all(np.isreal(d)) for d in DD)):
         # construct M
-        # M = np.sum(DD * np.exp(-r * hDD) * np.exp(theta), axis=2)
-        M = DD[:,:,0] * np.exp(-r*hDD[0])
-        for k2 in range(n_opt):
-            M = M + DD[:,:,k2+1] * np.exp(-r*hDD[k2+1]) * np.exp(1j * theta_grid[id[k2]])
-    
+        M = rho_normalized_diff(DD, hDD, r, theta)
         vals = linalg.eig(M, left=False, right=False)
         vals_abs = np.abs(vals)
-        gamma_r_index = np.argmax(vals_abs)
+        gamma_r_index = np.argmax(vals_abs) # index of dominant eigenvalue
         gamma_r = vals_abs[gamma_r_index]
+        
         if gamma_r > radius:
             radius = gamma_r
             radius_eig = vals[gamma_r_index]
-            radius_ind = np.copy(id)
-        
-        # form the next gridpoint
-        id[-1] += 1
-        j = len(id)
-        while id[j-1] == n_theta:
-            if j == 0:
-                break
-            id[j-1] = 0
-            id[j-2] = id[j-2] + 1
-            j = j -1
+            radius_th = np.copy(theta)
 
     if radius == 0:
         # degenerate case
@@ -296,7 +358,7 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     
     if not correction: # correction==False by user -> no correction applied
         logger.debug(f"No correction")
-        th = theta_grid[radius_ind.astype(int)]
+        th = radius_th
         M = DD[:,:,0] * np.exp(-r*hDD[0])
         for i in range(n_opt):
             M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th[i])
@@ -308,13 +370,11 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     
     # correction=True -> apply correction
     logger.debug("Applying correction to gamma_r")
-    th_v = theta_grid[radius_ind.astype(int)] # critical values of theta
+    th_v = radius_th # critical values of theta
     eig_v = radius_eig # critical eigen value
 
     # compute the corresponding left and right eigenvectors
-    M = DD[:,:,0] * np.exp(-r*hDD[0])
-    for i in range(n_opt):
-        M = M + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_v[i])    
+    M = rho_normalized_diff(DD, hDD, r, th_v)
 
     U, _, Vh = linalg.svd(M - eig_v*np.eye(n_diff))
     v_s = np.conj(Vh[-1])
@@ -326,59 +386,45 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     x0 = np.r_[np.real(v_s), np.imag(v_s), np.real(u_s), np.imag(u_s),
                np.real(eig_v), np.imag(eig_v), th_v]
 
-    # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_'    
+    # solve non-lienear root finding problem, use **kwargs starting 'scipy_root_
+    scipy_root_kwargs = {
+        "method": kwargs.get("scipy_root_method", "lm"),
+        "tol": kwargs.get("scipy_root_tol", None),  
+        "callback": kwargs.get("scipy_root_callback", None),
+        "options": kwargs.get("scipy_root_options", None),
+    }
+    logger.debug(f"Applying corrector: `scipy.optimize.root` with settings: {scipy_root_kwargs}")
     sol = optimize.root(
         func,
         x0,
         args=(DD, hDD, r, v_s),
         jac=True,
-        method=kwargs.get("scipy_root_method", "lm"),
-        tol=kwargs.get("scipy_root_tol", None),
-        callback=kwargs.get("scipy_root_callback", None),
-        options=kwargs.get("scipy_root_options", None),
+        **scipy_root_kwargs,
     ) # solution is saved in sol.x
+    logger.debug(f"Corrector fnished, succesfull?={sol.success}, status={sol.status}, message={sol.message}")
 
-    # logger.info(f"Using solver {kwargs.get('scipy_minimize_method', 'trust-constr')}")
-    # logger.debug(f"{x0=}")
-    # sol = optimize.minimize(
-    #     l2_func,
-    #     x0,
-    #     args=(DD, hDD, r, v_s),
-    #     jac=True,
-    #     hess=None,
-    #     method=kwargs.get("scipy_minimize_method", "trust-constr"),
-    #     options={'disp': True},
-    # ) # solution is saved in sol.x
-
-    if not sol.success: # i.e. root-finding algorithm failed
-        logger.warning("Correction step failed")
-        # TODO log these:
-        # sol.status #
-        # sol.message
-        # sol.nit
-        # sol.nfev # f evals
-        # sol.njev
-        # sol.nhev
+    if not sol.success: # i.e. root-finding algorithm failed -> rely on predictor
+        logger.warning("Correction failed (solver failed), rely on predictor")
+        gamma_info = GammaInfo(np.r_[0, th_v], M, eig_v, u_s, v_s)
+        return radius, gamma_info
     
+    # obtain solution from `sol` and reconstruct metadata
     x_star = sol.x # solution x*
-    th_star = x_star[4*n_diff+2:]
-
-    M_star = DD[:,:,0] * np.exp(-r*hDD[0])
-    for i in range(n_opt):
-        M_star = M_star + DD[:,:,i+1]*np.exp(-r*hDD[i+1])*np.exp(1j*th_star[i])
-    
+    th_star = x_star[4*n_diff+2:] # we are only interested in theta*
+    M_star = rho_normalized_diff(DD, hDD, r, th_star)
     vals = linalg.eig(M_star, left=False, right=False)
     vals_abs = np.abs(vals)
     gamma_r_index = np.argmax(vals_abs)
     gamma_r = vals_abs[gamma_r_index]
     
+    # check for improvement
     improvement = gamma_r - radius
     if improvement < 0.0: # improvement is worse then 0.0
-        logger.debug(f"Correction failed {gamma_r=}, {radius=}, rely on radius (predictor)")
+        logger.debug(f"Correction failed (negative improvement), rely on predictor. (predictor={radius}, corrector={gamma_r}, {improvement=})")
         gamma_info = GammaInfo(np.r_[0, th_v], M, eig_v, u_s, v_s)
         return radius, gamma_info
     else:
-        logger.debug(f"Correction succesful {gamma_r=}, {radius=}, {improvement=}, using gamma_r")
+        logger.debug(f"Correction succesful (positive improvement), rely on corrector. (predictor={radius}, corrector={gamma_r}, {improvement=})")
         eig_star = vals[gamma_r_index]
         U_star, _, Vh_star = linalg.svd(M - eig_star*np.eye(n_diff))
         v_star = np.conj(Vh_star[-1])
@@ -401,25 +447,54 @@ def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[flo
                 omit first delay = 0 and first normalized matrix = identity
             2b. call `gamma_diff_normalized`
     
-    Args:
-        D (array): coefficient matrices packed into 3D array shaped (n,n,m)
-        hDD (array): delays represented by 1D array shaped (m,)
-        r (float): point from complex plane
-        **kwargs: kwargs passed into `gamma_diff_normalized` function
+    Parameters
+    ----------
+
+    D : array
+        Coefficient matrices packed into 3D array shaped (n, n, m).
+    hD : array
+        Delays represented by 1D array shaped (m,).
+    r : float
+        Point from complex plane.
+    kwargs:
+        kwargs passed into `gamma_diff_normalized` function.
     
-    Returns:
-        tuple containing:
-            
-            - gamma (float): quantity gamma(r, D, hD)
-            - info (GammaInfo): gamma metadata
+    Returns
+    -------
+
+    tuple containing:
+
+        - gamma (float): quantity gamma(r, D, hD)
+        - info (GammaInfo): gamma metadata
     
-    Notes:
-        1. if compressed version of DIFF contains 2 or more delays,
-            invertibility of D[0] is assumed.
-        2. DIFF representation (D, hD) can be emtpy, result will be
-            gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
-        3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
-            see implementation of `gamma_diff_normalized`
+    Notes
+    -----
+
+    1. if compressed version of DIFF contains 2 or more delays,
+        invertibility of D[0] is assumed.
+    2. DIFF representation (D, hD) can be emtpy, result will be
+        gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
+    3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
+        see implementation of `gamma_diff_normalized`
+    
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from tdspy.stability.gamma_r import gamma_diff
+    >>> D = np.zeros(shape=(2,2,3))
+    >>> D[:,:,0] = np.array([[1.0, 0.0], [0.0, 1.0]])
+    >>> D[:,:,1] = np.array([[0.5, 0.0], [0.0, 0.5]])
+    >>> D[:,:,2] = np.array([[0.2, 0.0], [0.0, 0.2]])
+    >>> hD = np.array([0.0, 1.0, 2.0])
+    >>> r = 0.0
+    >>> gamma_val, gamma_info = gamma_diff(D, hD, r)
+    >>> print(gamma_val)
+    0.7
+    >>> print(gamma_info)
+    GammaInfo(th=array([0., 0.]), M=array([[0.7.+0.j , 0. +0.j ],
+            [0. +0.j , 0.7+0.j ]]), s=(0.7+0j), u=array([0.+0.j, 1.+0.j]), 
+            v=array([0.-0.j, 1.-0.j]))
     """
     # Perform necessary tests - TODO
     assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray)

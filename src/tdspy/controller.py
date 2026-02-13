@@ -23,6 +23,35 @@ from .common.closed_loop import controller_reprezentation
 logger = logging.getLogger(__name__)
 
 
+
+def _handle_indices_defaults(u_indices: list[int] | None, y_indices: list[int] | None,
+                             n_inputs: int, n_outputs: int) -> tuple[list[int], list[int]]:
+    """ Checks and solves default indices in case of interconnection of two
+    systems
+    """
+    print(f"{u_indices=}, {y_indices=}, {n_inputs=}, {n_outputs=}")    
+    # 4 cases possible
+    if y_indices and u_indices: # 1: both defined and possible -> done
+        pass    
+    elif y_indices and u_indices is None: # 2: defined outputs -> try to match to first n inputs
+        if len(y_indices) > n_outputs:
+            raise ValueError(f"Can not solve defaults for {y_indices} --> [?] not enough inputs")
+        u_indices = [ix for ix in range(len(y_indices))]
+    elif u_indices and y_indices is None: # 3: defined inputs -> try to match to first n outputs
+        if len(u_indices) > n_inputs:
+            raise ValueError(f"Can not solve defaults for [?] --> {u_indices} not enough outputs")
+        y_indices = [ix for ix in range(len(u_indices))]
+    else: # 4: both are None -> 2 cases
+        u_indices = [ix for ix in range( min(n_inputs, n_outputs) )]
+        y_indices = u_indices[:] # shallow copy is fine since only list of int
+
+    # check if possible
+    if any( ix >= n_inputs for ix in u_indices ) or any( ix >= n_outputs for ix in y_indices ):
+        raise ValueError(f"Interconnection indices can not be >= than respective matrix shape")
+
+    return u_indices, y_indices
+
+
 def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list = None,
                  y2_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
     """ Creates and interconnected system
@@ -96,16 +125,10 @@ def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list 
     # indices all are constructed as 1D arrays and axes are added later to leverage
     # broadcasting, it is necessary to have indices as dtype=int (alternatively as boolean mask)
     
-    # First, handle defaults
-    if y1_indices is None:
-        y1_indices = [0]
-    if u2_indices is None:
-        u2_indices = [0]
-    if y2_indices is None:
-        y2_indices = [0]
-    if u1_indices is None:
-        u1_indices = [0]
-    
+    # First, handle defaults: assume tds2 is controller and if not defined, try to connect all
+    u1_indices, y2_indices = _handle_indices_defaults(u1_indices, y2_indices, B1.shape[1], D2.shape[0])
+    u2_indices, y1_indices = _handle_indices_defaults(u2_indices, y1_indices, B2.shape[1], D1.shape[0])
+        
     ## System 1
     u1_indices = np.array(u1_indices, dtype=int)
     w1_indices = np.array([i for i in range(B1.shape[1]) if i not in u1_indices], dtype=int)

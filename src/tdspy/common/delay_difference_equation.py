@@ -1,6 +1,16 @@
 """
 Set of functions for obtaining and manipulation of delay difference equations
 -----------------------------------------------------------------------------
+
+Implemented functions:
+1. `ddae_to_diff`: extracts the delay-difference equation represented by 
+    `(D,hD)` from the delay-differential algebraic equation represented by
+    `(E,A,hA)`
+2. `ndde_to_diff`: extracts the associated delay-difference equation 
+    represented by `(D,hD)` given an NDDE represented by matrices `(H,hH)`
+3. `normalize_diff`: obtained the normalized ADDE with the leading matrix
+    corresponding to the zero-delay term equal to the identity matrix
+
 Notes:
     1. these functions are internal, they do not operate via high level API
     2. these functions assume correct inputs, input types, etc. (that is to
@@ -24,37 +34,77 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     difference equation
 
     DDAE dynamics represented by
-        E*dx/dt = A[0] x(t-hA[0]) + ... + A[m-1] x(t-hA[m-1])
 
-    Args:
-        E (array): left-side matrix of shape (n,n)
-        A (array): right-side matrices of shape (n,n,m)
-        hA (array): vector of delays of shape (m,)
-        uE (array): orthonormal basis for left null space of E, optional,
-            default None means uE will be calculated via SVD
-        vE (array): orthonormal basis for right null space of E, optional,
-            default None means uE will be calculated via SVD 
-        **kwargs:
-            tol: norm tolerance for considering matrix vanish, default 1e-14
-            rcond (float): relative condition number. Singular values s smaller
-                than rcond * max(s) are considered zero in null space
-                construction, default 1e-12
+    .. math::
 
-    Returns:
-            tuple containing
+        E \dot{x}(t) = A_0 x(t - h_{A,0}) + ... + A_{m_A} x(t - h_{A,m_A})
 
-                - D (array): right-side delay difference equation matrices
-                    of shape (p,p,q)
-                - hD (array): right-side delay difference equation delays of
-                    shape (q,)
+    into delay difference equation represented by
+    
+    .. math::
+        D_0 x(t - h_{D,0}) + ... + D_{m_D} x(t - h_{D,m_D}) = 0
 
-    Notes:
-        1. n, m are assumed to be > 1
-        2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
-        3. if E is non-singular, D, hD are returned as empty arrays
+    Parameters
+    ----------
+    E : array
+        left-side matrix of shape (n,n)
+    A : array
+        right-side matrices of shape (n,n,m)
+    hA : array
+        vector of delays of shape (m,)
+    uE : array, optional
+        orthonormal basis for left null space of E, optional,
+        default None means uE will be calculated via SVD
+    vE: array, optional
+        orthonormal basis for right null space of E, optional,
+        default None means uE will be calculated via SVD
+    **kwargs :
+        tol: norm tolerance for considering matrix vanish, default 1e-14
+        rcond (float): relative condition number. Singular values s smaller
+            than rcond * max(s) are considered zero in null space
+            construction, default 1e-12
+        is_compressed: if True, hA is assumed to be in compressed form,
+            i.e. hA[0] == 0, default True
+        
+    Returns
+    -------
+    tuple
+        A tuple containing
+
+        D : array
+            right-side delay difference equation matrices of shape (p,p,q)
+        hD : array
+            right-side delay difference equation delays of shape (q,)
+
+    Notes
+    -----
+    1. n, m are assumed to be > 1
+    2. A, hA is assumed to be in compressed form, i.e. hA[0] == 0
+    3. if E is non-singular, D, hD are returned as empty arrays
+    4. D, hD are returned in compressed form, i.e. no zero matrices in D
+        (and associated delays in hD)
+    5. if E is singular, the size of D, hD depends on the rank of E and
+        the number of non-vanishing matrices uE.T @ A[i] @ vE
+    
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import ddae_to_diff
+    >>> E = np.array([[1,0,0],[0,0,0],[0,0,1]])
+    >>> A = np.zeros(shape=(3,3,3))
+    >>> A[:,:,0] = np.array([[0,1,0],[0,0,0],[0,0,0]])
+    >>> A[:,:,1] = np.array([[0,0,0],[1,0,0],[0,0,1]])
+    >>> A[:,:,2] = np.array([[0,0,1],[0,0,0],[0,1,0]])
+    >>> hA = np.array([0,1,2])
+    >>> D,hD = ddae_to_diff(E,A,hA)
+    >>> D
+        array([], shape=(1, 1, 0), dtype=float64)
+    >>> hD
+        array([], dtype=int64)  
     """
     rcond = kwargs.get("rcond", 1e-12)
     tol = kwargs.get("tol", 1e-14)
+    is_compressed = kwargs.get("is_compressed", True)
 
     if uE is None:
         uE = linalg.null_space(E.T, rcond=rcond)
@@ -90,13 +140,61 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
 def ndde_to_diff(H, hH, **kwargs):
     """ Converts NDDE to delay difference equation
 
+    Parameters
+    ----------
+        H : array
+            right-side matrices of shape (n,n,mH)
+        hH : array
+            vector of delays of shape (mH,)
+        **kwargs :
+            tol: norm tolerance for considering matrix vanish, default 1e-14
+
+    Returns
+    -------
+    tuple
+        A tuple containing
+
+        D : array
+            right-side delay difference equation matrices of shape (n,n,mH+1)
+        hD : array
+            right-side delay difference equation matrices and delays of shape (n,n,mH+1) and (mH+1,)
+    
+    Notes
+    -----
+
     For a NDDAE, the associated delay difference equation is given by
-            
-            I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0          (1)
+    
+    .. math::
+        I x(t) + H_0 x(t-hH_0) + ... + H_{mH} x(t-hH_{mH}) = 0          (1)
+
+    1. n, mH are assumed to be > 0
+    2. hH is assumed to be non-zero delays
+    3. D, hD are returned in compressed form, i.e. no zero matrices in D
+        (and associated delays in hD)
+    4. D, hD are returned in normalized form, i.e. D[0] == I is omitted
+    
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import ndde_to_diff
+    >>> H = np.zeros(shape=(2,2,2))
+    >>> H[:,:,0] = np.array([[0,1],[0,0]])
+    >>> H[:,:,1] = np.array([[0,0],[1,0]])
+    >>> hH = np.array([1,2])
+    >>> D,hD = ndde_to_diff(H,hH)
+    >>> D
+    array([[[0., 0.],
+            [1., 0.]],
+    <BLANKLINE>
+        [[0., 1.],
+            [0., 0.]]])
+    >>> hD
+    array([1, 2])
+
     """
     assert H.ndim == 3 and hH.ndim == 1
-    assert H.shape[0] == hH.shape[1] > 0
-    assert H.shape[2] == hH.shape[0] > 0
+    assert H.shape[0] == H.shape[1] > 0 # square matrices
+    assert H.shape[2] == hH.shape[0] > 0    
     assert np.all(hH != 0)
 
     n = H.shape[0]
@@ -107,7 +205,58 @@ def ndde_to_diff(H, hH, **kwargs):
 
 
 def _normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
-    """ Normalizes delay difference equation """
+    """ Normalizes delay difference equation 
+    
+    Transforms the delay difference equation such that the leading zero delay
+    matrix D[0] equals identity (and can be omitted).
+
+    Parameters
+    ----------
+        D : array
+            right-side matrices of shape (n,n,m)
+        hD: array
+            vector of delays of shape (m,)
+
+    Returns
+    -------
+    tuple
+        A tuple containing
+            D : array
+                3D array representing matrices:
+                [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
+            hD : array
+                array of non-zero delays of shape (m-1,)
+
+    Notes
+    ------
+        1. m >= 1 is assumed
+        1. D[0] is assumed to be invertible
+        2. hD[0] == 0
+
+    Examples
+    --------
+    >>> D = np.zeros(shape=(2,2,3))
+    >>> D[:,:,0] = np.array([[1,0],[0,1]])
+    >>> D[:,:,1] = np.array([[0,1],[1,0]])
+    >>> D[:,:,2] = np.array([[1,1],[0,0]])
+    >>> hD = np.array([0,1,2])
+    >>> DD,hDD = _normalize_diff(D,hD)
+    >>> DD
+    array([[[0., 1.],
+            [1., 0.]],
+    <BLANKLINE>
+        [[1. 1.],
+            [0. 0.]]])
+    >>> hDD
+    array([1, 2])
+    
+    """
+
+    assert D.ndim == 3 and hD.ndim == 1
+    assert D.shape[0] == D.shape[1] > 0
+    assert D.shape[2] == hD.shape[0] >= 1
+    assert hD[0] == 0
+
     hDD = hD[1:]
     n, m = D.shape[0], hDD.shape[0]
     DD = np.zeros(shape=(n, n, m))
@@ -131,21 +280,49 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     Transforms the delay difference equation such that the leading zero delay
     matrix D[0] equals identity (and can be omitted).
 
-    Args:
-        D (array): right-side matrices of shape (n,n,m)
-        hD (array): vector of delays of shape (m,)
+    Parameters
+    ----------
+        D : array
+            right-side matrices of shape (n,n,m)
+        hD : array
+            vector of delays of shape (m,)
 
-    Returns:
-        tuple containing
+    Returns
+    -------
+    tuple
+        A tuple containing
 
-        - D (array): 3D array representing matrices:
+        DD : array
+            3D array representing matrices:
             [inv(D[0])*D[1], ... , inv(D[0])*D[m-1]]
-        - hDD (array): array of non-zero delays
-    
-    Notes:
+        hDD : array
+            array of non-zero delays of shape (m-1,)
+
+    Notes
+    -----
         1. m > 2 is assumed
         2. D[0] is assumed to be invertible
         3. hD[0] == 0
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.delay_difference_equation import normalize_diff
+    >>> D = np.zeros(shape=(2,2,3))
+    >>> D[:,:,0] = np.array([[1,0],[0,1]])
+    >>> D[:,:,1] = np.array([[0,1],[1,0]])
+    >>> D[:,:,2] = np.array([[1,1],[0,0]])
+    >>> hD = np.array([0,1,2])
+    >>> DD,hDD = normalize_diff(D,hD)
+    >>> DD
+    array([[[0., 1.],
+            [1., 1.]],
+    <BLANKLINE>
+        [[1., 0.],
+            [0., 0.]]])
+    >>> hDD
+    array([1, 2])
+
     """
     assert D.ndim == 3 and hD.ndim == 1
     assert D.shape[0] == D.shape[1] > 0
@@ -157,6 +334,9 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
 
     return DD, hDD
 
-    
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
 
     

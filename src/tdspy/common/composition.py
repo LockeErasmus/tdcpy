@@ -1,5 +1,10 @@
 """
 Set of functions for TDS composition
+
+Implemented functions:
+
+1. `concatenate_2x2_by_delays`: creates a concatenated DDAE ``(E*, A*, hA*)`` given a DDAE representation ``(E,A,B,C,D)`` and the repective delay matrices ``(hA, hB, hC, hD)``.
+
 """
 
 import numpy as np
@@ -10,59 +15,149 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
                               hB: npt.NDArray, hC: npt.NDArray, hD: npt.NDArray,
                               EE: npt.NDArray=None, AA: npt.NDArray=None,
                               hAA: npt.NDArray=None):
-    """ Concatenates system into compact form respecting delay vectors
+    """ Concatenates system into compact form respecting delay vectors.
 
-    Assumes system is defined as
+    Parameters
+    ----------
+    E : array
+        LHS matrix
+    A : array
+        left hand side matrices of DDAE, assumed non-empty
+    B : array
+        3D array of representing input matrices
+    C : array
+        3D array of representing output matrices
+    D : array
+        left hand side matrices of DDAE, assumed non-empty
+    hA : array
+        vector of delays associated with array A
+    hB : array
+        vector of delays associated with array B
+    hC : array
+        vector of delays associated with array C
+    hD : array
+        vector of delays associated with array D
+    EE : array, optional
+        if provided, used as LHS matrix of the concatenated system
+    AA: array, optional
+        if provided, used as RHS 3D array of the concatenated system
+    hAA : array, optional
+        if provided, used as delay vector of the concatenated system
 
-        E dxdt = A[:,:,0]*x(t-hA[0]) + ... + A[:,:,n] x(t-hA[n]) +
-                 + B[:,:,0]*u(t-hB[0]) + ... + B[:,:,m] u(t-hB[n])
-        
-            y  = C[:,:,0]*x(t-hC[0]) + ... + C[:,:,p] x(t-hC[p]) +
-                 + D[:,:,0]*u(t-hD[0]) + ... + D[:,:,q] u(t-hD[q])
-    
+    Returns
+    -------
+    tuple
+        A tuple containing
+
+        EE : array
+            2d array of concatenated LHS
+        AA : array
+            3d array of concatenated RHS
+        hAA : array
+            1d vector of concatenated delays associated with RHS
+
+    Notes
+    -----
+    Assumes the system is defined as
+
+    .. math::
+
+        E \dot{x}(t) &= A_0 x(t - h_{A,0}) + ... + A_{n} x(t - h_{A,n}) + 
+                    + B_0 u(t - h_{B,0}) + ... + B_{m} u(t - h_{B,m})
+            
+                y(t)  &= C_0 x(t - h_{C,0}) + ... + C_{p} x(t - h_{C,p}) + 
+                    + D_0 u(t - h_{D,0}) + ... + D_{q} u(t - h_{D,q})
+
     Concatenates the system into:
 
-        E*dx1dt = A*[:,:,0]*x2(t-hA*[0]) + ... + A*[:,:,n*] x2(t-hA*[n*])
+    .. math::
     
-    where:
-        x1 := [x^T y^T]^T
-        x2 := [x^T u^T]^T
+        E^* \dot{x}_1(t) = A_0^* x_2(t - h A_0^*) + \dotsb + A_{n^*}^* x_2(t - h A_{n^*}^*)
+    
+    with
+
+    :math:`x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix}`, :math:`x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}`, 
+    :math:`hA^* = [hA \quad hB \quad hC \quad hD]`, and :math:`n^* = n+m+p+q`.
+    
+    .. math::
+    
+        x_1 := \\begin{bmatrix} x \\\\ y \\end{bmatrix},
+        \quad
+        x_2 := \\begin{bmatrix} x \\\\ u \\end{bmatrix}
+
     and therefore:
-        hA* = [hA, hB, hC, hD]
-        n* = n+m+p+q
-    left hand-side matrix:
-        E* = [E, 0]
-             [0, 0]
-    right hand-side array:
-        A*[:,:,:n] = [A, 0]  
-                     [0, 0]
-        A*[:,:,n:n+m] = [0, B]  
-                        [0, 0]
-        A*[:,:,n+m:n+m+p] = [0, 0]  
-                            [C, 0]
-        A*[:,:,n+m+p:] = [0, 0]
-                         [0, D]
 
-    Args:
-        E (array): RHS matrix
-        A (array): left hand side matrices of DDAE, assumed non-empty
-        B (array): 3D array of representing input matrices
-        C (array): 3D array of
-        D (array): left hand side matrices of DDAE, assumed non-empty
-        hA (array): vector of delays associated with array A
-        hB (array): vector of delays associated with array B
-        hC (array): vector of delays associated with array C
-        hD (array): vector of delays associated with array D
-        
+    .. math::
     
-    Returns:
-        tuple containing:
+        h_A^* = [hA \quad hB \quad hC \quad hD],
+        \quad
+        n^* = n+m+p+q
 
-            - EE (array): 2d array of concatenated LHS
-            - AA (array): 3d array of concatenated RHS
-            - hAA (array): 1d vector of concatenated delays associated with RHS
+    with the new
+    left-hand side matrix:
+
+    .. math::
+
+        E^* := \\begin{bmatrix} E & 0 \\\\ 0 & 0\\end{bmatrix}
+
+    right-hand side array:
+    
+    :math:`A^*\{:,:, :n\} := \\begin{bmatrix} A & 0 \\\\ 0 & 0\\end{bmatrix}`,
+    :math:`A^*\{:,:, n:n+m\} := \\begin{bmatrix} 0 & B \\\\ 0 & 0\\end{bmatrix}`,
+    :math:`A^*\{:,:, n+m:n+m+p\} := \\begin{bmatrix} 0 & 0 \\\\ C & 0\\end{bmatrix}`,
+    :math:`A^*\{:,:, n+m+p:\} = \\begin{bmatrix} 0 & 0 \\\\ 0 & D \\end{bmatrix}`.
+                         
+    - Assumes all input arrays are non-empty
+    - If EE, AA, hAA are provided, they are updated in place and returned
+    - If EE, AA, hAA are not provided, they are created and returned
+    - The resulting system is in the form suitable for creating ClosedLoop object
+
+    Examples
+    ---------
+    >>> import numpy as np
+    >>> from tdspy.common.composition import concatenate_2x2_by_delays
+    >>> E = np.array([[1, 0], [0, 0]])
+    >>> A = np.array([[[0, -1], [1, 0]], [[0, 0], [0, 0]]])
+    >>> B = np.array([[[0], [1]], [[0], [0]]])
+    >>> C = np.array([[[1, 0]], [[0, 0]]])
+    >>> D = np.array([[[0]], [[1]]])
+    >>> hA = np.array([0., 1.])
+    >>> hB = np.array([0.])
+    >>> hC = np.array([0.,0.])
+    >>> hD = np.array([0.])
+    >>> EE, AA, hAA = concatenate_2x2_by_delays(E, A, B, C, D, hA, hB, hC, hD)
+    >>> EE
+    array([[1, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
+    >>> AA[:,:,0]
+    array([[0, 1, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
+    >>> AA[:,:,1]
+    array([[-1,  0,  0,  0],
+           [ 0,  0,  0,  0],
+           [ 0,  0,  0,  0],
+           [ 0,  0,  0,  0]])
+    >>> AA[:,:,2]
+    array([[0, 0, 0, 1],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0],
+           [0, 0, 0, 0]])
+    >>> hAA
+    array([0., 1., 0., 0., 0., 0.])
+
     """
     # TODO perform necessary checks
+    assert A.ndim == 3 and B.ndim == 3 and C.ndim == 3 and D.ndim == 3, "A, B, C, D must be 3D arrays!"
+    assert E.ndim == 2, "E must be a 2D array!"
+    assert hA.ndim == 1 and hB.ndim == 1 and hC.ndim == 1 and hD.ndim == 1, "Delay vectors must be 1D!"
+    assert A.shape[2] == hA.shape[0], "Inconsistent shape between A and hA!"
+    assert B.shape[2] == hB.shape[0], "Inconsistent shape between B and hB!"
+    assert C.shape[2] == hC.shape[0], "Inconsistent shape between C and hC!"
+    assert D.shape[2] == hD.shape[0], "Inconsistent shape between D and hD!"
 
     # non emtpy assumption
 
@@ -98,3 +193,11 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
 
 def interconnect():
     pass
+
+
+if __name__ == "__main__":
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import doctest
+    doctest.testmod()

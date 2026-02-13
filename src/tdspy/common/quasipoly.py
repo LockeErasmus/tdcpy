@@ -1,5 +1,12 @@
 """
 Set of functions for necessary quasipolynomial manipulation
+-----------------------------------------------------------
+
+Implemented functions:
+
+1. `compress_qp`: converts a quasipolynomial to minimal form
+2. `qp_to_ndde`: returns an ndde represented by `(H,hH,A,hA)` given a quasipolynomial of the representation (coeffs,delays)
+
 """
 
 import numpy as np
@@ -21,24 +28,66 @@ def compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol:
     vector of delays `delays` of shape (m), where the resulting quasipolynomial
     is defined as:
 
-                 m-1                    n
-        QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
-                 i=0                   j=0
+    ..  math::
     
-    Args:
-        coefs (array): matrix definition of polynomial coefficients (each row
-            represents polynomial coefficients corresponding to delay)
-        delays (array): vector definition of associated delays (each delay
-            corresponds to row in `coefs`)
-        atol (float): absolute tolerance for determining if coefficient is
-            sufficiently close to zero, default None, see numpy.isclose
-        rtol (float): relative tolerance for determining if coefficient is
-            sufficiently close to zero, default None, see numpy.isclose
+        QP(s) =  \\sum\\limits_{i=0}^{m-1} exp(-delays[i]*s) \\sum\\limits_{j=0}^{n} coefs[i,j] * s^j
+    
+    Parameters
+    ----------
+    coeffs: array
+        matrix definition of polynomial coefficients (each row
+        represents polynomial coefficients corresponding to delay)
+    delays: array
+        vector definition of associated delays (each delay
+        corresponds to row in `coefs`)
+    atol: float, optional
+        absolute tolerance for determining if coefficient is
+        sufficiently close to zero, default None, see numpy.isclose
+    rtol: float, optional
+        relative tolerance for determining if coefficient is
+        sufficiently close to zero, default None, see numpy.isclose
+                 
+    Returns
+    -------
+    tuple
+        A tuple containing
 
-    Returns:
-        tuple containing
-            - new_coefs (array): matrix definition of polynomial coefficients
-            - new_delays (array): vector definition of associated delays
+        new_coefs : array
+            matrix definition of polynomial coefficients
+        new_delays : array
+            vector definition of associated delays
+  
+    Notes
+    -----
+    1. if all coefficients are close to zero, returns empty arrays
+    2. if coefs is empty, returns coefs and delays unchanged
+    3. if delays is empty, returns coefs and delays unchanged
+    4. if coefs and delays have inconsistent shapes, raises ValueError
+    5. if rtol or atol are negative, raises ValueError
+    6. if coefs is not 2D array, raises ValueError
+    7. if delays is not 1D array, raises ValueError
+    8. if coefs.shape[0] != delays.shape[0], raises ValueError
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.quasipoly import compress_qp
+    >>> coefs = np.array([[0.0, 1.0], [0.0, 2.0], [0.0, 0.0]])
+    >>> delays = np.array([0.0, 1.0, 2.0])
+    >>> new_coefs, new_delays = compress_qp(coefs, delays)
+    >>> new_coefs
+    array([[0., 1.],
+           [0., 2.]])
+    >>> new_delays
+    array([0., 1.])
+    >>> coefs = np.array([[0.0, 0.0], [0.0, 0.0]])
+    >>> delays = np.array([0.0, 1.0])
+    >>> new_coefs, new_delays = compress_qp(coefs, delays)
+    >>> new_coefs
+    array([], shape=(0, 2), dtype=float64)
+    >>> new_delays
+    array([], dtype=float64)
+        
     """
     # TODO perform necessary checks ?
     new_delays = np.unique(delays) # sorted 1D array of unique delays
@@ -72,37 +121,88 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
 
     Converts quasipolynomial defined via `coefs` and `delays`
 
-                 m-1                    n
-        QP(s) =  SUM exp(-delays[i]*s) SUM coefs[i,j] * s**j
-                 i=0                   j=0
+    ..  math::
+
+        QP(s) =  \\sum\\limits_{i=0}^{m-1} exp(-delays[i]*s) \\sum\\limits_{j=0}^{n} coefs[i,j] * s^j
 
     into NDDE represented via arrays A, hA, H, hH
 
-        dxdt(t) = A[:,:,0]*x(t - hA[0]) + ... + A[mA]*x(t - hA[mA])
-            - H[:,:,0] * dxdt(t - hH[0]) - ... - H[:,:,mH] * dxdt(t - hH[mH])
+    .. math::
+
+        \dot{x}(t) = A_0*x(t - hA_0) + ... + A_{mA}*x(t - hA_{mA})
+            - H_0* \dot{x}(t - hH_0) - ... - H_{mH}* \dot{x}(t - hH_{mH})
 
     with mA number of delays associated with A and mH number of delays
     associated with H.
 
-    Args:
-        coefs (array): matrix definition of polynomial coefficients (each row
+    Parameters
+    ----------
+        coeffs : array
+            matrix definition of polynomial coefficients (each row
             represents polynomial coefficients corresponding to delay)
-        delays (array): vector definition of associated delays (each delay
+        delays : array
+            vector definition of associated delays (each delay
             corresponds to row in `coefs`)
-        ascending (bool): ordering of powers of s in each row, default ascending
-            meaning that coefs[i,j] is associated to ith polynomial and jth
-            power of s, setting this to False will default to original MATLAB
-            behaviour, where coefs[i,j] is associated to ith polynomial and
-            (n-j)th power of s
+        ascending : bool, optional
+            ordering of powers of s in each row, default ascending meaning that coefs[i,j]
+            is associated to ith polynomial and jth power of s, setting this to False will default to original MATLAB
+            behaviour, where coefs[i,j] is associated to ith polynomial and (n-j)th power of s
     
-    Returns:
-        tuple containing
-            - A (array): matrices defining delay differential equation, with
-                shape (n,n,mA)
-            - hA (array): vector of delays associated with A
-            - H (array): matrices defining delay difference equation, with
-                shape (n,n,mH)
-            - hH (array): vector of delays associated with H
+    Returns
+    -------
+    tuple
+        A tuple containing
+
+        A : array
+            matrices defining delay differential equation, with
+            shape (n,n,mA)
+        hA : array
+            vector of delays associated with A
+        H : array
+            matrices defining delay difference equation, with
+            shape (n,n,mH)
+        hH : array
+            vector of delays associated with H
+
+    Notes
+    -----
+    1. if all coefficients are close to zero, returns empty arrays
+    2. if coefs is empty, returns empty arrays
+    3. if delays is empty, returns empty arrays
+    4. if coefs and delays have inconsistent shapes, raises ValueError
+    5. if system is of advanced type (delay[0] != 0.0 or coefs[0,-1] == 0.0), raises ValueError
+    
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.common.quasipoly import qp_to_ndde
+    >>> coefs = np.array([[1.0, 0.0], [0.0, 2.0]])
+    >>> delays = np.array([0.0, 1.0])
+    >>> A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=False)
+    >>> A
+    array([[[-2.]]])
+    >>> hA
+    array([1.])
+    >>> H
+    array([], shape=(1, 1, 0), dtype=float64)
+    >>> hH
+    array([], dtype=float64)
+    >>> coefs = np.array([[0.0, 1.0], [0.0, 2.0], [0.0, 3.0]])
+    >>> delays = np.array([0.0, 1.0, 2.0])
+    >>> A, hA, H, hH = qp_to_ndde(coefs, delays)
+    >>> A
+    array([[[-0., -0.]]])
+    >>> A.shape
+    (1, 1, 2)
+    >>> hA
+    array([1., 2.])
+    >>> H
+    array([[[2., 3.]]])
+    >>> H.shape
+    (1, 1, 2)
+    >>> hH
+    array([1., 2.])
+
     """
     if not ascending: # MATLAB like definition of s-powers coefficient
         coefs = coefs[:,::-1] # coefs of powers of s are in ascending order now
@@ -121,6 +221,7 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
 
     if delays[0] != 0.0 or coefs[0,-1] == 0.0:
         raise ValueError("System can not be of advanced type!")
+    
     # Normalize the coefficients
     coefs = coefs / coefs[0, -1]
 
@@ -143,11 +244,15 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
     if np.any(coefs[1:, -1]): # returns False if all 0.0 or empty
         # non-empty and at least one non-zero coeficient -> neutral system
         hH = np.copy(delays)
-        hH = np.zeros(shape=(n,n,m), dtype=np.float64) # TODO dtype?
-        hH[-1, -1, :] = coefs[1:-1]
-        # last step, filter out matrices which are zero -> in this case, simly
-        mask = hH[-1, -1, :] == 0.0
+        H = np.zeros(shape=(n,n,m), dtype=np.float64) # TODO dtype?
+        H[-1, -1, 1:] = coefs[1:,-1]
+        # last step, filter out matrices which are zero -> in this case, simply
+        mask = H[-1, -1, :] == 0.0
         hH = hH[~mask]
         H = H[:,:,~mask]
 
     return A, hA, H, hH
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

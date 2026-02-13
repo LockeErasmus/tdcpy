@@ -11,6 +11,7 @@ from scipy import linalg
 from .rdde import RDDE
 from .ddae import DDAE
 from .ndde import NDDE
+from .utils import validate_rectangular_region
 from .common.compress import compress_matrices_delays
 from .stability.characteristic_roots import roots_ddae, RootsInfo
 
@@ -26,18 +27,18 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
             region via 4 coordinates [Re_min, Re_max, Im_min, Im_max], default r=0.0
         kwargs:
             discretization (int): discretization for discretizing DDAE into DAE,
-                optional, default None, if not specified, heuristic will be used
-                to obtain sufficient discretization
+                optional, default None, if not specified, heuristic from [1]
+                will be used to obtain sufficient discretization
             max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)
                 optional, default 600
-            basic_delay (float): base delay in case delays are commensurate,
+            base_delay (float): base delay in case delays are commensurate,
                 optional, default None, used in discretization heuristic
     
     Returns:
         tuple containing
 
             - cr (array): vector of obtained roots
-            - roots_info (RootsInfo): RMR metadata containing:
+            - roots_info (RootsInfo): Roots metadata containing:
                 discretization (int): discretization used for obtaining EVP
                 gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
                 index_exceeds_one (bool): flag that index exceeds one
@@ -50,23 +51,23 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
                 newton_unconverged_initial_guesses (array): mask of unconverged
                     newton initial guesses
                 newton_large_corrections (array): mask of "large" corrections
+    
+    References:
+
+    [1] Wu, Z. and Michiels, W. (2012). Reliably computing all
+        characteristic roots of delay differential equations in a given
+        right half plane using a  spectral method. Journal of
+        Computational and Applied Mathematics, 236(9), pp. 2499-2514.
+    [2] Michiels, W. (2011). Spectrum-based stability analysis and 
+        stabilisation of systems described by delay differential 
+        algebraic equations. IET control theory & applications, 5(16), 
+        pp. 1829-1842. 
+
     """
-    # kwargs TODO
-
-
-    # checks for region definition
     if isinstance(r, (int, float)):
-        # all OK
-        case = "rhp"
-    elif isinstance (r, list):
-        assert len(r) == 4, "region has to be defined in form [a,b,c,d]"
-        assert r[0] < r[1] and r[2] < r[3], "region has to be defined as [a,b,c,d], a<b, c<d"
-        assert np.all(~np.isinf(r)), "region has to be finite rectangle"
-        case = "rect"
-    else:
-        raise ValueError(("Region (argument `r`) has to be defined as number, "
-                          "example `r=-5.1` or rectangular region, example "
-                          "`[-5, 10.5, 0, 100]`."))
+        pass # valid definition of RHP
+    else: # assume rectangular region -> validate
+        r = validate_rectangular_region(r) # raises error if not valid rectangular region
     
     # type of TDS, RDDE and DDAE -> OK, NDDE -> convert to DDAE
     if isinstance(tds, NDDE):
@@ -85,11 +86,8 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
     else:
         hA = tds.hA
         A = tds.A
-    
-    # compress representation (this also sorts by delays ascending order)
-    A, hA = compress_matrices_delays(A, hA)
-    
+        
     # find all roots via discretization
-    cr, cr_info = roots_ddae(E, A, hA, r, **kwargs)
+    cr, cr_info = roots_ddae(E, A, hA, r=r, **kwargs)
 
     return cr, cr_info

@@ -4,5 +4,5 @@ except ImportError as e:
     print("Please install suitable version of matplotlib.")
     raise e
 
-from .eigenvalues import eigen_plot
+from .eigenvalues import eigen_plot, complex_scatter_axplot
 from .discretization_animation import discretization_animation

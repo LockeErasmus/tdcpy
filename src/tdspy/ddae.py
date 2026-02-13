@@ -1,8 +1,7 @@
 """
 DDAE implementation
 
-
-TODO:
+.. todo::
     1. `E` should not have default None value and should be first arg?
     1. lot of checking is duplicated code, maybe function(s)? but then we lose
         flexibility, as sometimes you need to add special check ...
@@ -22,76 +21,158 @@ logger = logging.getLogger(__name__)
 
 
 class DDAE(TDSBase):
-    """
+    """ Delay Differential-Algebraic Equation (DDAE)
+
+    .. math::
+
+        E \dot{x}(t) = \sum_{k=1}^{m_A} A_k x(t - h_{A,k}) 
+            + \sum_{k=1}^{m_B} B_k u(t - h_{B,k})
+    
+    .. math::
+        
+        y(t) = \sum_{k=1}^{m_C} C_k x(t - h_{C,k}) +
+            \sum_{k=1}^{m_D} D_k u(t - h_{D,k})
+
+    where :math:`x(t) \in \mathbb{R}^n` is the state vector, 
+    :math:`u(t) \in \mathbb{R}^p` the input vector, and 
+    :math:`y(t) \in \mathbb{R}^q` the output vector.
+
+    Parameters
+    ----------
+    A : npt.NDArray
+        3D array of shape (n, n, mA) containing system matrices A_k
+    hA : npt.NDArray
+        1D array of shape (mA,) containing system delays h_{A,k}
+    E : npt.NDArray, optional
+        2D array of shape (n, n) containing descriptor matrix E,
+        by default None, which is equivalent to identity matrix
+    B : npt.NDArray, optional
+        3D array of shape (n, p, mB) containing input matrices B_k,
+        by default None
+    hB : npt.NDArray, optional
+        1D array of shape (mB,) containing input delays h_{B,k},
+        by default None
+    C : npt.NDArray, optional
+        3D array of shape (q, n, mC) containing output matrices C_k,
+        by default None
+    hC : npt.NDArray, optional
+        1D array of shape (mC,) containing output delays h_{C,k},
+        by default None
+    D : npt.NDArray, optional
+        3D array of shape (q, p, mD) containing feed-through matrices D_k,
+        by default None
+    hD : npt.NDArray, optional
+        1D array of shape (mD,) containing feed-through delays h_{D,k},
+        by default None
+    **kwargs: additional arguments
+        tol_singular : float, optional
+            tolerance for considering matrix singular in null space computations,
+            by default 1e-12
+    
+    Returns
+    -------
+    DDAE
+        DDAE object
+
+    Notes
+    -----
+    The DDAE class represents a linear time-invariant delay differential-algebraic
+    equation (DDAE) of the form described above. 
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from tdspy.ddae import DDAE
+    >>> A = np.array([[[1, 0], [0, 1]], [[0, 0], [0, 0]]], dtype=float).transpose((1,2,0))
+    >>> hA = np.array([0.0, 1.0], dtype=float)
+    >>> E = np.array([[1, 0], [0, 1]], dtype=float)
+    >>> B = np.array([[[1], [0]], [[0], [1]]], dtype=float).transpose((1,2,0))
+    >>> hB = np.array([0.0], dtype=float)
+    >>> C = np.array([[[1, 0]], [[0, 1]]], dtype=float).transpose((1,2,0))
+    >>> hC = np.array([0.0], dtype=float)
+    >>> D = np.array([[[0]], [[0]]], dtype=float).transpose((1,2,0))
+    >>> hD = np.array([0.0], dtype=float)
+    >>> ddae = DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    >>> ddae.n
+    2
+    >>> ddae.n_inputs
+    
     """
 
-    def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None, uE: npt.NDArray=None, vE: npt.NDArray=None,
+    def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None,
                  B: npt.NDArray=None, hB: npt.NDArray=None, C: npt.NDArray=None, hC: npt.NDArray=None, 
                  D: npt.NDArray=None, hD: npt.NDArray=None, **kwargs) -> None:
-        """
+        A, hA = self._prepare_system_descriptor_matrix_vector(A, hA, allow_empty=True,
+                                                              allow_negative_delays=False,
+                                                              allow_complex=False,
+                                                              add_zero_delay=True,
+                                                              sort_by_delays=True,
+                                                              dtype=kwargs.get("dtype", np.float64))
         
-        Args:
-
-        
-            **kwargs:
-                dtype (): default np.float64
-                tol_singular (float): considering value singular, default 1e-12
-
-        
-        """
-        # A, hA
-        assert isinstance(A, np.ndarray) and isinstance(hA, np.ndarray), "both ndarrays"
-        assert A.ndim == 3 and hA.ndim == 1, "dimensions check 1"
-        assert A.shape[2] == hA.shape[0], "number of delays  hA does not match number of matrices Ai"
-        assert np.all(hA >= 0.0), "only non-negative delays possible"
-        if not np.any(hA == 0): # if necessary, add 0 delay term
-            hA = np.r_[0.0, hA]
-            A = np.concatenate([np.zeros((A.shape[0],A.shape[1], 1), dtype=A.dtype), A], axis=2)
-        
-        # E, uE, vE
         if E is not None:
-            assert isinstance(E, np.ndarray)
-            assert E.ndim == 2
-            assert E.shape[0] == A.shape[0] and E.shape[1] == A.shape[1], f"{E.shape=}, {A.shape=}"
+            if not isinstance(E, np.ndarray):
+                raise TypeError("E has to be ndarray")
+            if E.ndim != 2:
+                raise ValueError("E has to be 2D array")
+            if E.shape[0] != A.shape[0] or E.shape[1] != A.shape[1]:
+                raise ValueError("E shape does not match A shape")
+        
+        # for some legacy reasons, we allow uE, vE to be set directly
+        # but we need to check their validity
+        uE = kwargs.get("uE", None)
+        vE = kwargs.get("vE", None)
         if uE is not None:
-            assert isinstance(uE, np.ndarray)
-            if uE.size > 0:
-                assert uE.ndim == 2, "ndim of nullspace has to be 2"
-                assert uE.shape[0] == A.shape[0], "uE^T @ Ai has to be possible (dimensions has to match)"
+            if not isinstance(uE, np.ndarray):
+                raise TypeError("uE has to be ndarray")
+            if uE.ndim != 2:
+                raise ValueError("uE has to be 2D array")
+            if uE.shape[0] != A.shape[0]:
+                raise ValueError("uE shape does not match A shape")
         if vE is not None:
-            assert isinstance(vE, np.ndarray)
-            if vE.size > 0:
-                assert vE.ndim == 2, "ndim of nullspace has to be 2"
-                assert vE.shape[0] == A.shape[1], "Ai @ vE has to be possible (dimensions has to match)"
-
-        # I/O matrices
-        # TODO: tests are (somewhat) repeating, consider function?
+            if not isinstance(vE, np.ndarray):
+                raise TypeError("vE has to be ndarray")
+            if vE.ndim != 2:
+                raise ValueError("vE has to be 2D array")
+            if vE.shape[0] != A.shape[1]:
+                raise ValueError("vE shape does not match A shape")
+            
+        # Input/Output matrices
         if B is not None or hB is not None:
-            # input matrices are defined
-            assert isinstance(B, np.ndarray) and isinstance(hB, np.ndarray), "both ndarrays"
-            assert B.ndim == 3 and hB.ndim == 1, "dimensions check 1"
-            assert B.shape[0] == A.shape[0], "shapes of system does not match A-B matrices"
-            assert B.shape[2] == hB.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hB >= 0.0), "only non-negative delays possible"
+            B, hB = self._prepare_system_descriptor_matrix_vector(B, hB,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if B.shape[0] != A.shape[0]:
+                raise ValueError("B shape does not match A shape")
         
         if C is not None or hC is not None:
-            # output matrices are defined
-            assert isinstance(C, np.ndarray) and isinstance(hC, np.ndarray), "both ndarrays"
-            assert C.ndim == 3 and hC.ndim == 1, "dimensions check 1"
-            assert C.shape[1] == A.shape[1], "shapes of system does not match A-C matrices "
-            assert C.shape[2] == hC.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hC >= 0.0), "only non-negative delays possible"
+            C, hC = self._prepare_system_descriptor_matrix_vector(C, hC,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if C.shape[1] != A.shape[1]:
+                raise ValueError("C shape does not match A shape")
         
         if D is not None or hD is not None:
-            # feed-through matrices are defined
-            assert isinstance(C, np.ndarray), "C, hC needs to be defined to define D, hD"
-            assert isinstance(D, np.ndarray) and isinstance(hD, np.ndarray), "both ndarrays"
-            assert D.ndim == 3 and hD.ndim == 1, "dimensions check 1"
-            assert D.shape[0] == C.shape[0], "shapes of system does not match C-D matrices "
-            assert D.shape[2] == hD.shape[0], "number of delays hB does not match number of matrices Bi"
-            assert np.all(hD >= 0.0), "only non-negative delays possible"
+            if C is None or hC is None:
+                raise ValueError("C, hC needs to be defined to define D, hD")
+            D, hD = self._prepare_system_descriptor_matrix_vector(D, hD,
+                                                                  allow_empty=True,
+                                                                  allow_negative_delays=False,
+                                                                  allow_complex=False,
+                                                                  add_zero_delay=False,
+                                                                  sort_by_delays=True,
+                                                                  dtype=kwargs.get("dtype", np.float64))
+            if D.shape[0] != C.shape[0]:
+                raise ValueError("D shape does not match C shape")        
         
-        # --- ARGS ---
+        # set all matrices and delays as class attributes
         self._E = E
         self._uE = uE
         self._vE = vE
@@ -103,12 +184,18 @@ class DDAE(TDSBase):
         self._hC = hC
         self._D = D
         self._hD = hD
-        
-        # TODO checks when for example A, B, C defined and D is not        
 
-        # --- KWARGS ---
+        # solve other kwargs
         self.dtype = kwargs.get("dtype", np.float64)
-        self.tol_singular = kwargs.get("tol_singular", 1e-12)
+
+        if kwargs.get("tol_singular", None) is not None:
+            # set new tolerance for considering matrix singular
+            if not isinstance(kwargs["tol_singular"], float):
+                raise TypeError("tol_singular has to be float")
+            if kwargs["tol_singular"] <= 0:
+                raise ValueError("tol_singular has to be positive")
+            
+            self.tol_singular = kwargs.get("tol_singular", 1e-12)
 
     @property
     def n(self) -> int:
@@ -263,16 +350,19 @@ class DDAE(TDSBase):
     
     @property
     def is_normalized_delay_difference_equation(self) -> bool:
-        """ Checks if DDAE is a normalized delay difference equation
+        """Check if DDAE is a normalized delay difference equation.
         
-        This condition is defined as fullfilling
-            (a) DDAE is not logical
-            (b) E == 0
-            (c) A[0] == I
-        with `np.allclose` absolute tolerance 1e-12.
+        A DDAE is normalized if it satisfies all of the following conditions:
+        
+        - DDAE is not logical
+        - E == 0
+        - A[0] == I
+        
+        Tolerances used for comparisons are absolute tolerance of 1e-12.
         """
         flag = (not self.is_logical and np.allclose(self.E, 0, atol=1e-12)
                 and np.allclose(self.A[:,:,0], np.eye(self.n), atol=1e-12))
+        
         return flag
     
     @property
@@ -306,23 +396,35 @@ class DDAE(TDSBase):
         return not self.is_essentially_retarded
    
     def get_delay_difference_equation(self, **kwargs) -> 'DDAE':
-        """ Converts to Delay-difference Equation 
-
-        For a DDAE, the associated delay difference equation is given by
-            U'*A[0]*V x(t-hA[0]) + ... + U'*A[mA-1]*V x(t-hA[mA-1]) = 0
-        with U and V orthogonal matrices whose columns form a basis for the null
-        space of E.
+        """ Creates Delay-Difference Equation from DDAE
         
-        kwargs:
-            tol: norm tolerance for considering matrix vanish, default 1e-14
-            rcond (float): relative condition number. Singular values s smaller
-                than rcond * max(s) are considered zero in null space
-                construction, default 1e-12
+        For a DDAE, the associated delay difference equation is given by:
+        add equation
+        where U and V are orthogonal matrices whose columns form a basis for the null
+        add equation
         
-        Returns:
-            DDAE representing delay difference equation if E is singular
-            None if E is non-singular (there is no delay difference equation)
-
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments.
+            
+            tol : float, optional
+                Norm tolerance for considering matrix vanish. Default is 1e-14.
+            rcond : float, optional
+                Relative condition number. Singular values s smaller than 
+                rcond * max(s) are considered zero in null space construction. 
+                Default is 1e-12.
+        
+        Returns
+        -------
+        DDAE or None
+            DDAE representing delay difference equation or
+            None if E is non-singular (there is no delay difference equation).
+        
+        Raises
+        ------
+        ValueError
+            If the DDAE is logical. (not supported as of now, but is ready for future)
         """
         if self.is_logical:
             raise ValueError(f"Can't form delay difference equation from logical DDAE")
@@ -330,10 +432,12 @@ class DDAE(TDSBase):
         D, hD = ddae_to_diff(self.E, self.A, self.hA, **kwargs)
 
         if np.size(D) == 0:
-            # E is singular -> empty delay difference equation
-            return None # TODO - not good implementation
+            # E is singular or close to being singular, this means that
+            # DDAE is most likely essentialy retarded and we should return
+            # empty delay difference equation. TODO: None is not great here
+            return None
         
-        nE = D.shape[1] # TODO --- what if D.shape[1] == 0 ? can it happen?
+        nE = D.shape[1] # TODO - what if D.shape[1] == 0 ? can it happen?
         dtype = self.E.dtype
         diff = DDAE(A=D, hA=hD, E=np.zeros(shape=(nE,nE), dtype=dtype),
                     uE=np.eye(nE, dtype=dtype), vE=np.eye(nE, dtype=dtype))
