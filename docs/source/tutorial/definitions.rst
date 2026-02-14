@@ -4,8 +4,6 @@ Creating TDS Objects
 .. contents:: Contents
    :local:
 
-Definition
-------------------------------
 
 A time-delay system (TDS) is a dynamical system in which the evolution of the state depends not only on its current state but also on its past states.
 Such systems are commonly modeled using delay-differential equations (DDEs) which are differential equations that include terms with delays.

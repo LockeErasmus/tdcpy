@@ -7,22 +7,18 @@ Introduction
 
 .. As of now, I will put testing stuff here:
 
-``TDSPy`` is a Python package that provides tools for the analysis and control of time-delay systems (TDS).
-The software is designed mainly for Python users wishing to perform spectral analysis and design controllers for time-delay systems.
-Users already familiar with ``TDS-Control`` will find the basic functionality similar to the MATLAB toolbox.
-``TDSpy`` however utilizes additional Python libraries, mainly ``NumPy`` for arrays and array operations, ``Scipy`` for scientific computations and ``Matplotlib`` for plotting.
 
-This tutorial will guide users through the important features of ``TDSpy`` and will illustrate how to use them.
+This user-guide will guide users through the important features of ``TDSpy`` and will illustrate how to use them. 
 For more detailed information on the individual functions and classes, please refer to the :doc:`../reference/api_reference` section of the
 ``TDSpy`` manual and in the references listed at the end of this document.      
-For the related theory on the topic, we refer :cite:`michielsStability2007` and the ``TDS-Control`` manual :cite:`appeltans2023analysis`.
+The related theory on the topic, can be found in :cite:`michielsStability2007` and the ``TDS-Control`` manual :cite:`appeltans2023analysis`.
 
 
 Getting Started
 ---------------
 
 The most basic data structure utilized within ``TDSpy`` is the `NumPy <https://numpy.org/>`_ array. At the beginning of every script,
-the user is required to import the ``NumPy`` and ``TDSpy`` packages as follows:
+it is required to import the ``NumPy`` and ``TDSpy`` packages as follows:
 
 .. code-block:: python
 
@@ -72,9 +68,9 @@ High-level API vs Low-level API
 --------------------------------
 
 ``TDSpy`` functions can be called using the low-level API or the high-level API. 
-The high-level API is most often sufficient for users wanting to work directly with high-level functionalities such as spectral analysis and stabilization.
-Internally, the high-level API makes use of the low-level API to perform the necessary computations.
-For users wanting to gain a deeper insight in the workings of the software, or wanting to include the basic functions 
+The high-level API is most often sufficient for users wanting to work directly with high-level functions, for example, root computation or controller design.
+Internally, the high-level API wraps the low-level API around high-level functions to provide a simplified interface for users.
+Nevertheless, for users intending to gain a deeper insight in the workings of the software, or wanting to include the basic functions 
 into their own code, for example in optimization routines, users can directly access the low-level API, which provides the necessary building blocks.
 
 For example, for computing the characteristic roots of a time-delay system, the below code snippet uses the **high-level** function :func:`tdspy.roots`, to provide a similar 

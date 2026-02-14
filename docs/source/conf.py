@@ -42,6 +42,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx_gallery.gen_gallery',  # This is for examples
     "sphinxcontrib.bibtex",        # LaTeX like citations
+    'sphinx_gallery.gen_gallery',
+    'sphinx_design',  # 
 ]
 
 intersphinx_mapping = {

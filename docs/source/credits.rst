@@ -2,7 +2,7 @@
 Credits
 =======
 
-This project was initiated and developed by Adam Peichl during the design of development of input shapers and delay-based controllers, which relies heavily on spectral methods for time-delay systems. 
+This project was initiated and developed by Adam Peichl for the purpose of designing input shapers and delay-based controllers, which rely on spectral methods for time-delay systems. 
 The software is based on the `TDS-CONTROL <https://gitlab.kuleuven.be/u0011378/tds-control>` (:cite:`appeltans2023analysis`) in Matlab , developed by Prof. Dr. ir. Wim Michiels and Dr. ir. Pieter Appeltans in 2023. 
 The initial motivation for creating ``TDSpy`` was to create a Python version of the toolbox intended for Python users or for those without access to MATLAB.
 The software is currently in its early stages of development, and we are actively working on adding new features and improving the existing ones. 

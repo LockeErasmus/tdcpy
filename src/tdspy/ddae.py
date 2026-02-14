@@ -86,17 +86,19 @@ class DDAE(TDSBase):
     >>> A = np.array([[[1, 0], [0, 1]], [[0, 0], [0, 0]]], dtype=float).transpose((1,2,0))
     >>> hA = np.array([0.0, 1.0], dtype=float)
     >>> E = np.array([[1, 0], [0, 1]], dtype=float)
-    >>> B = np.array([[[1], [0]], [[0], [1]]], dtype=float).transpose((1,2,0))
+    >>> B = np.array([[[1], [0]]], dtype=float).transpose((1,2,0))
     >>> hB = np.array([0.0], dtype=float)
-    >>> C = np.array([[[1, 0]], [[0, 1]]], dtype=float).transpose((1,2,0))
+    >>> C = np.array([[[1, 0], [0, 1]]], dtype=float).transpose((1,2,0))
     >>> hC = np.array([0.0], dtype=float)
-    >>> D = np.array([[[0]], [[0]]], dtype=float).transpose((1,2,0))
+    >>> D = np.array([[[0], [0]]], dtype=float).transpose((1,2,0))
     >>> hD = np.array([0.0], dtype=float)
     >>> ddae = DDAE(A=A, hA=hA, E=E, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     >>> ddae.n
     2
     >>> ddae.n_inputs
-    
+    1
+    >>> ddae.n_outputs
+    2
     """
 
     def __init__(self, A: npt.NDArray, hA: npt.NDArray, E: npt.NDArray=None,

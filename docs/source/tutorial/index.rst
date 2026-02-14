@@ -3,11 +3,15 @@ User Guide
 ==========
 
 .. Welcome to the user guide for **tdspy**!
-``TDSpy`` is a Python package for analysis and control of time-delay systems. 
-The software is based on the ``TDS-Control`` MATLAB toolbox, developed and published by Pieter Appeltans and Wim Michiels in KU Leuven.
-Like ``TDS-Control``, ``TDSpy`` provides tools for modeling of time-delay systems, supporting systems of retarded type,
+
+``TDSpy`` provides an interface for modeling LTI time-delay systems, supporting systems of retarded type,
 neutral type and delay descriptor systems. Next to modeling, ``TDSpy`` offers functionalities for spectral analysis, 
 and controller design.
+
+``TDSpy`` is based on the ``TDS-Control`` MATLAB toolbox, developed and published by Pieter Appeltans and Wim Michiels in KU Leuven :cite:`appeltans2023analysis`.
+Users already familiar with ``TDS-Control`` will find the basic functionality similar.
+``TDSpy`` additionally utilizes the Python libraries ``NumPy`` for arrays and array operations, ``Scipy`` for scientific computations and ``Matplotlib`` for plotting.
+The user is required to have some basic familiarity with these packages when using ``TDSpy``.
 
 
 Organization
@@ -41,13 +45,13 @@ Besides these subpackages, several high-level modules are provided for direct us
 Kindly refer to the individual sections for more details on each of these subpackages and modules.
 
 
-Quick-start Guide
------------------
+Quick-start
+-----------
 
 The following sections will guide you through the basic functionalities of ``TDSpy``.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    introduction
    definitions
