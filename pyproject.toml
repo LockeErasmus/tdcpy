@@ -1,28 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "tdspy"
-version = "0.0.1"
-requires-python = ">= 3.10"
-dependencies = [
-    "numpy",
+dynamic = [
+    "version",
+    "dependencies",
+    "optional-dependencies",
 ]
-description = "Time Delay Systems"
+requires-python = ">= 3.10"
+description = "Time Delay Systems Control Package"
 authors = [
-	{name = "Adam Peichl", email = "adpeichl@gmail.com"}
+	{name = "Adam Peichl", email = "adpeichl@gmail.com"},
+    {name = "Adrian Saldanha", email = "saldanha.adrian@gmail.com"},
 ]
 maintainers = [
-    { name ="Adam Peichl", email = "adpeichl@gmail.com" }
+    {name ="Adam Peichl", email = "adpeichl@gmail.com"},
+    {name = "Adrian Saldanha", email = "saldanha.adrian@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Typing :: Typed"
 ]
 
-# TODO add classifiers
-
-readme = {file = "README.txt", content-type = "text/markdown"}
-license = {file = "LICENSE"}
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 keywords = ["timedelay", "control", "stability", "DDE", "DDAE"]
 
-[project.urls]
-Homepage = "https://github.com/LockeErasmus/tdspy"
-Repository = "https://github.com/LockeErasmus/tdspy"
+[tool.setuptools.packages.find]
+where = ["./src"]
+include = ["tdspy*"]
 
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools.dynamic]
+version = {attr = "tdspy.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+docs = {file = ["docs/requirements.txt"]}
+
+[project.urls]
+Homepage = "https://github.com/lockeerasmus/tdspy"
+Documentation = "https://lockeerasmus.github.io/tdspy"
+Repository = "https://github.com/lockeerasmus/tdspy"
+Issues = "https://github.com/lockeerasmus/tdspy/issues"
+Changelog = "https://github.com/lockeerasmus/tdspy/releases"

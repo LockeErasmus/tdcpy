@@ -1,0 +1,15 @@
+include pyproject.toml
+include README.md
+include LICENSE
+
+recursive-include tests *.py
+
+prune docs
+prune notes
+prune examples
+
+prune .github
+prune .venv
+prune venv
+
+global-exclude *.py[cod] __pycache__ *.so

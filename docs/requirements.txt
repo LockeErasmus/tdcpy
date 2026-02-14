@@ -2,7 +2,4 @@ sphinx >= 7.0
 sphinx-autodoc-typehints
 sphinx-gallery
 sphinxcontrib-bibtex
-
-# themes - TODO chose one at the end
-sphinx-rtd-theme
 pydata-sphinx-theme
