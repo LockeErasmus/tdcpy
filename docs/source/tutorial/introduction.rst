@@ -7,9 +7,8 @@ Introduction
 
 .. As of now, I will put testing stuff here:
 
-``TDSPy`` a Python package that provides tools for the analysis and control of time-delay systems (TDS).
+``TDSPy`` is a Python package that provides tools for the analysis and control of time-delay systems (TDS).
 The software is designed mainly for Python users wishing to perform spectral analysis and design controllers for time-delay systems.
-The core routines are modelled around the ``TDS-Control`` MATLAB toolbox, developed and published by the team of Wim Michiels in KU Leuven.
 Users already familiar with ``TDS-Control`` will find the basic functionality similar to the MATLAB toolbox.
 ``TDSpy`` however utilizes additional Python libraries, mainly ``NumPy`` for arrays and array operations, ``Scipy`` for scientific computations and ``Matplotlib`` for plotting.
 
@@ -31,7 +30,7 @@ the user is required to import the ``NumPy`` and ``TDSpy`` packages as follows:
     import tdspy as tds
 
 
-The secondary package `SciPy <https://scipy.org/>`_ is used for advanced scientific computations, and can be imported as follows:
+The secondary package `SciPy <https://scipy.org/>`_ is used for scientific computations and optimization, and can be imported as follows:
 
 .. code-block:: python
 

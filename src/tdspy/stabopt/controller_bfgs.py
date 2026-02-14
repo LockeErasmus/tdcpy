@@ -198,7 +198,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
 
     callback = kwargs.get("callback", None)                                                     # callback function for optimization, default is None
     method = kwargs.get("method", "L-BFGS-B")                                                     # optimization method, default is L-BFGS-B
-    options = kwargs.get("options", {"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
+    options = kwargs.get("options", {"disp": True, "eps":0.001, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
 
     # verify existing controller mask, ny, nu, nc
     assert K0.shape[0]==nu+order, "dimension of input channels must match controller dimension"
@@ -214,14 +214,14 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     y_indices = kwargs.get("y_indices",np.arange(0,ny))                               # y_indices for closed-loop
     u_indices = kwargs.get("u_indices",np.arange(0,nu))                               # u_indices for closed-loop
     nc = kwargs.get("order",0)                                                             # nc
-    options = kwargs.get("options",{"nstart",1,"Ntheta",10,"w1",0.001,"w2",0.001,"fvalquit",-np.inf})   # get_options
+    options = kwargs.get("options",{"nstart",1,"Ntheta",10,"w1",0.1,"w2",0.001,"fvalquit",-np.inf})   # get_options
     # Ntheta: 
     # w1: acceptable region for gamma0, i.e., gamma0 < 1 - w1, default is 0.001
     # w2: weight for log-barrier term in the objective function, default is 0.001, meaning that we want to balance between minimizing spectral abscissa and ensuring feasibility (gamma0 < 1 - w1)
     # fvalquit: objective function value to quit optimization, default is -inf, meaning no early stopping based on objective function value
     # gn: target gamma for barrier optimization, default is 0.5
 
-    optmization_options = kwargs.get("options",{"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # get_options
+    optmization_options = kwargs.get("options",{"disp": True, "eps":0.001, "gtol": 1e-6, "ftol": 0, "maxls": 100})   # get_options
     
 
     #################################### Step 1: Initialization ######################################
@@ -318,9 +318,9 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                 # current controller parameters are infeasible
                 print(f"gamma0={gamma0} >= 1 at initial controller parameters. Finding a feasible point!")
                 # find a feasible point
-                x0 = find_feasible_point(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1})
+                feasible_sol = find_feasible_point(E, P, hP, K0, hK, B, C, options={"disp": True, "eps":0.1}, nstart=5, gamma0_threshold=0.5)
 
-                if x0 is None:
+                if feasible_sol is None:
                     print("Could not find a feasible point, trying minimize_CD instead.")
                     return None 
                 
@@ -332,68 +332,94 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
             w2 = options.get("w2", 0.001)
             w1 = options.get("w1", 0.001)
 
-            gamma0_args = (DP, hDP, Kmask, hK, BU, CV)
+            gamma0_args = (E, P, hP, Kmask, hK, B, C)
             sa_args = (E, P, hP, hK, Kmask, B, C)
 
-            log_points = np.logspace(-3,3,7)
+            log_points = np.logspace(0,-8,9)   # different values of w2 to try, default is [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
+            log_points = 6.5e-3 * (0.3 ** np.arange(10))   # 6.5e-3, 1.95e-3, 5.85e-4, ...
+            best = None
+            eps = 1e-8
+            results = []
 
             def obj_fn(x, gamma0_args, sa_args, options):
 
+                w1 = options.get("w1", 0.001)
+                w2 = options.get("w2", 0.001)
                 g0, grad_g0 = grad_gamma0(x, *gamma0_args)
                 sa, grad_sa = func_sa(x, *sa_args)         
-                f = sa - w2*np.log(1 - w1 - g0)
-                grad = grad_sa + w2*1/(1 - w1 - g0)*grad_g0
-                return f, grad
+                
+                f1 = sa
+                grad_f1 = grad_sa
+                
+                slack = 1 - w1 - g0
+                
+                if slack <= 1e-12 or (not np.isfinite(slack)):
+                    return np.inf, np.zeros_like(x)
+                    
+                
+                f2 = np.log(slack+eps)
+                grad_f2 = -grad_g0 / slack
+                
+                f = f1 - w2*f2
+                grad = grad_sa - w2*grad_f2
+
+                if (not np.isfinite(f)) or (not np.all(np.isfinite(grad))):
+                    return np.inf, np.zeros_like(x)
+
+                return (f, grad) 
+
+            x=x0
 
             for w2 in log_points:
                 print(f"Optimizing with w2={w2}...")
                 sol = optimize.minimize(
                     obj_fn,
-                    x0,
-                    args=(gamma0_args, sa_args, {"w1": w1, "w2": w2}),
+                    x0=x,
+                    args=(gamma0_args, sa_args,{"w1": w1, "w2": w2}),
                     jac=True,
                     method=method,
-                    options=optmization_options,
+                    options=options,
                     callback=None
                 )
 
-                logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={func_gamma(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
-                x0 = sol.x  # update initial point for next optimization with different w2
+                # logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={grad_gamma0(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
+                results.append((w2, sol.fun, sol.x))
+                x = sol.x  # warm start the next optimization with the current solution
 
             return sol
 
                        
+    return sol
+    # raise NotImplementedError("Only retarded systems are currently supported!")
 
-        pass
+    # def check_feasibility(diff):
+    #     """
+    #     function to check feasibility of the optimization variables
+    #     sub-function of stab_opt, returns a boolean
+    #     Difference Equation:
+    #     DD[:,:,0] + DD[:,:,1] x(t-hDD[1]) + ... + DD[:,:,]
+    #     Args:
+    #         diff: delay-difference equation
 
-    def check_feasibility(diff):
-        """
-        function to check feasibility of the optimization variables
-        sub-function of stab_opt, returns a boolean
-        Difference Equation:
-        DD[:,:,0] + DD[:,:,1] x(t-hDD[1]) + ... + DD[:,:,]
-        Args:
-            diff: delay-difference equation
+    #     """
+    #     zero_delay = diff.hA==0
+    #     A0 = diff.A[:,:,zero_delay]
+    #     hA0 = diff.A[:,:,zero_delay]
+    #     diff0 = ddae(diff.E,A0,hA0) 
 
-        """
-        zero_delay = diff.hA==0
-        A0 = diff.A[:,:,zero_delay]
-        hA0 = diff.A[:,:,zero_delay]
-        diff0 = ddae(diff.E,A0,hA0) 
-
-        # first make sure that CD is finite for initial optimization variables
-        # if gamma(inf)>1, then CD = inf and the grad cannot be computed
-        gInf, info = gamma_diff(diff0.A[:,:,1:], diff0.hA[1:], 0, correction=True, n_theta=10)
-        gInf0, ginfo = gamma_diff(A0,hA0,0)
-        cd = cd
-        if gInf0 >=1:
-            feasibility_flag = False
-            # raise ValueError("gammaInf > 1, objective function is infeasible for all possible optimization variables")
-        else:
-            # compute cd
-            feasibility_flag = True
-            gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
-            cd, cd_info = spectral_abscissa_diff(diff.A,diff.hA)
+    #     # first make sure that CD is finite for initial optimization variables
+    #     # if gamma(inf)>1, then CD = inf and the grad cannot be computed
+    #     gInf, info = gamma_diff(diff0.A[:,:,1:], diff0.hA[1:], 0, correction=True, n_theta=10)
+    #     gInf0, ginfo = gamma_diff(A0,hA0,0)
+    #     cd = cd
+    #     if gInf0 >=1:
+    #         feasibility_flag = False
+    #         # raise ValueError("gammaInf > 1, objective function is infeasible for all possible optimization variables")
+    #     else:
+    #         # compute cd
+    #         feasibility_flag = True
+    #         gammar, gamma_info = gamma_diff(diff.A,diff.hA,r,correction=True,n_theta=10)
+    #         cd, cd_info = spectral_abscissa_diff(diff.A,diff.hA)
 
 def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **kwargs):
     """
@@ -540,6 +566,5 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     if sol.fun >= gamma_threshold:
         print(f"Optimization did not find a feasible point, gamma0={sol.fun} >= {gamma_threshold} at optimal controller parameters.")
         return None
-    else:
-        return sol
-        return sol.x
+    
+    return sol

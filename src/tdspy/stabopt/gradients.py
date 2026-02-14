@@ -377,19 +377,22 @@ def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     >>> P = np.random.rand(3,3,2)
     >>> hP = np.array([0., 1.])
     >>> hK = np.array([0., 1.])
-    >>> Kmask = np.ones((3,3,2), dtype=bool)
-    >>> B = np.random.rand(3,3)
+    >>> Kmask = np.ones((1,3,2), dtype=bool)
+    >>> B = np.random.rand(3,1)
     >>> C = np.random.rand(3,3)
-    >>> fval, grad = grad_gamma0(x=np.random.rand(18), E=E, P=P, hP=hP, Kmask=Kmask, hK=hK, B=B, C=C)
+    >>> fval, grad = grad_gamma0(x=np.random.rand(6), E=E, P=P, hP=hP, Kmask=Kmask, hK=hK, B=B, C=C)
     >>> print(f"gamma0: {fval}, grad: {grad}")
-    gamma0: 1.23456789, grad: [0.1, 0.2, ..., 0.18]
+    gamma0: 95.72387379041314, grad: [37.77946154 37.77946154  6.93863878  6.93863878 20.07062041 20.07062041]
     >>> # test gradient
-    >>> grad_analtical, grad_numerical = gradient_test(grad_gamma0,x=np.random.rand(18),args=(E, P, hP, Kmask, hK, B, C))
+    >>> grad_analytical, grad_numerical = gradient_test(grad_gamma0,x=np.random.rand(6),args=(E, P, hP, Kmask, hK, B, C))
+    Gradient test passed norm=5.389855703635268e-11 < 1e-06
+
     """
     
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
     from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
+    from tdspy.stability.bounds import lower_bound, upper_bound
     from scipy import linalg, optimize
 
     # unpack arguments
@@ -446,7 +449,7 @@ def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     vector = np.conj(s) * np.exp( 1j * th[m-1:] ) # shape (mH,)
     array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
 
-    grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
+    grad = (1. / max(np.abs(s),1e-12)) * np.real(array) / np.real(np.conj(u).T @ v)
 
     # mask gradients
     grad_masked = np.where(Kmask, grad, 0)
@@ -466,11 +469,11 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
 
     Returns:
 
-        tuple containing:
-            - fgrad : npt.NDArray
-                analytical gradient
-            - fgrad_num : npt.NDArray
-                numerical gradient
+    tuple containing:
+        - fgrad : npt.NDArray
+            analytical gradient
+        - fgrad_num : npt.NDArray
+            numerical gradient
 
     Notes
     -----

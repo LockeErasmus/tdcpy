@@ -61,7 +61,7 @@ ddae = tds.ddae.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
 
 K = np.array([[     0.0409,     0.0612,     0.3837  ]])
 K = np.array([[0.0365, 0.0480, 0.0416]])
-K = np.array([[1.,2.,3.]])
+# K = np.array([[1.,2.,3.]])
 hK = np.zeros(shape=(1,)) # no delay in the controller
 
 # forming the closed-loop
@@ -86,14 +86,32 @@ x0 = K.reshape(-1)
 p0 = K.reshape(-1)
 
 from tdspy.stabopt.controller_bfgs import find_feasible_point
-p_feasible = find_feasible_point(E, P, hP, K, hK, BB, CC, nstart=5, gamma0_threshold=0.5)
+# p_feasible = find_feasible_point(E, P, hP, K, hK, BB, CC, nstart=5, gamma0_threshold=0.5)
 
-print(f"Feasible point found: {p_feasible.x}")
-
-
-
+# # feasibility test
+# print(f"Feasible point found: {p_feasible.x}")
 
 
-# sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True}, callback=None)
 
 
+
+sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True}, callback=None)
+
+x = sol.x
+K = x.reshape(K.shape)
+cl = tds.ClosedLoop(ddae, order=0, y_indices=[0,1,2], u_indices=[0], K0=K, hK=hK)
+cl_ddae = tds.DDAE(E=cl.E, A=cl.A, hA=cl.hA)
+D,hD = ddae_to_diff(cl_ddae.E,cl_ddae.A,cl_ddae.hA)
+DD,hDD = normalize_diff(D,hD)
+g0, gInfo = gamma_normalized_diff(DD, hDD, 0, correction=True, n_theta=10)
+print(f"Optimized gamma0 = {g0}, gamma_normalized = {gInfo}")
+
+
+import matplotlib.pyplot as plt
+import tdspy.plot
+fig, (ax1, ax2) = plt.subplots(1,2)
+cr_system, _ = tds.roots(cl.system, r=-0.2)
+cr_cl, _ = tds.roots(cl, r=-0.2)
+tdspy.plot.eigen_plot(cr_system, ax=ax1)
+tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+plt.show()
