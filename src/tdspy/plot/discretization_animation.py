@@ -18,7 +18,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: complex=0j, discretization_ideal=None, xlim=None, ylim=None) -> animation.FuncAnimation:
+def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: complex=0j, **kwargs) -> animation.FuncAnimation:
     """ Creates discretization animation
 
     Parameters
@@ -29,14 +29,17 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
         iterable of discretization degrees to animate over
     s0 : complex, optional
         point discretization is done around, default 0j
-    discretization_ideal : int, optional
-        this discretization is assumed to be 'correct' and always present in
-        animation, set None to turn off, default None
-    xlim : tuple, optional
-        x axis limits, default None
-    ylim : tuple, optional
-        y axis limits, default None
-    
+    **kwargs:
+        discretization_ideal : int, optional
+            this discretization is assumed to be 'correct' and always present
+            in animation, set None to turn off, default None
+        xlim : tuple, optional
+            x axis limits, default None
+        ylim : tuple, optional
+            y axis limits, default None
+        interval : int, optional
+            time in ms between updates
+        
     Returns
     -------
     ani : animation
@@ -62,6 +65,12 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
     >>> ani = discretization_animation(tds, discretization=range(2, 100), discretization_ideal=50)
     >>> # to show the animation, use plt.show()
     """
+    # Unpack kwargs
+    discretization_ideal = kwargs.get("discretization_ideal", None)
+    xlim = kwargs.get("xlim", None)
+    ylim = kwargs.get("ylim", None)
+    interval = kwargs.get("interval", 500) # ms
+    
     fig, ax = plt.subplots()
 
     if isinstance(tds, NDDE):
@@ -100,6 +109,6 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
         s.set_offsets(np.column_stack([np.real(raw_roots), np.imag(raw_roots)]))
         legend.get_texts()[1].set_text("Solution of EVP N={}".format(n))
     
-    ani = animation.FuncAnimation(fig, update, frames=discretization, interval=200)
+    ani = animation.FuncAnimation(fig, update, frames=discretization, interval=interval)
 
     return ani

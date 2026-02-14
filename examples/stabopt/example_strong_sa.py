@@ -1,6 +1,6 @@
 r"""
-Prelude to strong stability - gradient of $c_D$
-===============================================
+Prelude to strong stability - gradient of :math:`c_D`
+====================================================
 
 First, we consider Example 13 from :cite:`michiels2011spectrum`
 
