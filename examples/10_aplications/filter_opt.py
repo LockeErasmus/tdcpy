@@ -1,6 +1,6 @@
 
 r"""
-Co-design of PD Controllers and Low-Pass Filter for TDS
+Co-design of PD controllers and low-pass filter for TDS
 =======================================================
 
 Let us consider the following example, retrieved from 
@@ -73,14 +73,13 @@ The closed-loop system can then be rewritten as a DDAE of the form
 .. math:: 
 
     \begin{aligned}
-        \dot{\xi}(t)
+    \dot{\xi}(t)
         &-
         \begin{bmatrix}
             0 & 0 \\
             T^{-1} C & 0
         \end{bmatrix}
-        \dot{\xi}(t) \\
-        &=
+        \dot{\xi}(t) = E \dot{\xi}(t) =
         \begin{bmatrix}
             A & 0 \\
             0 & -T^{-1} I
