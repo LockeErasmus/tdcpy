@@ -25,3 +25,11 @@ features), please contact the developers first.
 - Be respectful to discussions.
 
 Thank you for moving this project forward!
+
+## License
+
+By submitting a contribution to this project, you agree that your contribution
+will be licensed under the GNU General Public License v3.0 or later
+(GPL-3.0-or-later).
+
+You affirm that you have the right to submit the work under this license.

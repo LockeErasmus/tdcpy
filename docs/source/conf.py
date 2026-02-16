@@ -26,7 +26,7 @@ sys.path.insert(0, SRC_PATH) # package root
 
 project = 'tdspy'       # Your package name
 author = 'Adam Peichl'        # Your name
-copyright = '2025, Adam Peichl'  # Copyright info
+copyright = '2026, Adam Peichl'  # Copyright info
 release = importlib.metadata.version("tdspy")
 version = release
 
@@ -42,7 +42,15 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx_gallery.gen_gallery',  # This is for examples
     "sphinxcontrib.bibtex",        # LaTeX like citations
+    'sphinx_gallery.gen_gallery',
+    'sphinx_design',  # 
+    "matplotlib.sphinxext.plot_directive",  # enable the plot directive
 ]
+
+# Plot settings
+plot_html_show_formats = False
+plot_html_show_source_link = False
+plot_include_source = False
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),

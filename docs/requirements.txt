@@ -3,3 +3,4 @@ sphinx-autodoc-typehints
 sphinx-gallery
 sphinxcontrib-bibtex
 pydata-sphinx-theme
+sphinx-design

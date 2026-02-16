@@ -1,10 +1,12 @@
-r"""
-Discretization Animation
-========================
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
 
-In this example, we create an animation of the right-most part of the spectrum
-obtained via method proposed in :cite:`jarlebring2010krylov`. The considered 
-system is the following retarded delay differential equation (RDDE) from
+r"""
+Example 2.1 - Stability analysis of retarded DDE
+================================================
+
+We consider the following retarded delay differential equation (RDDE) from
 :cite:`verheyden2008efficient` Section 6.1:
 
 .. math::
@@ -23,12 +25,21 @@ system is the following retarded delay differential equation (RDDE) from
             0 & 0 & 3 & -5 \\
             0 & 5 & 5 & 5
         \end{bmatrix} x(t-1).
+
+We will follow the steps from :cite:`appeltans2023analysis` Section 2.2 to
+achive the same results as presented there, i.e. we will
+
+1. create the `RDDE` matrix representation
+2. compute characteristic roots via the `tdspy.roots` function
+3. plot the computed characteristic roots using `tdspy.plot.eigen_plot` function
+
+.. bibliography::
+    :filter: {"auto_examples/tds_control_manual/example_2_1"} & docnames
+
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
+import numpy as np
 import tdspy
 import tdspy.plot
 
@@ -41,19 +52,10 @@ A1 = np.array([[3, 3, 3, 3],
                [0, -1.5, 0, 0],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
+
 rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1])
-# %%
-# We use the build-in function for creating the discretization animation. 
-# If further customization would be needed, we encourage to read the source
-# code of `tdspy.plot.discretization_animation(.)` and adapt it.
-# %%
-ani = tdspy.plot.discretization_animation(
-    rdde,
-    s0=0,
-    discretization=range(10, 100, 5),
-    discretization_ideal=120,
-    xlim=(-5.25, 1.5),
-    ylim=(-200, 200),
-    interval=200,
-)
-ani.save("discretization.gif", writer="pillow")
+cr, info = tdspy.roots(rdde, r=-2.5)
+
+tdspy.plot.eigen_plot(cr)
+plt.show()
+

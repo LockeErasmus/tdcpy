@@ -19,19 +19,19 @@ Subpackages
 Modules
 ----------
 
-=================  ==============================================
-`tdspy.base`         Base classes and functions
-`tdspy.closed_loop`  Closed-loop representation
-`tdspy.controller`   Controller representation
-`tdspy.dae`          Differential-algebraic equation (DAE) representation
-`tdspy.ddae`         Delay differential-algebraic equation (DDAE) representation
-`tdspy.gamma`        Computation of gamma_r
-`tdspy.ndde`         NDDE classes and functions
-`tdspy.rdde`         RDDE classes
-`tdspy.roots`        Characteristic roots
-`tdspy.spectral_abscissa`  Spectral abscissa 
-`tdspy.zeros`        Zeros computation
-=================  ==============================================
+==========================  ===============================================================
+`tdspy.base`                  Base classes and functions
+`tdspy.closed_loop`           Closed-loop representation
+`tdspy.controller`            Controller representation
+`tdspy.dae`                   Differential-algebraic equation (DAE) representation
+`tdspy.ddae`                  Delay differential-algebraic equation (DDAE) representation
+`tdspy.gamma`                 Computation of gamma_r
+`tdspy.ndde`                  NDDE classes and functions
+`tdspy.rdde`                  RDDE classes
+`tdspy.roots`                 Characteristic roots
+`tdspy.spectral_abscissa`     Spectral abscissa 
+`tdspy.zeros`                 Zeros computation
+==========================  ===============================================================
 
 
 .. Subpackages

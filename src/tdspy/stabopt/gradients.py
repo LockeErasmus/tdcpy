@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+
 """
 Functions and its gradients for stabilization
 ---------------------------------------------
@@ -319,9 +323,9 @@ def func_cd(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     return cd, dKmasked
 
 
-def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray, 
+def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray, 
                 Kmask: npt.NDArray, hK: npt.NDArray, 
-                BU: npt.NDArray, CV: npt.NDArray) -> tuple[float, npt.NDArray]:
+                B: npt.NDArray, C: npt.NDArray) -> tuple[float, npt.NDArray]:
     """ gradient of gamma0 function for delay-difference equations
 
     Computes the gradient of the function :math:`\gamma_0(p)` of the delay-difference
@@ -332,18 +336,20 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     ----------
     x : npt.NDArray
         optimization variables
-    DP : npt.NDArray
-        difference equation matrices 
-    hDP : npt.NDArray
-        difference equation delays
+    E : npt.NDArray
+        matrix defining LHS of closed loop
+    P : npt.NDArray
+        system matrix of open-loop system
+    hP : npt.NDArray
+        system delays of open-loop system
     Kmask : npt.NDArray
         mask for the controller entries
     hK : npt.NDArray
         controller delays
-    BU : npt.NDArray
-        left matrix defining position of controller in DDE (= U.T @ B)
-    CV : npt.NDArray
-        right matrix defining position of controller in DDE (= C @ V)
+    B : npt.NDArray
+        input matrix of closed-loop system
+    C : npt.NDArray
+        output matrix of closed-loop system
 
     Returns
     -------
@@ -364,34 +370,51 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
 
         with H_i = linalg.solve(D[:, :, 0], D[:, :, i]), hH_i = hD[i].
 
+    - assumes that the controller parameters affect the DDE
+
     Examples
     --------
     >>> import numpy as np
     >>> from tdspy.stabopt.gradients import grad_gamma0, gradient_test
     >>> np.random.seed(0)
-    >>> DP = np.random.rand(2, 2, 3)  # difference equation matrices
-    >>> hDP = np.array([0.0, 0.1, 0.2])  # difference equation delays
-    >>> Kmask = np.ones((2, 2, 3), dtype=bool)  # all controller parameters adjustable
-    >>> hK = np.array([0.1, 0.2, 0.3])  # controller delays
-    >>> BU = np.random.rand(2, 2)  # left matrix defining position of controller in DDE
-    >>> CV = np.random.rand(2, 2)  # right matrix defining position of controller in DDE
-    >>> K = np.random.rand(*Kmask.shape)  # random controller parameters
-    >>> x = K.reshape(-1)  # vectorized controller parameters
-    >>> fval, grad = grad_gamma0(x, DP, hDP, Kmask, hK, BU, CV)
-    >>> print(f"gamma0: {fval}", f"grad shape: {grad.shape}")
-    gamma0: 4.7552476929955185 grad shape: (12,)
+    >>> E = np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 0.]])
+    >>> P = np.random.rand(3,3,2)
+    >>> hP = np.array([0., 1.])
+    >>> hK = np.array([0., 1.])
+    >>> Kmask = np.ones((1,3,2), dtype=bool)
+    >>> B = np.random.rand(3,1)
+    >>> C = np.random.rand(3,3)
+    >>> fval, grad = grad_gamma0(x=np.random.rand(6), E=E, P=P, hP=hP, Kmask=Kmask, hK=hK, B=B, C=C)
+    >>> print(f"gamma0: {fval}, grad: {grad}")
+    gamma0: 95.72387379041314, grad: [37.77946154 37.77946154  6.93863878  6.93863878 20.07062041 20.07062041]
+    >>> # test gradient
+    >>> grad_analytical, grad_numerical = gradient_test(grad_gamma0,x=np.random.rand(6),args=(E, P, hP, Kmask, hK, B, C))
+    Gradient test passed norm=5.389855703635268e-11 < 1e-06
 
     """
+    
     from tdspy.stabopt.utils import diff_dependency_mask
     from tdspy.common.delay_difference_equation import normalize_diff
     from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
+    from tdspy.stability.bounds import lower_bound, upper_bound
     from scipy import linalg, optimize
 
     # unpack arguments
-    n, nh, nu, ny = DP.shape[0], DP.shape[2], BU.shape[1], CV.shape[0]
+    n, nh, nu, ny = P.shape[0], P.shape[2], B.shape[1], C.shape[0]
     
     # set controller parameters
     K = x.reshape((nu, ny, hK.shape[0]))
+
+    # extract uE and vE from E
+    uE = linalg.null_space(E.T,rcond=1e-12)
+    vE = linalg.null_space(E,rcond=1e-12)
+
+    # extract DP, hDP from P, hP
+    DP, hDP = ddae_to_diff(E, P, hP, uE, vE)
+
+    # compute BU = uE.T @ B and CV = C @ vE for later use
+    BU = uE.T @ B
+    CV = C @ vE
     
     # form D = D_P + B_D @ K_D @ C_D
     BK  = np.einsum('lm,mki->lki', BU, K)   # B @ K_i for all i
@@ -411,7 +434,7 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     ######################## DDE defined as ##########################
     # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
 
-    if s < 1e-12:
+    if np.abs(g0) < 1e-12:
         logger.warning("WARNING: s == 0, gradient is ill-defined")
         return g0, grad
 
@@ -430,7 +453,7 @@ def grad_gamma0(x: npt.NDArray, DP: npt.NDArray, hDP: npt.NDArray,
     vector = np.conj(s) * np.exp( 1j * th[m-1:] ) # shape (mH,)
     array = matrix[:,:, np.newaxis] * vector[np.newaxis, :]
 
-    grad = (1 / np.abs(s)) * np.real(array) / np.real(np.conj(u).T @ v)
+    grad = (1. / max(np.abs(s),1e-12)) * np.real(array) / np.real(np.conj(u).T @ v)
 
     # mask gradients
     grad_masked = np.where(Kmask, grad, 0)
@@ -450,11 +473,11 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
 
     Returns:
 
-        tuple containing:
-            - fgrad : npt.NDArray
-                analytical gradient
-            - fgrad_num : npt.NDArray
-                numerical gradient
+    tuple containing:
+        - fgrad : npt.NDArray
+            analytical gradient
+        - fgrad_num : npt.NDArray
+            numerical gradient
 
     Notes
     -----

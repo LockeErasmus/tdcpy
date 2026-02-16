@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+
 r"""
 Example 2.6 - Stability analysis of neutral DDE with multiple delays
 ====================================================================

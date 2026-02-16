@@ -16,14 +16,13 @@ authors = [
     {name = "Adrian Saldanha", email = "saldanha.adrian@gmail.com"},
 ]
 maintainers = [
-    {name ="Adam Peichl", email = "adpeichl@gmail.com"}
+    {name ="Adam Peichl", email = "adpeichl@gmail.com"},
     {name = "Adrian Saldanha", email = "saldanha.adrian@gmail.com"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Mathematics",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
@@ -33,8 +32,9 @@ classifiers = [
     "Typing :: Typed"
 ]
 
-readme = {file = "README.txt", content-type = "text/markdown"}
-license = {file = "LICENSE"}
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 keywords = ["timedelay", "control", "stability", "DDE", "DDAE"]
 
 [tool.setuptools.packages.find]

@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+# Copyright (C) 2026 Diego Garcia
+
 __version__ = "0.0.1"
 
 import logging

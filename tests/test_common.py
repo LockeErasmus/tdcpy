@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+
 """
 Tests for common module
 
@@ -93,7 +97,9 @@ def test_dynamic_controller_01():
     # order 1, 3 measurements, 1 controller output
     E, K, hK  = controller_reprezentation(1, n_inputs=3, n_outputs=1)
 
-    Ec = np.array([[1,0],[0,0]], dtype=bool)
+    print(E)
+
+    Ec = np.array([[1, 0, 0, 0],[0, 0, 0, 0]], dtype=bool)
     Kc = np.ones(shape=(1+1, 3+1, 1), dtype=bool)
 
     assert E.shape == (2,2)

@@ -28,7 +28,7 @@ import tdspy as tds
 import numpy as np
 from tdspy.stability.characteristic_roots import rightmost_root
 
-tds.init_logger("DEBUG")
+# tds.init_logger("DEBUG")
 
 Th, Ta,Td, Tc = 14, 3, 3, 25
 Kb, Ka, Kd, Kc, Ku = 0.24, 1, 0.94, 0.81, 0.39
@@ -131,20 +131,20 @@ ax.set_ylim(0, 1000)
 
 # Callback function for updating the plot
 fvals = []
-def callback(xk):
-    fval, grad = func_sa(xk, cl.E, P, hP, hK, Kmask, B, C)
-    fvals.append(fval)
-    print(f"callback evaluated {xk=} {fvals=}\n {grad=}")
-    # Update plot data
-    line.set_data([i for i in range(len(fvals))], fvals)
-    ax.set_xlim(0, max(10, len(fvals)))
-    ax.set_ylim(0, max(fvals) * 1.1)
-    plt.draw()
-    plt.pause(0.05)
+# def callback(xk):
+#     fval, grad = func_sa(xk, cl.E, P, hP, hK, Kmask, B, C)
+#     fvals.append(fval)
+#     print(f"callback evaluated {xk=} {fvals=}\n {grad=}")
+#     # Update plot data
+#     line.set_data([i for i in range(len(fvals))], fvals)
+#     ax.set_xlim(0, max(10, len(fvals)))
+#     ax.set_ylim(0, max(fvals) * 1.1)
+#     plt.draw()
+#     plt.pause(0.05)
 
-callback(K0.reshape(-1))
+# callback(K0.reshape(-1))
 
-sol = design_bfgs(cl.E, P, hP, K0, hK, B, C, method="L-BFGS-B", options={"disp": True}, callback=callback)
+sol = design_bfgs(cl.E, P, hP, K0, hK, B, C, method="L-BFGS-B", options={"disp": True}, callback=None)
 
 plt.ioff()
 plt.show()
