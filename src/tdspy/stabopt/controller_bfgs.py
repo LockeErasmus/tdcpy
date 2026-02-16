@@ -197,6 +197,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     assert Kmask.shape == K0.shape, "Mask shape must match K0 shape!"                       
 
     callback = kwargs.get("callback", None)                                                     # callback function for optimization, default is None
+    type = kwargs.get("type", "barrier")                                                              # optimization type, default is barrier
     method = kwargs.get("method", "L-BFGS-B")                                                     # optimization method, default is L-BFGS-B
     options = kwargs.get("options", {"disp": True, "eps":0.001, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
 
@@ -326,67 +327,101 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                 
 
             ############################### Optimization ######################################
-            ################ f_objective = alpha - w2*log(1 - w1 - gamma0(p))##################
-            ################ gradient = grad_alpha + w2*1/(1 - w1 - gamma0(p)) * grad_gamma0 ##################
 
-            w2 = options.get("w2", 0.001)
-            w1 = options.get("w1", 0.001)
 
-            gamma0_args = (E, P, hP, Kmask, hK, B, C)
-            sa_args = (E, P, hP, hK, Kmask, B, C)
+            if type == "barrier":
+                ################ f_objective = alpha - w2*log(1 - w1 - gamma0(p))##################
+                ################ gradient = grad_alpha + w2*1/(1 - w1 - gamma0(p)) * grad_gamma0 ##################
 
-            log_points = np.logspace(0,-8,9)   # different values of w2 to try, default is [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
-            log_points = 6.5e-3 * (0.3 ** np.arange(10))   # 6.5e-3, 1.95e-3, 5.85e-4, ...
-            best = None
-            eps = 1e-8
-            results = []
-
-            def obj_fn(x, gamma0_args, sa_args, options):
-
-                w1 = options.get("w1", 0.001)
                 w2 = options.get("w2", 0.001)
-                g0, grad_g0 = grad_gamma0(x, *gamma0_args)
-                sa, grad_sa = func_sa(x, *sa_args)         
-                
-                f1 = sa
-                grad_f1 = grad_sa
-                
-                slack = 1 - w1 - g0
-                
-                if slack <= 1e-12 or (not np.isfinite(slack)):
-                    return np.inf, np.zeros_like(x)
+                w1 = options.get("w1", 0.001)
+
+                gamma0_args = (E, P, hP, Kmask, hK, B, C)
+                sa_args = (E, P, hP, hK, Kmask, B, C)
+
+                log_points = np.logspace(0,-8,9)   # different values of w2 to try, default is [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
+                log_points = 6.5e-3 * (0.3 ** np.arange(10))   # 6.5e-3, 1.95e-3, 5.85e-4, ...
+                best = None
+                eps = 1e-8
+                results = []
+
+                def obj_fn(x, gamma0_args, sa_args, options):
+
+                    w1 = options.get("w1", 0.001)
+                    w2 = options.get("w2", 0.001)
+                    g0, grad_g0 = grad_gamma0(x, *gamma0_args)
+                    sa, grad_sa = func_sa(x, *sa_args)         
                     
+                    f1 = sa
+                    grad_f1 = grad_sa
+                    
+                    slack = 1 - w1 - g0
+                    
+                    if slack <= 1e-12 or (not np.isfinite(slack)):
+                        return np.inf, np.zeros_like(x)
+                        
+                    
+                    f2 = np.log(slack+eps)
+                    grad_f2 = -grad_g0 / slack
+                    
+                    f = f1 - w2*f2
+                    grad = grad_sa - w2*grad_f2
+
+                    if (not np.isfinite(f)) or (not np.all(np.isfinite(grad))):
+                        return np.inf, np.zeros_like(x)
+
+                    return (f, grad) 
+
+                x=x0
+
+                for w2 in log_points:
+                    print(f"Optimizing with w2={w2}...")
+                    sol = optimize.minimize(
+                        obj_fn,
+                        x0=x,
+                        args=(gamma0_args, sa_args,{"w1": w1, "w2": w2}),
+                        jac=True,
+                        method=method,
+                        options=options,
+                        callback=None
+                    )
+
+                    # logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={grad_gamma0(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
+                    results.append((w2, sol.fun, sol.x))
+                    x = sol.x  # warm start the next optimization with the current solution
+
+                return sol
+            
+            elif type == "CD":
+
+                cd_args = (E, P, hP, Kmask, hK, B, C, uE, vE)
+                sa_args = (E, P, hP, hK, Kmask, B, C)
+
+                def obj_fn(x, cd_args, options):
+
+                    cd, grad_cd = func_cd(x, *cd_args) 
+                    sa, grad_sa = func_sa(x, *sa_args)    
+                    
+                    f = np.max([cd, sa])
+                    
+                    if cd>sa:
+                        grad = grad_cd
+                    else:
+                        grad = grad_sa
+
+                    return (f, grad) 
                 
-                f2 = np.log(slack+eps)
-                grad_f2 = -grad_g0 / slack
-                
-                f = f1 - w2*f2
-                grad = grad_sa - w2*grad_f2
-
-                if (not np.isfinite(f)) or (not np.all(np.isfinite(grad))):
-                    return np.inf, np.zeros_like(x)
-
-                return (f, grad) 
-
-            x=x0
-
-            for w2 in log_points:
-                print(f"Optimizing with w2={w2}...")
                 sol = optimize.minimize(
                     obj_fn,
-                    x0=x,
-                    args=(gamma0_args, sa_args,{"w1": w1, "w2": w2}),
+                    x0=x0,
+                    args=(cd_args, options),
                     jac=True,
                     method=method,
                     options=options,
                     callback=None
                 )
 
-                # logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={grad_gamma0(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
-                results.append((w2, sol.fun, sol.x))
-                x = sol.x  # warm start the next optimization with the current solution
-
-            return sol
+                return sol
 
                        
     return sol

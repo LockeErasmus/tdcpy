@@ -430,7 +430,7 @@ def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     ######################## DDE defined as ##########################
     # 0 = I x(t) + DD[:,:,0] x(t-h1) + DD[:,:,2] x(t-h2) + ... + DD[:,:,m] x(t-hm)
 
-    if s < 1e-12:
+    if np.abs(g0) < 1e-12:
         logger.warning("WARNING: s == 0, gradient is ill-defined")
         return g0, grad
 

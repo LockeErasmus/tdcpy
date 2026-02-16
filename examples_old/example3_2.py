@@ -78,7 +78,9 @@ BB,CC = cl.BB, cl.CC
 D,hD = ddae_to_diff(E,cl_ddae.A,cl_ddae.hA)
 DD,hDD = normalize_diff(D,hD)
 g0, gInfo = gamma_normalized_diff(DD, hDD, 0, correction=True, n_theta=10)
+cd0, cdInfo = tds.spectral_abscissa_diff(cl_ddae, return_info=True)
 print(f"Original gamma0 = {g0}, gamma_normalized = {gInfo}")
+print(f"Original cd = {cd0}, gamma_normalized = {cdInfo}")
 
 # extract controller parameters affecting the delay-difference equation
 Kmask = np.full_like(K, fill_value=True,dtype=bool)
@@ -93,9 +95,9 @@ from tdspy.stabopt.controller_bfgs import find_feasible_point
 
 
 
+options={'ftol': 1e-6, 'gtol': 1e-6}
 
-
-sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True}, callback=None)
+sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True, **options}, callback=None, type = "barrier")
 
 x = sol.x
 K = x.reshape(K.shape)
@@ -104,14 +106,17 @@ cl_ddae = tds.DDAE(E=cl.E, A=cl.A, hA=cl.hA)
 D,hD = ddae_to_diff(cl_ddae.E,cl_ddae.A,cl_ddae.hA)
 DD,hDD = normalize_diff(D,hD)
 g0, gInfo = gamma_normalized_diff(DD, hDD, 0, correction=True, n_theta=10)
-print(f"Optimized gamma0 = {g0}, gamma_normalized = {gInfo}")
-
+cd, cdInfo = tds.spectral_abscissa_diff(cl_ddae, return_info=True)
+print(f"Optimized gamma_r = {g0}, gamma_normalized = {gInfo}")
+print(f"Optimized cd = {cd}, gamma_normalized = {cdInfo}")
 
 import matplotlib.pyplot as plt
 import tdspy.plot
 fig, (ax1, ax2) = plt.subplots(1,2)
-cr_system, _ = tds.roots(cl.system, r=-0.2)
-cr_cl, _ = tds.roots(cl, r=-0.2)
-tdspy.plot.eigen_plot(cr_system, ax=ax1)
+cr_system, _ = tds.roots(cl.system, r=-0.4, discretization=100)
+cr_cl, _ = tds.roots(cl, r=-0.4, discretization=100)
+tdspy.plot.eigen_plot(cr_cl, ax=ax1)
+cl.hA[1] = 2.51
+cr_cl, _ = tds.roots(cl, r=-1, discretization=400)
 tdspy.plot.eigen_plot(cr_cl, ax=ax2)
 plt.show()

@@ -44,7 +44,13 @@ extensions = [
     "sphinxcontrib.bibtex",        # LaTeX like citations
     'sphinx_gallery.gen_gallery',
     'sphinx_design',  # 
+    "matplotlib.sphinxext.plot_directive",  # enable the plot directive
 ]
+
+# Plot settings
+plot_html_show_formats = False
+plot_html_show_source_link = False
+plot_include_source = False
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
