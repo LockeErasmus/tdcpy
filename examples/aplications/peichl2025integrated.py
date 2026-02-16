@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+
 r"""
 Non-collocated vibration absorbtion via delayed resonator
 =========================================================

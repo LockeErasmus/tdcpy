@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+
 """
 Set of high level API functions for creating controllers
 

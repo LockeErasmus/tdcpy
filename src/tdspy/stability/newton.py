@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Adam Peichl
+# Copyright (C) 2026 Adrian Saldanha
+
 """
 Newton method for increasing precision of roots
 """
