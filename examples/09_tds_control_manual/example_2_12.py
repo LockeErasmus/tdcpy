@@ -45,26 +45,26 @@ tau_grid = np.linspace(0, 8, 201)
 delta_grid = np.linspace(-8, 10, 451)
 Z = np.zeros((len(delta_grid), len(tau_grid)))
 
-# for i2 in range(0,len(tau_grid)-1):
-#     tau = tau_grid[i2]
-#     for i1 in range(0,len(delta_grid)):
-#         delta = delta_grid[i1]
-#         if np.abs(tau+delta)<1e-8:
-#             # case: tau+delta = 0
-#             if np.abs(tau)<1e-8:
-#                 tau = 1e-8
-#             hH[0],hH[1] = tau, 1e-8
-#             hA[1],hA[2] = tau, 1e-8
-#             ndde = tds.NDDE(H=H,hH=hH,A=A,hA=hA)
-#             Z[i1,i2] = tds.strong_spectral_abscissa(ndde)
-#         elif tau + delta < 0:
-#             # case: "real" delay cannot be negative
-#             Z[i1,i2] = -np.inf
-#         else:
-#             hH[0], hH[1] = tau, tau+delta
-#             hA[1], hA[2] = tau, tau+delta
-#             ndde = tds.NDDE(H=H,hH=hH,A=A,hA=hA)
-#             Z[i1,i2] = tds.strong_spectral_abscissa(ndde)
+for i2 in range(0,len(tau_grid)-1):
+    tau = tau_grid[i2]
+    for i1 in range(0,len(delta_grid)):
+        delta = delta_grid[i1]
+        if np.abs(tau+delta)<1e-8:
+            # case: tau+delta = 0
+            if np.abs(tau)<1e-8:
+                tau = 1e-8
+            hH[0],hH[1] = tau, 1e-8
+            hA[1],hA[2] = tau, 1e-8
+            ndde = tds.NDDE(H=H,hH=hH,A=A,hA=hA)
+            Z[i1,i2] = tds.strong_spectral_abscissa(ndde)
+        elif tau + delta < 0:
+            # case: "real" delay cannot be negative
+            Z[i1,i2] = -np.inf
+        else:
+            hH[0], hH[1] = tau, tau+delta
+            hA[1], hA[2] = tau, tau+delta
+            ndde = tds.NDDE(H=H,hH=hH,A=A,hA=hA)
+            Z[i1,i2] = tds.strong_spectral_abscissa(ndde)
 
 # X, Y = np.meshgrid(tau_grid,delta_grid)
 # plt.contour(X,Y,Z,[0,0])

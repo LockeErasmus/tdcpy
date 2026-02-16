@@ -26,7 +26,7 @@ sys.path.insert(0, SRC_PATH) # package root
 
 project = 'tdspy'       # Your package name
 author = 'Adam Peichl'        # Your name
-copyright = '2025, Adam Peichl'  # Copyright info
+copyright = '2026, Adam Peichl'  # Copyright info
 release = importlib.metadata.version("tdspy")
 version = release
 
