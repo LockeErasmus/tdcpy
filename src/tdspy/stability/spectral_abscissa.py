@@ -3,9 +3,21 @@ Spectral abscissa
 -----------------
 We distinguish between three types:
 
-1. spectral abscissa (denote `alpha`)
-2. spectral abscissa of delay-difference equation (denote `cd`)
+1. spectral abscissa (denote ``alpha``)
+2. spectral abscissa of delay-difference equation (denote ``cd``)
 3. strong spectral abscissa := MAX(alpha, cd)
+
+Functions
+---------
+- ``spectral_abscissa``: placeholder for classic spectral abscissa routines.
+- ``func``: evaluate ``f(r)=gamma(r)-1`` and its derivative at a scalar ``r``.
+- ``CdRootProblem``: root-problem wrapper object used by ``scipy.optimize.root``.
+- ``spectral_abscissa_diff``: compute the delay-difference contribution ``cd``.
+
+References:
+    [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
+    computation for time-delay systems: an eigenvalue-based approach.
+    Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
 """
 
 from collections import namedtuple
@@ -27,26 +39,35 @@ def spectral_abscissa():
     raise NotImplementedError(".")
 
 def func(r, DD, hDD, gamma_kwargs):
-    """ Value and derivative of a function
+    """Evaluate f(r) = gamma(r) - 1 and its derivative.
 
-        f(r) = gamma(r) - 1
-    
-    f(r) = 0 corresponds to zero crossings
-    
-    Note that gamma(r) is gamma evaluated at r of delayed difference equation
-    defined via DD, hDD.
-    
-    Args: TODO
-        r 
-        DD
-        hDD
-        gamma_kwargs: kwargs passed to function `gamma_normalized_diff`
-    
-    Returns:
-        tuple containing:
+    Parameters
+    ----------
+    r : float
+        Real number defining right-half complex plane for
+        characteristic roots computation
+    DD : npt.NDArray
+        Normalized delay-difference matrices defining the operator.
+    hDD : npt.NDArray
+        Delays corresponding to the slices of ``DD`` (shape must match
+        ``DD.shape[2]``).
+    gamma_kwargs : dict
+        Additional keyword arguments forwarded to
+        :func:`gamma_normalized_diff`.
 
-            - fval (float): f()
-            - df (array): derivative of f(.)
+    Returns
+    -------
+    fval : float
+        The scalar value ``gamma(r) - 1``.
+    df : float
+        The derivative df/dr evaluated at ``r``.
+
+    Notes
+    -----
+    The implementation calls :func:`gamma_normalized_diff` to obtain
+    the normalized spectral radius and associated metadata, then computes
+    the derivative using the expression derived from the numerator
+    involving the left/right eigenvectors returned by the helper.
     """
 
     gamma_r, gamma_info = gamma_normalized_diff(DD, hDD, r, **gamma_kwargs)
@@ -111,41 +132,55 @@ class CdRootProblem:
         return fval, df
 
 def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple[float, CDInfo]:
-    """ Computes strong spectral abscissa of normalized delay difference
-    equation
- 
-    This function is based on the expressions in [1, Definition 1.32]
-    and [1, Proposition 1.51] for the strong spectral abscissa of delay
-    difference equations associated with NDDEs and DDAEs, respectively. 
- 
-    References:
-    [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
-        computation for time-delay systems: an eigenvalue-based approach. 
-        Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
+    """Compute the strong spectral abscissa of a normalized delay-difference equation.
 
-    Args:
-        DD (array): TODO, NORMALIZED
-        hDD (array): TODO, NORMALIZED
-        **kwargs:
-            cd0 (float): initial guess for the strong spectral abscissa of the
-                underlying delay difference equation, optional, default 0.0
-            scipy_root_method (str): scipy.optimize.root method, default 'hybr',
-            scipy_root_tol (float): Tolerance for termination. For detailed
-                control, use `scipy_root_options`, default None
-            scipy_root_callback (function): Optional callback function. It is
-                called on every iteration as `callback(x, f)` where x is the
-                current solution and f the corresponding residual. For all
-                methods but 'hybr' and 'lm'.
-            scipy_root_options (dict): a dictionary of solver options (method),
-                default None
-            gamma_kwargs (dict): keyword arguments passed to function
-                `gamma_normalized_diff` (see documentation)
-    Returns:
-        tuple containing:
+    This routine follows the formulation in Michiels & Niculescu (2014)
+    and locates roots of ``f(r)=gamma(r)-1`` using ``scipy.optimize.root``
+    to determine the delay-difference contribution to the strong spectral
+    abscissa.
 
-            - cd (float): strong spectral abscissa of associated delay
-                difference equation
-            - info (TODO): TODO - named tuple matching matlab behaviour?
+    Parameters
+    ----------
+    DD : npt.NDArray
+        Normalized delay-difference matrices of shape ``(n, n, m)``.
+    hDD : npt.NDArray
+        Delays corresponding to the third dimension of ``DD`` (shape ``(m,)``).
+    **kwargs : dict
+        Optional keyword arguments:
+
+        - ``cd0`` (float): initial guess for the strong spectral abscissa,
+          default ``0.0``.
+        - ``scipy_root_method`` (str): method for ``scipy.optimize.root``,
+          default ``'hybr'``.
+        - ``scipy_root_tol`` (float): tolerance for the root solver.
+        - ``scipy_root_callback`` (callable): optional callback ``callback(x, f)``.
+        - ``scipy_root_options`` (dict): solver-specific options.
+        - ``gamma_kwargs`` (dict): kwargs forwarded to
+          :func:`gamma_normalized_diff`.
+
+    Returns
+    -------
+    cd : float
+        The strong spectral abscissa of the associated delay-difference
+        equation. May be ``-np.inf`` or ``np.inf`` in degenerate cases.
+    info : CDInfo
+        Metadata returned from :func:`gamma_normalized_diff` corresponding
+        to the root with smallest residual (or ``None`` when unavailable).
+
+        Notes
+        -----
+        - If ``DD.shape[1] == 0`` the function returns ``-np.inf`` to indicate
+            no meaningful contribution from the delay-difference operator.
+        - If the root-finding fails but the zero-frequency gamma satisfies
+            ``gamma(0) >= 1``, the routine treats the strong spectral abscissa
+            as ``np.inf``; otherwise ``-np.inf`` is used. In the current
+            implementation a failed root solve raises ``NotImplementedError``
+            instead of returning a metadata-rich result.
+
+        References:
+        [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
+            computation for time-delay systems: an eigenvalue-based approach.
+            Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
     """
     cd0 = kwargs.get("cd0", 0)
     gamma_kwargs = kwargs.get("gamma_kwargs", dict())

@@ -1,5 +1,6 @@
 """
 Newton method for increasing precision of roots
+------------------------------------------------
 """
 
 import logging
@@ -17,57 +18,69 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
 
     root `s` (element of `roots0`) is an initial guess of the eigenvalue of
     characteristic matrix M(s) and its derivative dM(s)
-
-        M(s) = E*s - A[0]*exp(-s*hA[0]) - ... - A[mA]*exp(-s*hA[mA])
-        dM(s) = E + hA[0]*A[0]*exp(-s*hA[0]) + ... + hA[mA]*A[mA]*exp(-s*hA[mA])
+    .. math::
+        M(s) = E*s - A_0*e^{-s*h_{A,0}} - ... - A_{mA}*e^{-s*hA_{mA}}
+        dM(s) = E + hA_0*A_0*e^{-s*hA_0} + ... + hA_{mA}*A_{mA}*e^{-s*hA_{mA}}
     
     and we look for a solution of system n+1 non-linear equations
-
-        M(s) * v      ==  0
+    .. math::
+        M(s) * v      ==  0121
         v0.H * v - 1  ==  0
     
     with jacobian
-
-    J = [[M(s), dM(s)*v]
-         [v0.H, 0      ]]
+    .. math::
+        J = \begin{bmatrix} M(s) & dM(s)*v \\
+             v0.H &0      \end{bmatrix}
 
     Update rule for newton corrections stands as
-
+    .. math::
         [dv.T, ds].T = PINV( J ) @ [M(s)*v, v0.H * v - 1].T
         
         v = v - dv
         s = s - ds
 
-    Args:
-        roots0 (array): 1D vector of initial guesses for roots
-        E (array): E matrix from TDS representation shaped (n,n)
-        A (array): A matrices from TDS representation shaped (n,n,mA)
-        hA (array): hA vector of delays from TDS representation shaped (mA,)
-        **kwargs:
-            return_residuals(bool): wheter to also return residuals or not,
-                default False
-            tol (float): absolute tolerance, default 1e-10
-            max_iterations(int): maximum number of newton iterations, default 20
-    
-    Returns:
-        tuple containing:
+    Parameters
+    -----------
+    roots0 : npt.NDArray
+        1D vector of initial guesses for roots.
+    E : npt.NDArray
+        E matrix from TDS representation shaped (n, n).
+    A : npt.NDArray
+        A matrices from TDS representation shaped (n, n, mA).
+    hA : npt.NDArray
+        hA vector of delays from TDS representation shaped (mA,).
+    **kwargs : dict, optional
+        Additional arguments:
 
-            - roots (array): 1D array roots of improved precission
-            - residuals (array): 1D array roots of residuals
-            - converged_mask (array): 1D array mask if root converged
-            - large_correction_mask (array): 1D array mask if correction large
+        - return_residuals (bool): Whether to also return residuals or not.
+            Default False.
+        - tol (float): Absolute tolerance. Default 1e-10.
+        - max_iterations (int): Maximum number of newton iterations.
+            Default 20.
 
-    Notes:
-        1. The expected shapes of input arrays:
-            (a) E ... (n,n)
-            (b) A ... (n,n,mA)
-            (c) hA ... (mA,)
-         shapes are not checked to speed up computation.
-        2. It is possible some corrections won't converge (`residual` check)
-        3. It is possible some corrections converge, hoewever corrections are
+    Returns
+    -------
+    tuple containing
+
+        - roots (npt.NDArray): 1D array of roots with improved precision.
+        - residuals (npt.NDArray): 1D array of residuals.
+        - converged_mask (npt.NDArray): 1D bool array indicating if root converged.
+        - large_correction_mask (npt.NDArray): 1D bool array indicating if correction
+            is large.
+
+    Notes
+    -----
+    1. The expected shapes of input arrays:
+        - E ... (n,n)
+        - A ... (n,n,mA)
+        - hA ... (mA,)
+        shapes are not checked to speed up computation.
+    2. It is possible some corrections won't converge (`residual` check)
+    3. It is possible some corrections converge, hoewever corrections are
           "large" (see "newton method - basin of attraction"), these corrections
           should be taken with a grain of salt because root can converge to root
           which is already present in solution.
+
     """
     return_residuals = kwargs.get("return_residuals", False)
     max_iterations = kwargs.get("max_iterations", 20)
