@@ -47,7 +47,7 @@ tdspy.stability.newton module
 tdspy.stability.spectral\_abscissa module
 -----------------------------
 
-.. automodule:: tdspy.stabiity.spectral_abscissa
+.. automodule:: tdspy.stability.spectral_abscissa
    :members:
    :undoc-members:
    :show-inheritance:
