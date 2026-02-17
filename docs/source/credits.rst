@@ -56,7 +56,7 @@ Place for contributors outside of team.
 
 Scientific Advisors
 ---------------------
-- **Prof. Dr. ir. Wim Michiels**: KU Leuven
+- **Prof. Dr. ir. Wim Michiels**: Co-developer TDS-CONTROL, KU Leuven
 
   .. image:: _static/team/wim.jpg
    :width: 100
