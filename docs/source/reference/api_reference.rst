@@ -56,6 +56,7 @@ The reference describes the modules, functions, classes, and methods available i
    tdspy.ddae <tdspy.ddae>
    tdspy.gamma <tdspy.gamma>
    tdspy.ndde <tdspy.ndde>
+   tdspy.rdde <tdspy.rdde>
    tdspy.roots <tdspy.roots>
    tdspy.spectral_abscissa <tdspy.spectral_abscissa>
    tdspy.zeros <tdspy.zeros>

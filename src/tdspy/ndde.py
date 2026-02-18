@@ -25,7 +25,9 @@ logger = logging.getLogger(__name__)
 class NDDE(TDSBase):
     """ Neutral Delay Differential Equaton
 
-    dxdt(t) = A[i]*x(t - hA[i]) + ... + A[mA]*x(t - hA[mA])
+    .. code-block:: text
+
+        dxdt(t) = A[i]*x(t - hA[i]) + ... + A[mA]*x(t - hA[mA])
               - H[0] * dxdt(t - hH[0]) - ... - H[mH] * dxdt(t - hH[mH])
     
     TODO documentation
@@ -363,10 +365,10 @@ class NDDE(TDSBase):
     def to_ddae(self) -> 'DDAE':
         """ Converts NDDE to DDAE
         
-        
-         [0  I]  [dxdt(t)] = [A0 0] [x(t)] + SUM [A[k]   0] [x(t-tau)]
-         [0  0]  [dadt(t)] = [I -I] [a(t)]   k=1 [H[k-1] 0] [a(t-tau)]
-        
+        .. code-block:: text
+
+            [0  I]  [dxdt(t)] = [A0 0] [x(t)] + SUM [A[k]   0] [x(t-tau)]
+            [0  0]  [dadt(t)] = [I -I] [a(t)]   k=1 [H[k-1] 0] [a(t-tau)]
         
         """
         dtype = self.A.dtype # TODO
@@ -399,7 +401,11 @@ class NDDE(TDSBase):
         """ Converts to Delay-difference Equation
 
         For a NDDAE, the associated delay difference equation is given by
+
+        .. code-block:: text
+
             I*x(t) + H[0]*x(t-hH[0]) + ... + H[mH]*x(t-hH[mH]) = 0
+
         """
         if self.is_logical:
             raise ValueError(f"Can't form Delay-Difference Equation from logical")
@@ -409,8 +415,10 @@ class NDDE(TDSBase):
 
     def eval_char_matrix(self, s:complex) -> npt.NDArray:
         """ Evaluate the characteristic matrix at `s` 
+
+        .. code-block:: text
         
-        M(s) = s*(E + H[0]*exp(-s*hH[0]) + ... + H[mH]*exp(-s*hH[mH])) - A[0]*exp(-s*hA[0]) - ... - A[mA]*exp(-s*hA[mA])
+            M(s) = s*(E + H[0]*exp(-s*hH[0]) + ... + H[mH]*exp(-s*hH[mH])) - A[0]*exp(-s*hA[0]) - ... - A[mA]*exp(-s*hA[mA])
         
         Args: 
             s (complex, float, int): s from complex plane
@@ -422,9 +430,11 @@ class NDDE(TDSBase):
     
     def eval_char_matrix_derivative(self, s: complex) -> npt.NDArray:
         """ Derivative of the characteristic matrix with respect to s evaluated at s
+
+        .. code-block:: text
         
-        dM(s) = E + (H[0]*exp(-s*H[0])+...+H[mH]*exp(-s*H[mH]) - s*(hH[0]*H[0]*exp(-s*H[0])+...+hH[mH]*H[mH]*exp(-s*H[mH])
-                    + (hA[0]*A[0]*exp(-s*hA[0])+...+hA[mA]*A[mA]*exp(-s*hA[mA]))
+            dM(s) = E + (H[0]*exp(-s*H[0])+...+H[mH]*exp(-s*H[mH]) - s*(hH[0]*H[0]*exp(-s*H[0])+...+hH[mH]*H[mH]*exp(-s*H[mH])
+                        + (hA[0]*A[0]*exp(-s*hA[0])+...+hA[mA]*A[mA]*exp(-s*hA[mA]))
 
         Args: 
             s (complex, float, int: s from complex plane

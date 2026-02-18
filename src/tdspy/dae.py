@@ -17,9 +17,10 @@ import numpy.typing as npt
 
 class DAE:
     """
-    
-    E x'(t) = A x(t) + B u(t)
-       y(t) = C x(t) + D u(t) 
+    class representing a DAE in the form
+
+        E x'(t) = A x(t) + B u(t)
+        y(t) = C x(t) + D u(t) 
     
     """
     

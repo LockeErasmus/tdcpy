@@ -65,19 +65,60 @@ class ClosedLoop(TDSBase):
                         <---------------|                   |<---------------
                                         |___________________|
 
-        where:
-                                        
-        y1_indices (list): list of indices (outputs of system 1), if not defined,
-            [0] is assumed
-        u2_indices (list): list of indices (inputs of system 2), if not defined,
-            [0] is assumed
-        y2_indices (list): list of indices (outputs of system 2), if not defined,
-            [0] is assumed
-        u1_indices (list): list of indices (inputs of system 1), if not defined,
-            [0] is assumed
+        Parameters
+        ----------
+        system : DDAE
+            system to be controlled
+        order : int
+            order of controller, non-negative
+        y_indices : list, optional
+            list of indices (outputs of system 1), if not defined, [0] is assumed
+        u_indices : list, optional
+            list of indices (inputs of system 2), if not defined, [0] is assumed
+        K0 : npt.NDArray, optional
+            initial controller values, shape (order+len(u_indices), order+len(y_indices), mK), if not defined, heuristic is used (TODO)
+        hK : npt.NDArray, optional
+            controller delays, shape (mK,), if not defined, [0.] is assumed
+        
+        Returns
+        -------
+        None
 
-        Args:
-            order (int): order of controller, non-negative
+        Notes
+        -----
+        
+
+        Examples
+        --------
+        >>> from tdspy import DDAE, ClosedLoop
+        >>> import numpy as np
+        >>> A0 = np.array([[0., 1.], [-2., -3.]])
+        >>> A = np.stack([A0], axis=2)
+        >>> hA = np.array([1.])
+        >>> E = np.eye(2)
+        >>> B1 = np.array([[0.], [1.]])
+        >>> B = np.stack([B1], axis=2)
+        >>> hB = np.array([0.])
+        >>> C1 = np.array([[1., 0.], [0., 1.]])
+        >>> C = np.stack([C1], axis=2)
+        >>> hC = np.array([0.])
+        >>> D1 = np.array([[0., 0.], [0., 0.]])
+        >>> D = np.stack([D1], axis=2)
+        >>> hD = np.array([0.])
+        >>> system = DDAE(E=E, A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+        >>> order = 1
+        >>> y_indices = [0, 1]
+        >>> u_indices = [0]
+        >>> K0 = np.array([[0., 0.]])
+        >>> K = np.stack([K0], axis=2)
+        >>> hK = np.array([0.])
+        >>> cl = ClosedLoop(system, order, y_indices, u_indices, K, hK)
+        >>> cl.E.shape
+        (6, 6)
+        >>> cl.A.shape
+        (6, 6, 1)
+        >>> cl.hA.shape
+        (1,)
         """
 
         # TODO perform checks
@@ -310,26 +351,32 @@ class ClosedLoop(TDSBase):
     
     @property
     def BB(self) -> npt.NDArray:
+        """ input matrix of equivalent closed-loop """
         return self._BB
     
     @property
     def CC(self) -> npt.NDArray:
+        """ output matrix of equivalent closed-loop """
         return self._CC
 
     @property
     def y_indices(self) -> list[int]:
+        """indices of system outputs fed to controller"""
         return self._y_indices
     
     @property
     def u_indices(self) -> list[int]:
+        """indices of control inputs fed into system"""
         return self._u_indices
     
     @property
     def w_indices(self) -> list[int]:
+        """indices of exogenous inputs fed into system"""
         return [i for i in range(self.system.B.shape[1]) if i not in self.u_indices]
     
     @property
     def z_indices(self) -> list[int]:
+        """indices of system outputs"""
         return [i for i in range(self.system.C.shape[0]) if i not in self.y_indices]
 
     # CONTROLER SPECIFIC
@@ -356,14 +403,17 @@ class ClosedLoop(TDSBase):
 
     @property
     def n_controller_inputs(self) -> int:
+        """number of control inputs"""
         return len(self._y_indices)
     
     @property
     def n_controller_outputs(self) -> int:
+        """number of control outputs"""
         return len(self._u_indices)
     
     @property
     def controller_order(self) -> int:
+        """order of the dynamic controller"""
         return self._order
 
     @property

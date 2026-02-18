@@ -18,6 +18,55 @@ from .ddae import DDAE
 
 class RDDE(TDSBase):
     """ Retarded Delay Differential Equaton
+
+    .. math::
+
+        \dot{x}(t) = \sum_{k=1}^{m_A} A_k x(t - h_{A,k}) 
+            + \sum_{k=1}^{m_B} B_k u(t - h_{B,k})
+    
+    .. math::
+        
+        y(t) = \sum_{k=1}^{m_C} C_k x(t - h_{C,k}) +
+            \sum_{k=1}^{m_D} D_k u(t - h_{D,k})
+
+    where :math:`x(t) \in \mathbb{R}^n` is the state vector, 
+    :math:`u(t) \in \mathbb{R}^p` the input vector, and 
+    :math:`y(t) \in \mathbb{R}^q` the output vector.
+
+        Parameters
+    ----------
+    A : npt.NDArray
+        3D array of shape (n, n, mA) containing system matrices A_k
+    hA : npt.NDArray
+        1D array of shape (mA,) containing system delays h_{A,k}
+    B : npt.NDArray, optional
+        3D array of shape (n, p, mB) containing input matrices B_k,
+        by default None
+    hB : npt.NDArray, optional
+        1D array of shape (mB,) containing input delays h_{B,k},
+        by default None
+    C : npt.NDArray, optional
+        3D array of shape (q, n, mC) containing output matrices C_k,
+        by default None
+    hC : npt.NDArray, optional
+        1D array of shape (mC,) containing output delays h_{C,k},
+        by default None
+    D : npt.NDArray, optional
+        3D array of shape (q, p, mD) containing feed-through matrices D_k,
+        by default None
+    hD : npt.NDArray, optional
+        1D array of shape (mD,) containing feed-through delays h_{D,k},
+        by default None
+    **kwargs: additional arguments
+        tol_singular : float, optional
+            tolerance for considering matrix singular in null space computations,
+            by default 1e-12
+    
+    Returns
+    -------
+    RDDE
+        RDDE object
+
     
     TODO documentation
 
@@ -80,6 +129,7 @@ class RDDE(TDSBase):
 
     @property
     def n(self) -> int:
+        """ dimension of state variable """
         return self._A[0].shape[0]
     
     @property

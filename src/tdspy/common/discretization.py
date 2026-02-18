@@ -32,13 +32,13 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
 
     .. math::
 
-        E \dot{x}(t) = A_0 x(t) + A_1 x(t - h_{A,1}) + ... + A_{m} x(t - h_{A,m}),          (1)
+        E \dot{x}(t) = A_0 x(t) + A_1 x(t - h_{A,1}) + ... + A_{m} x(t - h_{A,m}),          
 
     is discretized into DAE of form:
     
     .. math::
         
-        E \dot{x}(t) = A x(t),                                                              (2)
+        E \dot{x}(t) = A x(t),                                                             
     
     When method == 'cheb', the code uses the companion-type reformulation of
     the spectral discretisaion of the infinitesimal generator of the solution
@@ -76,10 +76,10 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
 
     Notes
     -----
-    1. assumes hA is in compressed form, i.e. hA[0] == 0
-    2. if s0 != 0, the matrices A are shifted accordingly before and after
+    1.  assumes hA is in compressed form, i.e. hA[0] == 0
+    2.  if s0 != 0, the matrices A are shifted accordingly before and after
         discretization
-    3. if method is not recognized, raises ValueError
+    3.  if method is not recognized, raises ValueError
 
         
     References

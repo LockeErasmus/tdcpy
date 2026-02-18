@@ -6,6 +6,9 @@
 Set of function for representation compressions
 -----------------------------------------------
 
+The `compress` module consists of functions for obtaining a minimal representaation of a 
+given set of matrices and delays.
+
 compression := obtaining minimal sorted representation of "something"
 
 Implemented functions:
@@ -34,8 +37,9 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
         A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           
     
     into representation (A*, hA*), where:
-        1. matrices A*[i] are NOT close to zero
-        2. hA* does not contain duplicates
+
+    1. matrices A*[i] are NOT close to zero
+    2. hA* does not contain duplicates
 
     Parameters
     ----------
@@ -77,15 +81,16 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     --------
     >>> import numpy as np
     >>> from tdspy.common.compress import compress_matrices_delays
-    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+    >>> A0 = np.array([[0, 1],[1, 0]])
+    >>> A1 = np.array([[1, 0],[0, 0]])
+    >>> A2 = np.array([[0, 0],[0, 1]])
+    >>> A = np.stack((A0, A1, A2), axis=2)
     >>> hA = np.array([0., 2., 0.])
     >>> compress_matrices_delays(A, hA)
-    (array([[[0.],
-            [0.]]]), array([0., 2.]))   # only the second matrix is kept, delays 0 and 2 are kept
-    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
-    >>> hA = np.array([0., 2., 0.])
-    >>> compress_matrices_delays(A, hA, rtol=1e-2, atol=1e-2)
-    (array([], shape=(2, 2, 0), dtype=int64), array([], dtype=float64))   # all matrices are close to zero, so all are removed
+    (array([[[0., 1.],
+        [1., 0.]],
+       [[1., 0.],
+        [1., 0.]]]), array([0., 2.]))
     """
     # Consider adding tests here - TODO
 
@@ -114,8 +119,9 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
         A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})
     
     into the representation (A*, hA*), where:
-        1. matrices A*[i] are NOT zero
-        2. hA* does not contain duplicates
+        
+    1. matrices A*[i] are NOT zero
+    2. hA* does not contain duplicates
 
     Parameters
     ----------
@@ -136,12 +142,11 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
             compressed representation of A
         compressed_hA : array
             compressed vector of delays
-
+    
     Notes
     -----
     1. the sort is "stable" (see numpy.argsort implementation)
-    2. if all matrices are zero, returns empty array with
-        shape (A.shape[0], A.shape[1], 0) and empty hA   array
+    2. if all matrices are zero, returns empty array with shape `(A.shape[0], A.shape[1], 0)` and empty hA array
     3. if A is empty, returns A and hA unchanged
     4. if hA is empty, returns A and hA unchanged
     5. if A and hA have inconsistent shapes, raises ValueError
@@ -151,15 +156,18 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
     
     Examples
     --------
-    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]], dtype=bool)
+    >>> import numpy as np
+    >>> from tdspy.common.compress import compress_bool_matrices_delays
+    >>> A0 = np.array([[0, 1],[1, 0]])
+    >>> A1 = np.array([[1, 0],[0, 0]])
+    >>> A2 = np.array([[0, 0],[0, 1]])
+    >>> A = np.stack((A0, A1, A2), axis=2)
     >>> hA = np.array([0., 2., 0.])
     >>> compress_bool_matrices_delays(A, hA)
-    (array([[[False]],
-            [[ True]]]), array([0., 2.]))   # only the second matrix is kept, delays 0 and 2 are kept
-    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0]], [[0, 0, 0], [0, 0, 0]]], dtype=bool)
-    >>> hA = np.array([0., 2., 0.])
-    >>> compress_bool_matrices_delays(A, hA)
-    (array([], shape=(2, 2, 0), dtype=bool), array([], dtype=float64))   # all matrices are zero, so all are removed
+    (array([[[0., 0.],
+        [1., 0.]],
+       [[1., 0.],
+        [1., 0.]]]), array([0., 2.]))
     """
     # Consider adding tests here - TODO
 
@@ -185,11 +193,12 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
     Sorts delays into ascending order, i.e. changes the representation (A, hA):
 
     .. math::
-        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                           (1)
+        A_0 x(t - h_{A,0}) + ... + A_{mA} x(t - h_{A,mA})                     
     
     into representation (A*, hA*), where:
-        1. hA* is now in ascending order
-        2. shapes are preserved
+
+    1. hA* is now in ascending order
+    2. shapes are preserved
 
     Parameters
     ----------
@@ -221,23 +230,19 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
 
     Examples
     --------
-    >>> A = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 1, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
+    >>> import numpy as np
+    >>> from tdspy.common.compress import sort_matrices_delays
+    >>> A0 = np.array([[0, 1],[1, 0]])
+    >>> A1 = np.array([[1, 0],[0, 0]])
+    >>> A2 = np.array([[0, 0],[0, 1]])
+    >>> A = np.stack((A0, A1, A2), axis=2)
     >>> hA = np.array([0., 2., 0.])
     >>> sort_matrices_delays(A, hA)
-    (array([[[0., 0.],
-            [0., 0.]],
-           [[0., 0.],
-            [1., 0.]],
-           [[0., 0.],
-            [0., 0.]],
-           [[0., 0.],
-            [0., 0.]],
-           [[0., 0.],
-            [0., 0.]],
-           [[0., 0.],
-            [0., 0.]],
-           [[0., 0.],
-            [0., 0.]]]), array([0., 0., 2.]))   # delays are now sorted, shapes are preserved
+    (array([[[0, 0, 1],
+            [1, 0, 0]],
+    <BLANKLINE>
+            [[1, 0, 0],
+            [0, 1, 0]]]), array([0., 0., 2.]))
     """
     # Consider adding tests here - TODO
     sorted_index = np.argsort(hA, kind="stable")

@@ -1,6 +1,9 @@
 tdspy.common package
 ====================
 
+The :py:mod:`tdspy.common` package contains common utilities for the tdspy package, including functions for working 
+with quasipolynomials, discretization, and composition of systems.
+
 Submodules
 ----------
 

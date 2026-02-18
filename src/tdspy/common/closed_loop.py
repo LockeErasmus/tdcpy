@@ -6,9 +6,11 @@
 Closed-loop and controller related functionality
 ------------------------------------------------
 
+The closed-loop module contains helper functions for building a closed-loop interconnection of a plant and controller.
+
 Implemented functions:
 
-1. `controller_reprezentation`: creates an empty controller representation ``(E, K, hK)`` given the order, number of inputs and outputs, and delays for matrices ``(Ac, Bc, Cc, Dc)`` (if applicable)
+1. `controller_reprezentation`: creates an empty controller representation ``(E, K, hK)`` given the order, number of inputs and outputs, and delays for matrices ``(Ac, Bc, Cc, Dc)`` (if applicable).
 
 """
 
@@ -101,7 +103,7 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
     >>> K.shape
     (1, 2, 2)
     >>> hK
-    array([0., 1.], dtype=float32)
+    array([0., 1.])
 
     """
 

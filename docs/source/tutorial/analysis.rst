@@ -20,10 +20,10 @@ The characteristic equation of the retarded time delay system defined by :eq:`eq
 
     \det\left(\lambda I - A_0 - \sum_{i=1}^m A_i e^{-\lambda \tau_i}\right) = 0.
 
-Unlike ODEs, the characteristic function is a quasipolynomial, which in general consists of infinitely 
-many characteristic roots. However it is known that for retarded systems, there can exist only finitely many characteristic roots to a given half plane. 
+Unlike ODEs, the characteristic function is a quasipolynomial, and therefore there exist infinitely 
+many characteristic roots. However it is known that for retarded systems, there can exist only finitely many roots to a given half plane. 
 
-In `TDSpy` the function :func:`tdspy.roots` is used to compute the characteristic roots of the retarded system. 
+In `TDSpy` the function :func:`tdspy.roots` can be used to compute the characteristic roots of the retarded system. 
 The user specifies the region of the complex plane in which the roots are to be computed, either by specifying the real part, or alternately the rectangular region of the complex plane. 
 
 .. code-block:: python
@@ -45,7 +45,7 @@ More details on the discretization can be found in the tutorial :doc:`/auto_exam
 .. admonition:: Example: Roots of a retarded time-delay system
     :class: example
 
-    The characteristic equation for the retarded system `rdde` defined in :doc:`/tutorial/definitions` reads as:
+    The characteristic equation of the retarded system `rdde` defined in :doc:`/tutorial/definitions` reads as:
 
     .. math::
 
@@ -115,10 +115,28 @@ for which the function :func:`tdspy.spectral_abscissa` can be used as follows:
     alpha = tds.spectral_abscissa(rdde)
 
 For the system to be stable, the spectral abscissa must be strictly negative, which is equivalent to all characteristic roots being in the left half plane. 
+
 Finally, if the user wishes to incorporate the rightmost root computation within a subfunction, the low-level API :func:`tdspy.stability.characteristic_roots.rightmost_root` can be called instead using: 
-`root_star, root_info = rightmost_root(E, A, hA, r=-10.0)`, 
-where `root_info` is a tuple containing additional information connected with the rightmost root. The above function
-is called internally within the high-level function :func:`tdspy.spectral_abscissa`.
+Often, the user may wish to perform root computations within a subfunction, for example
+within an optimization routine. In such cases, the low-level API :func:`tdspy.stability.characteristic_roots.rightmost_root` comes in handy.
+The rightmost root :math:`\lambda^*` and the related information can be obtained by calling the function as follows:
+
+.. code-block:: python
+    
+    from tdspy.stability.characteristic_roots import rightmost_root
+    root_star, root_info = rightmost_root(E, A, hA, r=real_part)
+
+where `root_star` is the rightmost root found and `root_info` is a tuple containing the following:
+
+* `M`: Characteristic matrix evaluated at :math:`\lambda^*`
+* `DM`: Derivative of the characteristic matrix with respect to :math:`\lambda` evaluated at :math:`\lambda^*`
+* `u`: Left eigenvector of the characteristic matrix corresponding to :math:`\lambda^*`
+* `v`: Right eigenvector of the characteristic matrix corresponding to :math:`\lambda^*`
+* `root_star_found`: Boolean indicating whether the rightmost root was found
+* `cr_info.max_size_evp_enforced`: Maximum size of the eigenvalue problem enforced during computation.
+
+The above information is essential for computing the gradients of the spectral abscissa with respect to the system parameters, used 
+extensively for gradient computation with respect to system parameters in stabilization routines.
 
 **Summary**
 

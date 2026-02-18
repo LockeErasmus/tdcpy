@@ -51,8 +51,8 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
 
     Notes
     -----
-    1. if this function does not suit you, copy and rewrite this
-    2. if you want to save animation, use ani.save(...) method of returned
+    1.  if this function does not suit you, copy and rewrite this
+    2.  if you want to save animation, use ani.save(...) method of returned
         Animation object
 
     Examples

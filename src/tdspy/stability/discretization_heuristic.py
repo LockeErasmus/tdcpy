@@ -248,10 +248,12 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
     such that exp(-s*taum) is sufficiently well approximated in the rectanuglar
     region in complex plane:
 
-    region[1]+1j*region[4] --------- region[2]+1j*region[4]
-             |                                |
-             |                                |
-    region[1]+1j*region[3] --------- region[2]+1j*region[3]
+    .. code-block:: text
+
+        region[1]+1j*region[4] --------- region[2]+1j*region[4]
+                |                                |
+                |                                |
+        region[1]+1j*region[3] --------- region[2]+1j*region[3]
 
     Args:
         region (tuple): tuple representing rectangular region in complex plane,
@@ -260,11 +262,12 @@ def compute_n_rect(region: tuple[int], tau_max, **kwargs) -> int:
         tau_max (float): maximal delay, has to be >= 0
         kwargs:
 
-    Returns:
-        tuple containing
-
-            - n (int): number of discretization points necessary
-            - origin (complex): origin TODO
+    Returns
+    -------
+    
+    tuple containing
+        - n (int): number of discretization points necessary
+        - origin (complex): origin TODO
     
     See:
         [1] Wu, Z., & Michiels, W. (2012) Reliably computing all

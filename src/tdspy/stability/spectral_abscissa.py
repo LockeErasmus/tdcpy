@@ -171,20 +171,22 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
         Metadata returned from :func:`gamma_normalized_diff` corresponding
         to the root with smallest residual (or ``None`` when unavailable).
 
-        Notes
-        -----
-        - If ``DD.shape[1] == 0`` the function returns ``-np.inf`` to indicate
-            no meaningful contribution from the delay-difference operator.
-        - If the root-finding fails but the zero-frequency gamma satisfies
-            ``gamma(0) >= 1``, the routine treats the strong spectral abscissa
-            as ``np.inf``; otherwise ``-np.inf`` is used. In the current
-            implementation a failed root solve raises ``NotImplementedError``
-            instead of returning a metadata-rich result.
+    Notes
+    -----
+    -   If ``DD.shape[1] == 0`` the function returns ``-np.inf`` to indicate
+        no meaningful contribution from the delay-difference operator.
+    -   If the root-finding fails but the zero-frequency gamma satisfies
+        ``gamma(0) >= 1``, the routine treats the strong spectral abscissa
+        as ``np.inf``; otherwise ``-np.inf`` is used. In the current
+        implementation a failed root solve raises ``NotImplementedError``
+        instead of returning a metadata-rich result.
 
-        References:
-        [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
-            computation for time-delay systems: an eigenvalue-based approach.
-            Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
+    References
+    ----------
+
+    [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
+        computation for time-delay systems: an eigenvalue-based approach.
+        Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
     """
     cd0 = kwargs.get("cd0", 0)
     gamma_kwargs = kwargs.get("gamma_kwargs", dict())

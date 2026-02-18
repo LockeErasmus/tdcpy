@@ -56,20 +56,20 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
     **kwargs : dict, optional
         Additional arguments:
 
-        - return_residuals (bool): Whether to also return residuals or not.
+        -   return_residuals (bool): Whether to also return residuals or not.
             Default False.
-        - tol (float): Absolute tolerance. Default 1e-10.
-        - max_iterations (int): Maximum number of newton iterations.
+        -   tol (float): Absolute tolerance. Default 1e-10.
+        -   max_iterations (int): Maximum number of newton iterations.
             Default 20.
 
     Returns
     -------
     tuple containing
 
-        - roots (npt.NDArray): 1D array of roots with improved precision.
-        - residuals (npt.NDArray): 1D array of residuals.
-        - converged_mask (npt.NDArray): 1D bool array indicating if root converged.
-        - large_correction_mask (npt.NDArray): 1D bool array indicating if correction
+        -   roots (npt.NDArray): 1D array of roots with improved precision.
+        -   residuals (npt.NDArray): 1D array of residuals.
+        -   converged_mask (npt.NDArray): 1D bool array indicating if root converged.
+        -   large_correction_mask (npt.NDArray): 1D bool array indicating if correction
             is large.
 
     Notes
@@ -81,9 +81,9 @@ def newton_correction(roots0: npt.NDArray, E: npt.NDArray, A: npt.NDArray,
         shapes are not checked to speed up computation.
     2. It is possible some corrections won't converge (`residual` check)
     3. It is possible some corrections converge, hoewever corrections are
-          "large" (see "newton method - basin of attraction"), these corrections
-          should be taken with a grain of salt because root can converge to root
-          which is already present in solution.
+        "large" (see "newton method - basin of attraction"), these corrections
+        should be taken with a grain of salt because root can converge to root
+        which is already present in solution.
 
     """
     return_residuals = kwargs.get("return_residuals", False)

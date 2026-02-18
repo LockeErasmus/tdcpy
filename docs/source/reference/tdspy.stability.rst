@@ -1,6 +1,10 @@
 tdspy.stability package
 ============================
 
+The :py:mod:`tdspy.stability` package contains functions for computing the characteristic roots, and spectral abscissa of time-delay systems. 
+
+
+
 Submodules
 ----------
 
@@ -47,7 +51,7 @@ tdspy.stability.newton module
 tdspy.stability.spectral\_abscissa module
 -----------------------------
 
-.. automodule:: tdspy.stabiity.spectral_abscissa
+.. automodule:: tdspy.stability.spectral_abscissa
    :members:
    :undoc-members:
    :show-inheritance:

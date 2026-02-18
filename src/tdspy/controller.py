@@ -58,24 +58,11 @@ def _handle_indices_defaults(u_indices: list[int] | None, y_indices: list[int] |
 
 def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list = None,
                  y2_indices: list=None, u1_indices:list = None, **kwargs) -> DDAE:
-    """ Creates and interconnected system
-
-    Args:
-        tds1 (TDS): system 1
-        tds2 (TDS): system 2
-        y1_indices (list): list of indices (outputs of system 1), if not defined,
-            [0] is assumed
-        u2_indices (list): list of indices (inputs of system 2), if not defined,
-            [0] is assumed
-        y2_indices (list): list of indices (outputs of system 2), if not defined,
-            [0] is assumed
-        u1_indices (list): list of indices (inputs of system 1), if not defined,
-            [0] is assumed
-        **kwargs:
-            compress (bool): perform compression of resulting system, default
-                True
+    """ Creates and interconnected system from two systems and interconnection indices
 
     Assume we have two systems:
+
+    .. code-block:: text
 
         E1 dx1dt = SUM A1[i] x1(t-hA1[i]) + SUM B1[j] u1(t-hB1[j])
               y1 = SUM C1[k] x1(t-hC1[k]) + SUM D1[l] u1(t-hD1[l])
@@ -83,35 +70,74 @@ def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list 
         E2 dx2dt = SUM A2[i] x2(t-hA2[i]) + SUM B2[j] u2(t-hB2[j])
               y2 = SUM C2[k] x2(t-hC2[k]) + SUM D2[l] u2(t-hD2[l])
         
-    And interconnection defined via indices mapping, then the final system can
-    be discribed via TODO
+        And interconnection defined via indices mapping, then the final system can
+        be discribed via TODO
 
 
-    x* = [x1, u1, y1, x2, u2, y2]
+        x* = [x1, u1, y1, x2, u2, y2]
 
-        E1, 0, 0,  0, 0, 0
-         0, 0, 0,  0, 0, 0
-    E =  0, 0, 0,  0, 0, 0
-         0, 0, 0, E2, 0, 0
-         0, 0, 0,  0, 0, 0
-         0, 0, 0,  0, 0, 0
-    
-
-        E1, 0, 0,  0, 0, 0
-         0, 0, 0,  0, 0, 0
-    E =  0, 0, 0,  0, 0, 0
-         0, 0, 0, E2, 0, 0
-         0, 0, 0,  0, 0, 0
-         0, 0, 0,  0, 0, 0
+            E1, 0, 0,  0, 0, 0
+            0, 0, 0,  0, 0, 0
+        E = 0, 0, 0,  0, 0, 0
+            0, 0, 0, E2, 0, 0
+            0, 0, 0,  0, 0, 0
+            0, 0, 0,  0, 0, 0
     
     TODO create scheme and maybe even equations
 
-    Args:
-        tds1 (TDS): system 1 to be interconnected
-        tds2 (TDS): system 2 to be interconnected
+    Parameters
+    ----------
 
-    Returns:
-        interconnected system (DDAE)
+    tds1 : DDAE
+        system 1 to be interconnected
+    tds2 : DDAE
+        system 2 to be interconnected
+    y1_indices : list, optional
+        list of indices (outputs of system 1), if not defined, [0] is assumed
+    u2_indices : list, optional
+        list of indices (inputs of system 2), if not defined, [0] is assumed
+    y2_indices : list, optional
+        list of indices (outputs of system 2), if not defined, [0] is assumed
+    u1_indices : list, optional
+        list of indices (inputs of system 1), if not defined, [0] is assumed
+    **kwargs:
+        compress (bool): perform compression of resulting system, default True
+
+        
+    Returns
+    -------
+    interconnected system: DDAE
+
+    Notes
+    -----
+
+    Examples
+    --------
+    >>> from tdspy.controller import interconnect
+    >>> from tdspy.ddae import DDAE
+    >>> A1 = np.array([[[1.0]]])
+    >>> hA1 = np.array([0.0])
+    >>> E1 = np.eye(1)
+    >>> B1 = np.array([[[1.0]]])
+    >>> hB1 = np.array([0.0])
+    >>> C1 = np.array([[[1.0]]])
+    >>> hC1 = np.array([0.0])
+    >>> D1 = np.array([[[0.0]]])
+    >>> hD1 = np.array([0.0])
+    >>> tds1 = DDAE(A=A1, hA=hA1, E=E1, B=B1, hB=hB1, C=C1, hC=hC1, D=D1, hD=hD1)
+    >>> A2 = np.array([[[0.5]]])
+    >>> hA2 = np.array([0.0])
+    >>> E2 = np.eye(1)
+    >>> B2 = np.array([[[1.0]]])
+    >>> hB2 = np.array([0.0])
+    >>> C2 = np.array([[[1.0]]])
+    >>> hC2 = np.array([0.0])
+    >>> D2 = np.array([[[0.0]]])
+    >>> hD2 = np.array([0.0])
+    >>> tds2 = DDAE(A=A2, hA=hA2, E=E2, B=B2, hB=hB2, C=C2, hC=hC2, D=D2, hD=hD2)
+    >>> interconnected = interconnect(tds1, tds2)
+    >>> interconnected.E.shape
+    (6, 6)
     """
 
     # perform checks
@@ -270,8 +296,32 @@ def create_static_controller(K: npt.NDArray) -> DDAE:
         I dxdt = A*x + B*u
              y = C*x + K*u
     
-    Args:
-        K (array): 1D or 2D array representing static controller gains
+    Parameters
+    ----------
+    K : array
+        1D or 2D array representing static controller gains
+
+    Returns
+    -------
+    DDAE
+        DDAE representation of static controller
+
+    Notes
+    -----
+    
+    Examples
+    --------
+    >>> from tdspy.controller import create_static_controller
+    >>> K = np.array([[1.0, 2.0], [3.0, 4.0]])
+    >>> controller = create_static_controller(K)
+    >>> controller.A.shape
+    (0, 0, 1)
+    >>> controller.B.shape
+    (0, 2, 0)
+    >>> controller.C.shape
+    (2, 0, 0)
+    >>> controller.D.shape
+    (2, 2, 1)
     """
 
     assert isinstance(K, np.ndarray), "K is assumed to be array"
@@ -301,8 +351,42 @@ def create_dynamic_controller(A: npt.NDArray, B: npt.NDArray, C: npt.NDArray,
         I dxdt = A*x + B*u
              y = C*x + K*u
     
-    Args:
-        K (array): 1D or 2D array representing static controller gains
+    Parameters  
+    ----------
+    A : array
+        state matrix, shape (n, n)
+    B : array
+        input matrix, shape (n, m)
+    C : array
+        output matrix, shape (p, n)
+    D : array
+        feedthrough matrix, shape (p, m)
+
+    Returns
+    -------
+    ddae : DDAE
+        DDAE representation of dynamic controller
+
+    Notes
+    -----
+
+    Examples
+    --------
+    >>> from tdspy.controller import create_dynamic_controller
+    >>> A = np.array([[0.0, 1.0], [-2.0, -3.0]])
+    >>> B = np.array([[0.0], [1.0]])
+    >>> C = np.array([[1.0, 0.0]])
+    >>> D = np.array([[0.0]])
+    >>> controller = create_dynamic_controller(A, B, C, D)
+    >>> controller.A.shape
+    (2, 2, 1)
+    >>> controller.B.shape
+    (2, 1, 1)
+    >>> controller.C.shape
+    (1, 2, 1)
+    >>> controller.D.shape
+    (1, 1, 1)
+
     """
 
     assert isinstance(A, np.ndarray), "A is assumed to be array"
@@ -339,18 +423,46 @@ def interconnect2(tds1: DDAE, y1_indices: list=None, u1_indices:list = None,
                   **kwargs) -> DDAE:
     """ Creates and interconnected system ready for stabilitzation
 
-    Args:
-        tds1 (TDS): system 1 to be interconnected
-        y1_indices (list): indicies of measurements
-        u1_indices (list): indicies of controled inputs
-        hA2 (array): controller delays, default None will assume delay vector
-            to be [0.0]
-        hB2
-        hC2
-        hD2
+    Parameters
+    ----------
+    tds1 : DDAE
+         system 1 to be interconnected
+    y1_indices : list, optional
+        indices of measurements
+    u1_indices : list, optional
+        indices of controlled inputs
+    hA2 : array, optional
+        controller delays, default None will assume delay vector to be [0.0]
+    hB2 : array, optional
+        controller delays, default None will assume delay vector to be [0.0]
+    hC2 : array, optional
+        controller delays, default None will assume delay vector to be [0.0]
+    hD2 : array, optional
+        controller delays, default None will assume delay vector to be [0.0]
 
-    Returns:
-        interconnected system (DDAE)
+    Returns
+    -------
+    ddae : DDAE
+        interconnected system 
+
+    Examples
+    --------
+    >>> from tdspy.controller import interconnect2
+    >>> from tdspy.ddae import DDAE
+    >>> A1 = np.array([[[1.0]]])
+    >>> hA1 = np.array([0.0])
+    >>> E1 = np.eye(1)
+    >>> B1 = np.array([[[1.0]]])
+    >>> hB1 = np.array([0.0])
+    >>> C1 = np.array([[[1.0]]])
+    >>> hC1 = np.array([0.0])
+    >>> D1 = np.array([[[0.0]]])
+    >>> hD1 = np.array([0.0])
+    >>> tds1 = DDAE(A=A1, hA=hA1, E=E1, B=B1, hB=hB1, C=C1, hC=hC1, D=D1, hD=hD1)
+    >>> interconnected = interconnect2(tds1)
+    >>> interconnected.E.shape
+    (5, 5)
+
     """
     # perform checks
 

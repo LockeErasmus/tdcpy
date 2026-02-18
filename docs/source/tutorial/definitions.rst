@@ -6,10 +6,10 @@ Creating TDS Objects
 
 
 A time-delay system (TDS) is a dynamical system in which the evolution of the state depends not only on its current state but also on its past states.
-Such systems are commonly modeled using delay-differential equations (DDEs) which are differential equations that include terms with delays.
+Such systems are commonly modeled using delay-differential equations (DDEs).
 
 Depending on the nature of the delays and their influence on the system dynamics, time-delay systems can be categorized into different classes, viz. retarded, neutral, and delay descriptor systems.
-``TDSpy`` allows to model linear time-invariant (LTI) time-delay systems with multiple discrete delays, represented as delay-differential equations (DDEs) or as delay-differential-algebraic equations (DDAEs).
+``TDSpy`` allows to model linear time-invariant (LTI) time-delay systems with multiple discrete delays, and represented by delay-differential equations (DDEs) or as delay-differential-algebraic equations (DDAEs).
 
 We consider the following classes of time-delay systems and their corresponding `TDSpy` objects:
     
@@ -21,10 +21,9 @@ We consider the following classes of time-delay systems and their corresponding 
  Delay-differential algebraic equations (DDAEs)     :class:`tdspy.ddae`     
 =============================================== ============================
 
-The :class:`tdspy.base` class provides the abstract parent class on which the above `rdde`, `ndde`, and `ddae` classes are based.
-Each class comes with its own set of defined methods and properties, which are detailed in the :doc:`API reference <../reference/api_reference>` section of the documentation.
-
-Besides, the software also handles quasi-polynomial representation of time-delay systems, as explained in the next section.
+The :class:`tdspy.base` class provides the abstract parent class on which the `rdde`, `ndde`, and `ddae` classes are based.
+Each class comes with its own set of methods and properties, which are detailed in the :doc:`API reference <../reference/api_reference>` section of the documentation.
+Additionally, the software also handles quasi-polynomial representation of time-delay systems.
 
 Retarded DDEs
 ---------------------
@@ -43,7 +42,16 @@ The matrices :math:`B_j` and :math:`C_i` correspond to the input and output matr
 We will skip the input and output terms for now, and will focus mainly on the system matrices as these define the spectral properties.
 
 
-In ``TDSpy``, a retarded time-delay system can be created using the (high-level) :func:`tdspy.rdde` class.
+In ``TDSpy``, a retarded time-delay system can be created using the (high-level) `RDDE` function from the `:func:`tdspy.rdde` class.
+
+.. note::
+    :collapsible:
+        
+    The system matrices :math:`(A_i, B_j, C_i, D_j)` are stored as 3D NumPy arrays, with the third dimension corresponding to the delays :math:`(h_{A_i}, h_{B_j}, h_{C_i}, h_{D_j})` respectively.
+    For example, the system matrices :math:`A_i, i=1,\ldots,m_A` are represented as 3D NumPy arrays of shape :math:`(n, n, m_A)`, where :math:`n` is the order of the system,
+    and :math:`m_A` is the number of delays (including the zero delay).
+    To access the system matrix corresponding to a specific delay, one can use `rdde.A[:,:,i]`, where :math:`i` is the index of the delay.
+    When calling the :func:`RDDE` function, the software automatically compresses the delays and sorts the system matrices in ascending order of delays.
 
 .. admonition:: Example: Simple problem
     :class: example
@@ -61,8 +69,10 @@ In ``TDSpy``, a retarded time-delay system can be created using the (high-level)
 
     .. code-block:: python
 
-        A0 = np.array([[1, 0], [0, 1]], dtype=float)
-        A1 = np.array([[0, 1], [0.5, 0]], dtype=float)
+        import numpy as np
+        import tdspy as tds
+        A0 = np.array([[1., 0.], [0., 1.]])
+        A1 = np.array([[0., 1.], [0.5, 0.]])
         delays = np.array([0,0.5])
         rdde = tds.RDDE(A = [A0, A1], hA=delays)
   
@@ -73,9 +83,9 @@ The above works similar to the `TDS-Control` function `tds_create('A',{A0,A1},'h
 .. note::
     :collapsible:
 
-    While in the above syntax, the system matrices are provided as a list of 2D NumPy arrays, the function internally converts the system matrices into a 3D NumPy array, where the third dimension corresponds to the delays.
-    The system matrices can also be created directly using the 3D NumPy array format, which is important when using the equivalent low-level API functions. 
-    Equivalent to the above code snippet, the following code snippet also creates the system matrices can be defined using the 3D NumPy array format as:
+    In the above syntax, the system matrices are provided as a list of 2D NumPy arrays. However, the function internally converts the system matrices into a 3D NumPy array.
+    The system matrices can also be created directly using the 3D NumPy array format, which is essential when using the equivalent low-level API. 
+    Equivalent to the above code snippet, the following code snippet can also be used. Here the system matrices are defined using the 3D NumPy array format as:
 
     .. code-block:: python
 
@@ -92,7 +102,7 @@ The above works similar to the `TDS-Control` function `tds_create('A',{A0,A1},'h
         rdde = tds.RDDE(A=A, hA=delays)
 
 
-For more details refer :ref:`tds_control_manual_examples`.
+For more examples on retarded systems, refer :ref:`tds_control_manual_examples`.
 
 
 Neutral DDEs
@@ -113,7 +123,7 @@ The associated delay-difference equation (ADDE) for the above is given by:
 
     x(t) + \sum_{i=1}^{m_H} H_i x(t - h_{H_i}) = 0.
 
-In case of neutral systems, the above ADDE is important for the stability analysis of the system.
+For neutral systems, the ADDE is important for stability analysis, especially in connection with the so-called strong stability condition.
 
 A neutral time-delay system can be created using the :func:`tdspy.ndde` class as demonstrated in the example below. 
 
@@ -149,6 +159,11 @@ A neutral time-delay system can be created using the :func:`tdspy.ndde` class as
     .. code-block:: python
 
         adde = ndde_to_diff(H=ndde.H, hH=ndde.hH)
+
+.. note:: 
+    :collapsible:
+
+    For converting an NDDE to a DDAE, one can use the function :func:`ndde.to_ddae`.
 
 
 Delay-differential algebraic equations (DDAEs)

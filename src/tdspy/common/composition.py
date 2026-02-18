@@ -4,6 +4,9 @@
 
 """
 Set of functions for TDS composition
+------------------------------------------
+The `composition` module contains functions required for creating a packed representation of a controller or a system itself.
+The packed representation can later be used in the closed-loop interconnection with the system.
 
 Implemented functions:
 
@@ -114,7 +117,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     - Assumes all input arrays are non-empty
     - If EE, AA, hAA are provided, they are updated in place and returned
     - If EE, AA, hAA are not provided, they are created and returned
-    - The resulting system is in the form suitable for creating ClosedLoop object
+    - The resulting system is in the form suitable for creating a `ClosedLoop` object
 
     Examples
     ---------

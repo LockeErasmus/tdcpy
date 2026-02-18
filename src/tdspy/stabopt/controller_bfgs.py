@@ -15,7 +15,7 @@ from scipy import linalg, optimize
 from tdspy.common.delay_difference_equation import ddae_to_diff
 from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 from tdspy.common.compress import compress_matrices_delays
-from .gradients import func_sa, func_cd, func_gamma, grad_gamma0
+from .gradients import func_sa, func_cd, grad_gamma0
 from tdspy.controller import create_static_controller, interconnect3
 from tdspy.common.composition import concatenate_2x2_by_delays
 from tdspy import DDAE, ClosedLoop  
@@ -65,7 +65,18 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
 
     Examples
     --------
-    TODO
+    >>> from tdspy.stabopt.controller_bfgs import design_bfgs
+    >>> import numpy as np
+    >>> E = np.eye(2)
+    >>> P0 = np.array([[-1., 0.], [0., -2.]])
+    >>> P1 = np.array([[-0.5, 0.], [0., -0.5]])
+    >>> P = np.stack([P0, P1], axis=2)
+    >>> hP = np.array([0.,0.5])
+    >>> K0 = np.zeros((2,2,1))
+    >>> hK = np.array([0.])
+    >>> B = np.eye(2)
+    >>> C = np.eye(2)
+    >>> sol = design_bfgs(E, P, hP, K0, hK, B, C, options={"disp": True})
 
     """
 
@@ -171,14 +182,37 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     -------
     sol : OptimizeResult
         Optimization result containing the optimal controller parameters and optimization information
+        x: optimal controller parameters
+        fun: optimal objective function value
+        success: whether the optimization was successful
+        message: description of the cause of the termination
 
     Notes
     -----
+    1. The optimization problem is non-convex, and the solution may depend on the initial controller parameters.
+    2. The default solver if L-BFGS-B. 
+    3. The optimization options can be specified via the `options` key in `kwargs`.
     
 
     Examples
     --------
-    TODO
+    
+    >>> from tdspy.stabopt.controller_bfgs import minimize_spectral_abscissa
+    >>> from tdspy.ddae import DDAE
+    >>> A0 = np.array([[-1., 0.], [0., -2.]])
+    >>> A1 = np.array([[1., 0.], [0., 1.]])
+    >>> A = np.stack([A0, A1], axis=2)
+    >>> hA = np.array([0., 1.])
+    >>> Bu = np.array([ [-0.1],[-0.2]    ])
+    >>> B = np.stack([Bu],axis=2)
+    >>> hB = np.array([0.5])
+    >>> C = np.array(np.eye(2))
+    >>> C = np.stack([C],axis=2)
+    >>> hC = np.array([0])
+    >>> D = np.zeros(shape=(2,1,1), dtype=float)    # must be defined, otherwise error!
+    >>> hD = np.array([0.])
+    >>> ddae = DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
+    >>> sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True}, type = "barrier")
 
     """
 
@@ -203,7 +237,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     callback = kwargs.get("callback", None)                                                     # callback function for optimization, default is None
     type = kwargs.get("type", "barrier")                                                              # optimization type, default is barrier
     method = kwargs.get("method", "L-BFGS-B")                                                     # optimization method, default is L-BFGS-B
-    options = kwargs.get("options", {"disp": True, "eps":0.001, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
+    options = kwargs.get("options", {"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 1e-12, "maxls": 100})   # optimization options, default is some reasonable settings for BFGS optimization
 
     # verify existing controller mask, ny, nu, nc
     assert K0.shape[0]==nu+order, "dimension of input channels must match controller dimension"
@@ -219,14 +253,14 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     y_indices = kwargs.get("y_indices",np.arange(0,ny))                               # y_indices for closed-loop
     u_indices = kwargs.get("u_indices",np.arange(0,nu))                               # u_indices for closed-loop
     nc = kwargs.get("order",0)                                                             # nc
-    options = kwargs.get("options",{"nstart",1,"Ntheta",10,"w1",0.1,"w2",0.001,"fvalquit",-np.inf})   # get_options
+    options = kwargs.get("options",{"nstart":1,"Ntheta":10,"w1":0.1,"w2":0.001,"fvalquit":-np.inf})   # get_options
     # Ntheta: 
     # w1: acceptable region for gamma0, i.e., gamma0 < 1 - w1, default is 0.001
     # w2: weight for log-barrier term in the objective function, default is 0.001, meaning that we want to balance between minimizing spectral abscissa and ensuring feasibility (gamma0 < 1 - w1)
     # fvalquit: objective function value to quit optimization, default is -inf, meaning no early stopping based on objective function value
     # gn: target gamma for barrier optimization, default is 0.5
 
-    optmization_options = kwargs.get("options",{"disp": True, "eps":0.001, "gtol": 1e-6, "ftol": 0, "maxls": 100})   # get_options
+    optmization_options = kwargs.get("options",{"disp": True, "eps":0.1, "gtol": 1e-6, "ftol": 0, "maxls": 100})   # get_options
     
 
     #################################### Step 1: Initialization ######################################
@@ -374,6 +408,8 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                     if (not np.isfinite(f)) or (not np.all(np.isfinite(grad))):
                         return np.inf, np.zeros_like(x)
 
+
+
                     return (f, grad) 
 
                 x=x0
@@ -429,7 +465,6 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
 
                        
     return sol
-    # raise NotImplementedError("Only retarded systems are currently supported!")
 
     # def check_feasibility(diff):
     #     """

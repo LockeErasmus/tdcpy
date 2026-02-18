@@ -37,10 +37,10 @@ def complex_scatter_axplot(roots: npt.NDArray, ax: Axes, *args, **kwargs) -> Non
     
     Notes
     -----
-    1. if roots is empty, does nothing
-    2. if ax is None, creates new figure and axes
-    3. uses matplotlib scatter function internally
-    4. x axis is real part, y axis is imaginary part
+    1.  if roots is empty, does nothing
+    2.  if ax is None, creates new figure and axes
+    3.  uses matplotlib scatter function internally
+    4.  x axis is real part, y axis is imaginary part
 
     Examples
     --------
@@ -74,9 +74,10 @@ def eigen_plot(roots: npt.NDArray, ax=None, **kwargs):
 
     Notes
     -----
-    1. if ax is None, creates new figure and axes
-    2. plots horizontal and vertical lines at 0
-    3. colors eigenvalues based on their real part:
+    1.  if ax is None, creates new figure and axes
+    2.  plots horizontal and vertical lines at 0
+    3.  colors eigenvalues based on their real part:
+    
         - red for Re(root) > tol
         - blue for |Re(root)| <= tol
         - green for Re(root) < -tol

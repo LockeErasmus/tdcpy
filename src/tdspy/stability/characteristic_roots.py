@@ -8,12 +8,14 @@ Characteristic roots
 Set of functionalities connected to characteristic roots of DDAE
 
 Implemented functions:
-1. roots_ddae: characteristic roots of DDAE
-2. rightmost_root: right most root and necessary things for gradient
+
+1.  roots_ddae: characteristic roots of DDAE
+2.  rightmost_root: right most root and necessary things for gradient
 
 TODO:
-1. split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move 
+1.  split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move 
 higher logic into high level API (tdspy.roots)
+
 """
 
 from collections import namedtuple
@@ -48,7 +50,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
 
     .. math::
 
-        E \Dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})  \ldots \qquad (1)
+        E \dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})  \ldots \qquad (1)
     
     region is defined either by (1) r is float:
         region = {z \in C: Re(z) >= r && Im(z) >= 0}
@@ -91,6 +93,7 @@ def roots_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float | list,
             vector of obtained roots
         roots_info : RootsInfo
             RMR metadata containing:
+            
             discretization : int
                 discretization used for obtaining EVP 
             gamma_r_exceeds_one : bool
@@ -400,7 +403,7 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float=0.0
     TDS is assumed to be defined via E, A, hA as
 
     .. math::
-        E \Dot{x}(t) = \sum\limits_{k=1}^N A_k x(t-h_{A,k})
+        E \dot{x}(t) = \sum\limits_{k=1}^N A_k x(t-h_{A,k})
 
     Parameters
     ----------

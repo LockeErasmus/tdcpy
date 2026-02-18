@@ -40,21 +40,18 @@ def roots(tds: RDDE | NDDE | DDAE , r=0.0, **kwargs) -> tuple[npt.NDArray, Roots
     
     Returns:
         tuple containing
-
-            - cr (array): vector of obtained roots
-            - roots_info (RootsInfo): Roots metadata containing:
-                discretization (int): discretization used for obtaining EVP
-                gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
-                index_exceeds_one (bool): flag that index exceeds one
-                discretization_eigenvalues (array): eigenvalues of EVP
-                max_size_evp_enforced (bool): flag if maximum size of EVP was
-                    enforced
-                newton_inital_guesses (array): roots before newton corrections
-                newton_final_values (array): roots after newton corrections
-                newton_residuals (array): newton residuals
-                newton_unconverged_initial_guesses (array): mask of unconverged
-                    newton initial guesses
-                newton_large_corrections (array): mask of "large" corrections
+            -   cr (array): vector of obtained roots
+            -   roots_info (RootsInfo): Roots metadata containing:
+                    discretization (int): discretization used for obtaining EVP
+                    gamma_r_exceeds_one (bool): flag indicating gamma(r) > 1
+                    index_exceeds_one (bool): flag that index exceeds one
+                    discretization_eigenvalues (array): eigenvalues of EVP
+                    max_size_evp_enforced (bool): flag if maximum size of EVP was enforced
+                    newton_inital_guesses (array): roots before newton corrections
+                    newton_final_values (array): roots after newton corrections
+                    newton_residuals (array): newton residuals
+                    newton_unconverged_initial_guesses (array): mask of unconverged newton initial guesses
+                    newton_large_corrections (array): mask of "large" corrections
     
     References:
 

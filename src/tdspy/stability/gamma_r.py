@@ -90,16 +90,34 @@ def func(x: npt.NDArray, DD: npt.NDArray, hDD: npt.NDArray, r, v0):
         
     using fsolve (#optim. variables: 4*ndiff + 2 + (m-1), #constraints: 4*ndiff + 2 + (m-1) ).
 
-    Returns:
+    Parameters
+    ----------
+    x : ndarray
+        1D array of shape (4*ndiff + 2 + (m-1), ) representing optimization variables
+    DD : ndarray
+        Coefficient matrices packed into 3D array of shape (n, n, m).
+    hDD : ndarray
+        Delays represented by 1D array of shape (m,).
+    r : float
+        Point in complex plane.
+    v0 : ndarray
+        Normalization vector of shape (n, ).
+        
+    Returns
+    -------
         tuple containing
-
-        - y (array): 1D array representing function F evaluated at x
-        - jac (array): jacobian of F evaluated at x
+        y : ndarray
+            1D array representing function F evaluated at x
+        jac : ndarray
+            Jacobian of F evaluated at x, shape (2*(2*ndiff+2) + n_opt, 2*(2*ndiff+1) + n_opt)
     
-    Notes:
-        1. shape of `x` (n_opt, ), n_opt = 4*ndiff + 2 + (m-1)
-        1. shape of `jac` (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
-            n_diff ... dimension of the state vector of the delay-difference equation
+    Notes
+    -----
+
+    1.  shape of `x` (n_opt, ), n_opt = 4*ndiff + 2 + (m-1)
+    2.  shape of `jac` (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
+        n_diff ... dimension of the state vector of the delay-difference equation
+        
     """
     n_diff = DD.shape[0] 
     n_opt = DD.shape[2] - 1
@@ -445,11 +463,11 @@ def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[flo
     where m == len(DD) == len(hDD).
 
     quantity gamma(r; D, hD) is then:
-        1. gamma(r; D, hD) = 0 IF number of delays (vector hD) is less then 2
-        2. obtained via predictor corrector approach, i.e.
-            2a. normalize DIFF (multiply equation (1) by inverse of D[0]) and
-                omit first delay = 0 and first normalized matrix = identity
-            2b. call `gamma_diff_normalized`
+    1.  gamma(r; D, hD) = 0 IF number of delays (vector hD) is less then 2
+    2.  obtained via predictor corrector approach, i.e.
+        2a. normalize DIFF (multiply equation (1) by inverse of D[0]) and
+            omit first delay = 0 and first normalized matrix = identity
+        2b. call `gamma_diff_normalized`
     
     Parameters
     ----------
@@ -474,11 +492,11 @@ def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[flo
     Notes
     -----
 
-    1. if compressed version of DIFF contains 2 or more delays,
+    1.  if compressed version of DIFF contains 2 or more delays,
         invertibility of D[0] is assumed.
-    2. DIFF representation (D, hD) can be emtpy, result will be
+    2.  DIFF representation (D, hD) can be emtpy, result will be
         gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.
-    3. for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
+    3.  for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
         see implementation of `gamma_diff_normalized`
     
     Examples

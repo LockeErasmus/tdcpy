@@ -20,21 +20,25 @@ class TDSBase(ABC):
     @property
     @abstractmethod
     def mA(self) -> int:
+        """ number of delayed terms in the system matrices """
         ...
     
     @property
     @abstractmethod
     def hA(self) -> npt.NDArray:
+        """ vector of delays in the system matrices, shape (mA,) """
         ...
 
     @property
     @abstractmethod
     def A(self) -> npt.NDArray:
+        """ system matrices, shape (n, n, mA) """
         ...
 
     @property
     @abstractmethod
     def E(self) -> npt.NDArray:
+        """ E matrix from TDS representation, shape (n, n) """
         ...
 
     @property

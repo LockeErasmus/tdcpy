@@ -6,13 +6,13 @@
 Spectral abscissa, strong spectral abscissa
 -------------------------------------------
 Functions:
-    1. spectral_abscissa: computes spectral abscissa of TDS
-    2. spectral_abscissa_diff: computes spectral abscissa of associated delay
+    1.  spectral_abscissa: computes spectral abscissa of TDS
+    2.  spectral_abscissa_diff: computes spectral abscissa of associated delay
         difference equation of TDS
-    3. strongspectral_abscissa: computes strong spectral abscissa of TDS
-    4. sa: alias for `spectral_abscissa`
-    5. cd: alias for `spectral_abscissa_diff`
-    6. strong_sa: alias for `strong_spectral_abscissa`
+    3.  strong_spectral_abscissa: computes strong spectral abscissa of TDS
+    4.  sa: alias for `spectral_abscissa`
+    5.  cd: alias for `spectral_abscissa_diff`
+    6.  strong_sa: alias for `strong_spectral_abscissa`
 """
 
 from collections import namedtuple
@@ -101,11 +101,6 @@ def spectral_abscissa_diff(tds: RDDE | NDDE | DDAE, **kwargs):
     and [1, Proposition 1.51] for the strong spectral abscissa of delay
     difference equations associated with NDDEs and DDAEs, respectively. 
  
-    References:
-    [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
-        computation for time-delay systems: an eigenvalue-based approach. 
-        Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
-
     Args:
         tds (TDS): instance of time-delay system, i.e., RDDE, NDDE or DDAE
         **kwargs:
@@ -114,15 +109,20 @@ def spectral_abscissa_diff(tds: RDDE | NDDE | DDAE, **kwargs):
 
     Returns:
         tuple containing:
-
-            - cd (float): strong spectral abscissa of associated delay
+            -   cd (float): strong spectral abscissa of associated delay
                 difference equation
-            - info (TODO): TODO - named tuple matching matlab behaviour?
+            -   info (TODO): TODO - named tuple matching matlab behaviour?
     
     Notes:
         1. If the associated delay difference equations has a large
            number of delays, the computation of the corresponding strong
            spectral abscissa may be (very) slow.
+
+    References
+    ----------
+    [1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
+        computation for time-delay systems: an eigenvalue-based approach. 
+        Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA
     """
     cd0 = kwargs.get("cd0", 0)
 
