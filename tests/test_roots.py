@@ -7,7 +7,6 @@ Tests for tdcpy.roots
 """
 
 import logging
-from imagesize import get
 import pytest
 
 import numpy as np
