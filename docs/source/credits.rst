@@ -31,13 +31,13 @@ specific algorithm comes from. We always include reference in the docstrings.
 Team
 ----
 
-- **Adam Peichl**: Final Boss, Czech Technical University
+- **Adam Peichl**: Developer, Czech Technical University
 
   .. image:: _static/team/adam.jpg
    :width: 100
    :alt: Adam Peichl
 
-- **Adrian Saldanha**: Czech Technical University, KU Leuven
+- **Adrian Saldanha**: Developer, Czech Technical University, KU Leuven
 
   .. image:: _static/team/adrian.jpg
    :width: 100

@@ -238,7 +238,7 @@ def spectral_abscissa_diff(DD: npt.NDArray, hDD: npt.NDArray, **kwargs) -> tuple
             cd_star = -np.inf
         raise NotImplementedError(f"NO gamma_info")
     else:
-        cd_star = float(sol.x)
+        cd_star = sol.x.item() # extract scalar from array
         cd_info = problem._gamma_info_star
     
     return cd_star, cd_info
