@@ -228,17 +228,6 @@ roots_me, info = tdcpy.roots(opt_syst, r=r)
 roots_a, info = tdcpy.roots(create_system(k0), r =r)
 # Plot configuration to mimic MATLAB's plot style
 # %%
-plt.rcParams.update({
-    "text.usetex": True,              
-    "font.family": "serif",           
-    "font.size": 14,                  
-    "axes.labelsize": 16,
-    "axes.titlesize": 16,
-    "legend.fontsize": 12,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12
-})
-
 
 plt.plot(np.real(roots_me), np.imag(roots_me), '*', markersize = 10, label='Right-most roots with optimized filter')
 plt.plot(np.real(roots_a), np.imag(roots_a), '*', markersize = 10, label='Right-most roots with Appeltans et al. controller')
@@ -266,5 +255,4 @@ ax.annotate(
 )
 
 plt.legend()
-plt.tight_layout()
 plt.show()
