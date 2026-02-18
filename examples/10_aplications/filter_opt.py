@@ -8,7 +8,7 @@ Appeltans et al. The system is described as follows:
 
 .. math::
     
-    \begin{align}
+    \begin{aligned}
         \dot{x}(t) &=
         \underset{A}{\begin{bmatrix}
         -1 & \tfrac{1}{3} & 1 \\ 
@@ -24,7 +24,7 @@ Appeltans et al. The system is described as follows:
         \underset{C}{\begin{bmatrix}
         0.5 & 0 & 0.5
         \end{bmatrix}} x(t).
-    \end{align}
+    \end{aligned}
 
 where :math:`\tau_0 > 0` denotes a delay in the input channel.
 
