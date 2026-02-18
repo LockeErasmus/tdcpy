@@ -18,7 +18,7 @@ the repository
 .. code-block:: bibtex
 
    @misc{tdcpy,
-     author    = {Peichl, Adam, Saldanha, Adrian, Garcia, Diego},
+     author    = {Peichl, Adam and Saldanha, Adrian and Torres-Garcia, Diego},
      title     = {tdcpy},
      year      = {2026},
      version   = {1.0.0},
