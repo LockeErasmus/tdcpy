@@ -37,7 +37,7 @@ Team
    :width: 100
    :alt: Adam Peichl
 
-- **Adrian Saldanha**: Aprentice, Czech Technical University, KU Leuven
+- **Adrian Saldanha**: Czech Technical University, KU Leuven
 
   .. image:: _static/team/adrian.jpg
    :width: 100
