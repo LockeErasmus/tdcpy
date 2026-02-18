@@ -1,42 +1,42 @@
 API Reference
 =============
 
-The reference describes the modules, functions, classes, and methods available in the TDSpy package.
+The reference describes the modules, functions, classes, and methods available in the tdcpy package.
 
 
 
-* `tdspy`
-* `tdspy.common`
-   * `tdspy.common.closed_loop`
-   * `tdspy.common.composition`
-   * `tdspy.common.compress`
-   * `tdspy.common.delay_difference_equation`
-   * `tdspy.common.discretization`
-   * `tdspy.common.quasipoly`
-* `tdspy.plot`
-   * `tdspy.plot.eigenvalues`
-   * `tdspy.plot.discretization_animation`
-* `tdspy.stability`
-   * `tdspy.stability.characteristic_roots`
-   * `tdspy.stability.spectral_abscissa`
-   * `tdspy.stability.bounds`
-   * `tdspy.stability.discretization_heuristic`
-   * `tdspy.stability.gamma_r`
-   * `tdspy.stability.newton`
-* `tdspy.stabopt`
-   * `tdspy.stabopt.controller_bfgs`
-   * `tdspy.stabopt.gradients`
-   * `tdspy.stabopt.utils`
-* `tdspy.base`
-* `tdspy.closed_loop`
-* `tdspy.controller`
-* `tdspy.dae`
-* `tdspy.ddae`
-* `tdspy.gamma`
-* `tdspy.ndde`
-* `tdspy.roots`
-* `tdspy.spectral_abscissa`
-* `tdspy.zeros`
+* `tdcpy`
+* `tdcpy.common`
+   * `tdcpy.common.closed_loop`
+   * `tdcpy.common.composition`
+   * `tdcpy.common.compress`
+   * `tdcpy.common.delay_difference_equation`
+   * `tdcpy.common.discretization`
+   * `tdcpy.common.quasipoly`
+* `tdcpy.plot`
+   * `tdcpy.plot.eigenvalues`
+   * `tdcpy.plot.discretization_animation`
+* `tdcpy.stability`
+   * `tdcpy.stability.characteristic_roots`
+   * `tdcpy.stability.spectral_abscissa`
+   * `tdcpy.stability.bounds`
+   * `tdcpy.stability.discretization_heuristic`
+   * `tdcpy.stability.gamma_r`
+   * `tdcpy.stability.newton`
+* `tdcpy.stabopt`
+   * `tdcpy.stabopt.controller_bfgs`
+   * `tdcpy.stabopt.gradients`
+   * `tdcpy.stabopt.utils`
+* `tdcpy.base`
+* `tdcpy.closed_loop`
+* `tdcpy.controller`
+* `tdcpy.dae`
+* `tdcpy.ddae`
+* `tdcpy.gamma`
+* `tdcpy.ndde`
+* `tdcpy.roots`
+* `tdcpy.spectral_abscissa`
+* `tdcpy.zeros`
 
 
 .. toctree::
@@ -44,28 +44,29 @@ The reference describes the modules, functions, classes, and methods available i
    :titlesonly:
    :hidden:
 
-   tdspy <tdspy>
-   tdspy.common <tdspy.common>
-   tdspy.plot <tdspy.plot>
-   tdspy.stability <tdspy.stability>
-   tdspy.stabopt <tdspy.stabopt>
-   tdspy.base <tdspy.base>
-   tdspy.closed_loop <tdspy.closed_loop>
-   tdspy.controller <tdspy.controller>
-   tdspy.dae <tdspy.dae>
-   tdspy.ddae <tdspy.ddae>
-   tdspy.gamma <tdspy.gamma>
-   tdspy.ndde <tdspy.ndde>
-   tdspy.roots <tdspy.roots>
-   tdspy.spectral_abscissa <tdspy.spectral_abscissa>
-   tdspy.zeros <tdspy.zeros>
+   tdcpy <tdcpy>
+   tdcpy.common <tdcpy.common>
+   tdcpy.plot <tdcpy.plot>
+   tdcpy.stability <tdcpy.stability>
+   tdcpy.stabopt <tdcpy.stabopt>
+   tdcpy.base <tdcpy.base>
+   tdcpy.closed_loop <tdcpy.closed_loop>
+   tdcpy.controller <tdcpy.controller>
+   tdcpy.dae <tdcpy.dae>
+   tdcpy.ddae <tdcpy.ddae>
+   tdcpy.gamma <tdcpy.gamma>
+   tdcpy.ndde <tdcpy.ndde>
+   tdcpy.rdde <tdcpy.rdde>
+   tdcpy.roots <tdcpy.roots>
+   tdcpy.spectral_abscissa <tdcpy.spectral_abscissa>
+   tdcpy.zeros <tdcpy.zeros>
 
 
 
 .. .. toctree::
 ..    :maxdepth: 4
 
-..    tdspy
+..    tdcpy
 
 .. Subpackages
 .. -----------
@@ -74,7 +75,7 @@ The reference describes the modules, functions, classes, and methods available i
 ..    :maxdepth: 1
 ..    :titlesonly:
 
-..    tdspy.common <common>
-..    tdspy.stability <stability>
-..    tdspy.plot <plot>
-..    tdspy.stabopt <stabopt>
+..    tdcpy.common <common>
+..    tdcpy.stability <stability>
+..    tdcpy.plot <plot>
+..    tdcpy.stabopt <stabopt>

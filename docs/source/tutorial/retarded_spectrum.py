@@ -1,8 +1,8 @@
 
 import numpy as np
-import tdspy as tds
+import tdcpy as tds
 import matplotlib.pyplot as plt
-from tdspy.plot.eigenvalues import eigen_plot
+from tdcpy.plot.eigenvalues import eigen_plot
 
 A0 = np.array([[1, 0], [0, 1]], dtype=float)
 A1 = np.array([[0, 1], [0.5, 0]], dtype=float)

@@ -18,8 +18,8 @@ How do we obtain the delay difference equation from the above?
 """
 
 import numpy as np
-import tdspy as tds
-import tdspy.plot
+import tdcpy as tds
+import tdcpy.plot
 
 tds.init_logger(level="WARNING")    
 
@@ -40,7 +40,7 @@ ddae = ndde.to_ddae()
 cr, RootsInfo = tds.roots(ddae,r=[-3,1,-60,60])
 
 import matplotlib.pyplot as plt
-tdspy.plot.eigen_plot(cr)
+tdcpy.plot.eigen_plot(cr)
 
 
 
@@ -51,7 +51,7 @@ dde = ddae.get_delay_difference_equation()
 crd, RootsInfo = tds.roots(dde,r=[-3,1,-60,60])
 crd
 
-tdspy.plot.eigen_plot(crd)
+tdcpy.plot.eigen_plot(crd)
 
 
 plt.plot([np.real(crd)], [np.imag(crd)], "bo", alpha=0.25)

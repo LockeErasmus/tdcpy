@@ -1,7 +1,7 @@
-tdspy.closed\_loop module
+tdcpy.closed\_loop module
 -------------------------
 
-.. automodule:: tdspy.closed_loop
+.. automodule:: tdcpy.closed_loop
    :members:
    :undoc-members:
    :show-inheritance:

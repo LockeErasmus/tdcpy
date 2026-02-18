@@ -6,15 +6,15 @@
 
 """
 
-import tdspy as tds
+import tdcpy as tds
 import numpy as np
 from scipy import linalg
-from tdspy import controller
-from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
-from tdspy.stability.gamma_r import gamma_normalized_diff
-from tdspy.stabopt.controller_bfgs import find_feasible_point, minimize_spectral_abscissa
-from tdspy.stabopt.utils import diff_dependency_mask
-from tdspy.stabopt.gradients import grad_gamma0, gradient_test
+from tdcpy import controller
+from tdcpy.common.delay_difference_equation import ddae_to_diff, normalize_diff
+from tdcpy.stability.gamma_r import gamma_normalized_diff
+from tdcpy.stabopt.controller_bfgs import find_feasible_point, minimize_spectral_abscissa
+from tdcpy.stabopt.utils import diff_dependency_mask
+from tdcpy.stabopt.gradients import grad_gamma0, gradient_test
 
 
 A0 = np.array([
@@ -37,7 +37,7 @@ hD = np.array([2.5,5.])
 ddae = tds.ddae.DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
 
 
-from tdspy.stabopt.gradients import grad_gamma0, gradient_test
+from tdcpy.stabopt.gradients import grad_gamma0, gradient_test
 
 
 A0 = np.array([
@@ -87,7 +87,7 @@ Kmask = np.full_like(K, fill_value=True,dtype=bool)
 x0 = K.reshape(-1)
 p0 = K.reshape(-1)
 
-from tdspy.stabopt.controller_bfgs import find_feasible_point
+from tdcpy.stabopt.controller_bfgs import find_feasible_point
 # p_feasible = find_feasible_point(E, P, hP, K, hK, BB, CC, nstart=5, gamma0_threshold=0.5)
 
 # # feasibility test
@@ -111,12 +111,12 @@ print(f"Optimized gamma_r = {g0}, gamma_normalized = {gInfo}")
 print(f"Optimized cd = {cd}, gamma_normalized = {cdInfo}")
 
 import matplotlib.pyplot as plt
-import tdspy.plot
+import tdcpy.plot
 fig, (ax1, ax2) = plt.subplots(1,2)
 cr_system, _ = tds.roots(cl.system, r=-0.4, discretization=100)
 cr_cl, _ = tds.roots(cl, r=-0.4, discretization=100)
-tdspy.plot.eigen_plot(cr_cl, ax=ax1)
+tdcpy.plot.eigen_plot(cr_cl, ax=ax1)
 cl.hA[1] = 2.51
 cr_cl, _ = tds.roots(cl, r=-1, discretization=400)
-tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+tdcpy.plot.eigen_plot(cr_cl, ax=ax2)
 plt.show()

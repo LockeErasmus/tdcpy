@@ -1,29 +1,29 @@
-tdspy.stabopt package
+tdcpy.stabopt package
 =====================
 
 Submodules
 ----------
 
-tdspy.stabopt.controller\_bfgs module
+tdcpy.stabopt.controller\_bfgs module
 -------------------------------------
 
-.. automodule:: tdspy.stabopt.controller_bfgs
+.. automodule:: tdcpy.stabopt.controller_bfgs
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stabopt.gradients module
+tdcpy.stabopt.gradients module
 ------------------------------
 
-.. automodule:: tdspy.stabopt.gradients
+.. automodule:: tdcpy.stabopt.gradients
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stabopt.utils module
+tdcpy.stabopt.utils module
 --------------------------
 
-.. automodule:: tdspy.stabopt.utils
+.. automodule:: tdcpy.stabopt.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ tdspy.stabopt.utils module
 Module contents
 ---------------
 
-.. automodule:: tdspy.stabopt
+.. automodule:: tdcpy.stabopt
    :members:
    :undoc-members:
    :show-inheritance:

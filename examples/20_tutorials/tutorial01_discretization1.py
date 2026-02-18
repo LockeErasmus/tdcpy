@@ -27,15 +27,15 @@ infinitesimal generator.
 
 Note that as this is tutorial, we will go deeper than high level interface and
 use internal functions. In the end, the result should be equal to calling
-:code:`tdspy.roots(.)` without specifying discretization.
+:code:`tdcpy.roots(.)` without specifying discretization.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.linalg as linalg
 
-from tdspy.stability.discretization_heuristic import incommensurate_gk, cubic_spline_a, cubic_spline_b
-from tdspy.common.discretization import discretize_ddae
+from tdcpy.stability.discretization_heuristic import incommensurate_gk, cubic_spline_a, cubic_spline_b
+from tdcpy.common.discretization import discretize_ddae
 
 # define time delay system in usual matrix form
 E = np.eye(1)

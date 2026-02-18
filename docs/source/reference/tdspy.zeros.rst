@@ -1,7 +1,7 @@
-tdspy.zeros module
+tdcpy.zeros module
 ------------------
 
-.. automodule:: tdspy.zeros
+.. automodule:: tdcpy.zeros
    :members:
    :undoc-members:
    :show-inheritance:

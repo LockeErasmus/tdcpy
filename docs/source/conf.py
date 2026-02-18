@@ -1,5 +1,5 @@
 """
-Sphinx configuration file for tdspy documentation.
+Sphinx configuration file for tdcpy documentation.
 
 This module configures Sphinx documentation generation including:
 - Path setup for the package
@@ -24,10 +24,10 @@ sys.path.insert(0, SRC_PATH) # package root
 
 # -- Project information -----------------------------------------------------
 
-project = 'tdspy'       # Your package name
+project = 'tdcpy'       # Your package name
 author = 'Adam Peichl'        # Your name
 copyright = '2026, Adam Peichl'  # Copyright info
-release = importlib.metadata.version("tdspy")
+release = importlib.metadata.version("tdcpy")
 version = release
 
 # -- General configuration ---------------------------------------------------
@@ -75,8 +75,8 @@ latex_engine = "pdflatex"
 latex_documents = [
     (
         "index",                # root document
-        "tdspy.tex",            # output .tex file
-        "TDSpy Documentation",  # document title
+        "tdcpy.tex",            # output .tex file
+        "tdcpy Documentation",  # document title
         "Adam Peichl",          # author
         "manual",               # document class
     ),

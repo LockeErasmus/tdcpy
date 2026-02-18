@@ -1,7 +1,7 @@
-tdspy.ddae module
+tdcpy.ddae module
 -----------------
 
-.. automodule:: tdspy.ddae
+.. automodule:: tdcpy.ddae
    :members:
    :undoc-members:
    :show-inheritance:

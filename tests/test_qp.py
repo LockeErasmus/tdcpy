@@ -11,8 +11,8 @@ import pytest
 import numpy as np
 import numpy.typing as npt
 
-import tdspy
-from tdspy.common.quasipoly import compress_qp, qp_to_ndde
+import tdcpy
+from tdcpy.common.quasipoly import compress_qp, qp_to_ndde
 
 def assert_arrays_equal(a: npt.NDArray, b: npt.NDArray):
     assert a.ndim == b.ndim, f"ndim mismatch: {a.ndim} != {b.ndim}"

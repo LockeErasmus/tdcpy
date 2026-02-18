@@ -2,7 +2,7 @@ Project structure and hierarchy
 -------------------------------
 -------------------------------
 
-TDSpy package
+tdcpy package
 -------------------------------
 
 
@@ -11,7 +11,7 @@ TDSpy package
     * `coming_from_matlab.md`
 * `examples`
 * `src`
-    * [`tdspy`](#tdspy)
+    * [`tdcpy`](#tdcpy)
         * [`common`](#common)
             * [`closed_loop`](#closed-loop)
             * [`composition`](#composition)
@@ -49,7 +49,7 @@ TDSpy package
 
 ### Modules
 
-#### `tdspy`
+#### `tdcpy`
 
 ##### `common`
 

@@ -27,7 +27,7 @@ sphinx-quickstart
 Genereate `.rst` files for modules
 
 ```
-sphinx-apidoc -o ./source/ ../src/tdspy/
+sphinx-apidoc -o ./source/ ../src/tdcpy/
 ```
 
 Option if it won't create `.rst` files add `... --force --separate`

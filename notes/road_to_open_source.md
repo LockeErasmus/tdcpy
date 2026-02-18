@@ -33,7 +33,7 @@
 
 ## PyPI
 
-- [ ] Decide on PyPI name (`tdspy` is taken sadly)
+- [ ] Decide on PyPI name (`tdcpy` is taken sadly)
 
 1. tddpy - time delay dynamics
 1. tdcpy - time delay control

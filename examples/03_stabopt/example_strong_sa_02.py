@@ -9,8 +9,8 @@ TODO
 import numpy as np
 import matplotlib.pyplot as plt
 
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 
 # %%
 #
@@ -36,7 +36,7 @@ D1 = np.array([
 D2 = np.array([[0.4], [-0.4], [-0.4]])
 hD = np.array([2.5,5.])
 
-plant = tdspy.DDAE(
+plant = tdcpy.DDAE(
     A=[A0], hA=[0],
     B=[Bu], hB=[5.],
     C=[C], hC=[0],
@@ -48,21 +48,21 @@ print(plant)
 # static controller
 K = np.array([[     0.0409,     0.0612,     0.3837  ]])
 hK = np.array([0])
-closed_loop = tdspy.ClosedLoop(plant, order=0, y_indices=[0, 1, 2], u_indices=[0], K0=np.stack([K], axis=2), hK=hK)
-cl_ddae = tdspy.DDAE(E=closed_loop.E, A=closed_loop.A, hA=closed_loop.hA)
+closed_loop = tdcpy.ClosedLoop(plant, order=0, y_indices=[0, 1, 2], u_indices=[0], K0=np.stack([K], axis=2), hK=hK)
+cl_ddae = tdcpy.DDAE(E=closed_loop.E, A=closed_loop.A, hA=closed_loop.hA)
 
 
 # %%
-cl_roots, rootsInfo = tdspy.roots(closed_loop, r=[-1, 1, -100, 100])
-cl_roots, rootsInfo = tdspy.roots(cl_ddae, r=[-1, 1, -100, 100])
+cl_roots, rootsInfo = tdcpy.roots(closed_loop, r=[-1, 1, -100, 100])
+cl_roots, rootsInfo = tdcpy.roots(cl_ddae, r=[-1, 1, -100, 100])
 print(f"mas RE of roots of closed-loop: {np.max(np.real(cl_roots))}, Adrian value= -0.0309 ")
-# print(f"SA: {tdspy.spectral_abscissa(cl_ddae, r=-0.1)}, Adrian value= -0.0309")
+# print(f"SA: {tdcpy.spectral_abscissa(cl_ddae, r=-0.1)}, Adrian value= -0.0309")
 
-tdspy.utils.print_system_matrices(cl_ddae)
+tdcpy.utils.print_system_matrices(cl_ddae)
 
-tdspy.plot.eigen_plot(cl_roots)
+tdcpy.plot.eigen_plot(cl_roots)
 plt.show()
-# print(f"Roots of closed-loop: {tdspy.spectral_abscissa(closed_loop, r=-0.1)}")    # must be = -0.0309
+# print(f"Roots of closed-loop: {tdcpy.spectral_abscissa(closed_loop, r=-0.1)}")    # must be = -0.0309
 
 
 

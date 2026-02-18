@@ -87,8 +87,8 @@ we also check that a transmission zeros are placed at :math:`\pm j \omega`.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 
 # Main chain of masses-springs-dampers
 m1, m2, m3 = 1.49, 0.509, 1.1 # masses [kg]
@@ -141,24 +141,24 @@ A1 = g * Bu @ Ea.T
 # %%
 # When matrices and delays are ready, we form
 # the descriptor and find right most roots. Regarding the position of zeros,
-# we can use `tdspy.zeros` with specified rectangular region as our system is
+# we can use `tdcpy.zeros` with specified rectangular region as our system is
 # SISO. In the case of multiple inputs and/or outputs, we recommend passing
 # `input_index` and `output_index` arguments explicitly as by default it is
 # assumed user is interested in transmission zeros between first input and
 # first output.
-rdde = tdspy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0],
+rdde = tdcpy.RDDE(A=[A0, A1], hA=[0, tau], B=[Bd], hB=[0], C=[Et.T], hC=[0],
                   D=[np.array([[0.]])], hD=[0.])
-cr, info = tdspy.roots(rdde, r=-350)
-z, _ = tdspy.zeros(rdde, r=[-350, 5, -4500, 4500])
+cr, info = tdcpy.roots(rdde, r=-350)
+z, _ = tdcpy.zeros(rdde, r=[-350, 5, -4500, 4500])
 
 # %%
-# Finally, plot the results using `tdspy.plot.eigen_plot` function and
+# Finally, plot the results using `tdcpy.plot.eigen_plot` function and
 # a little bit of additional styling.
 fig, ax1 = plt.subplots(1,1)
 
 ax1.scatter(np.real(z), np.imag(z), marker="o", facecolors='none',
             edgecolors='blue', alpha=0.8, label="zeros")
-tdspy.plot.eigen_plot(cr, ax=ax1)
+tdcpy.plot.eigen_plot(cr, ax=ax1)
 ax1.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker=".",
             color="black", label=rf"$\omega=-j{omega_target}\pi$")
 ax1.set_xlim((-340, 1))
@@ -169,7 +169,7 @@ ax1.legend(loc='lower right')
 ax2 = fig.add_axes([0.55, 0.55, 0.3, 0.3])
 ax2.scatter(np.real(z), np.imag(z), marker="o", facecolors='none',
             edgecolors='blue', alpha=0.8)
-tdspy.plot.eigen_plot(cr, ax=ax2)
+tdcpy.plot.eigen_plot(cr, ax=ax2)
 ax2.scatter([0, 0], [omega_target*np.pi, -omega_target*np.pi], marker=".",
             color="black")
 ax2.set_xlim((-4, 1))

@@ -12,13 +12,13 @@ u(t)    =   Dc y(t)
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import tdspy as tds
+import tdcpy as tds
 
-import tdspy.controller
-import tdspy.plot
-from tdspy.common.delay_difference_equation import ddae_to_diff
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+import tdcpy.controller
+import tdcpy.plot
+from tdcpy.common.delay_difference_equation import ddae_to_diff
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 
 
 
@@ -28,7 +28,7 @@ from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootIn
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     print(cr)
 
-    # cl = tdspy.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
+    # cl = tdcpy.ClosedLoop(ddae, 0, [0,1,2], [0], K0=K, hK=hK)
     # print_ddae(cl)
     # K = np.array()
 
@@ -94,8 +94,8 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs, stab_opt
-    from tdspy.stabopt.gradients import func_sa, func_cd, gradient_test
+    from tdcpy.stabopt.controller_bfgs import design_bfgs, stab_opt
+    from tdcpy.stabopt.gradients import func_sa, func_cd, gradient_test
 
 
     # check if cl contains a delay-difference 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 
     # test for DIFF dependency
-    from tdspy.stabopt.utils import diff_dependency_mask
+    from tdcpy.stabopt.utils import diff_dependency_mask
 
     g_numerical, g_analytical = gradient_test(func_cd, x=np.random.rand(K0.size), args=(E, P, hP, hK, Kmask, B, C))
 

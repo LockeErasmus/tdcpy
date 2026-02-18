@@ -1,8 +1,8 @@
 """Example 2_8: Demonstrates feature X."""
 
-import tdspy as tds
+import tdcpy as tds
 import numpy as np
-import tdspy.plot
+import tdcpy.plot
 import matplotlib.pyplot as plt
 
 tds.init_logger(level="WARNING")

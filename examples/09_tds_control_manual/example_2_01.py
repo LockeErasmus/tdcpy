@@ -30,8 +30,8 @@ We will follow the steps from :cite:`appeltans2023analysis` Section 2.2 to
 achive the same results as presented there, i.e. we will
 
 1. create the `RDDE` matrix representation
-2. compute characteristic roots via the `tdspy.roots` function
-3. plot the computed characteristic roots using `tdspy.plot.eigen_plot` function
+2. compute characteristic roots via the `tdcpy.roots` function
+3. plot the computed characteristic roots using `tdcpy.plot.eigen_plot` function
 
 .. bibliography::
     :filter: {"auto_examples/tds_control_manual/example_2_1"} & docnames
@@ -40,8 +40,8 @@ achive the same results as presented there, i.e. we will
 
 import matplotlib.pyplot as plt
 import numpy as np
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 
 # Create RDDE matrix representation
 A0 = np.array([[-1, 0, 0, 0],
@@ -53,9 +53,9 @@ A1 = np.array([[3, 3, 3, 3],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
 
-rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1])
-cr, info = tdspy.roots(rdde, r=-2.5)
+rdde = tdcpy.RDDE(A=[A0, A1], hA=[0, 1])
+cr, info = tdcpy.roots(rdde, r=-2.5)
 
-tdspy.plot.eigen_plot(cr)
+tdcpy.plot.eigen_plot(cr)
 plt.show()
 

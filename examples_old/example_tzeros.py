@@ -15,12 +15,12 @@
 
 import logging
 import numpy as np
-import tdspy as tds
-import tdspy.plot
+import tdcpy as tds
+import tdcpy.plot
 
 # Set up logging
 import logging
-logger = logging.getLogger("tdspy")
+logger = logging.getLogger("tdcpy")
 logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -59,10 +59,10 @@ zr, zr_info = tds.zeros(ddae, r=[-4, 4, -50, 50])
 print(zr)
 
 # import matplotlib.pyplot as plt
-# tdspy.plot.eigen_plot(zr)
+# tdcpy.plot.eigen_plot(zr)
 # plt.show()
 
 import matplotlib.pyplot as plt
-tdspy.plot.eigen_plot(zr)
+tdcpy.plot.eigen_plot(zr)
 plt.show()
 

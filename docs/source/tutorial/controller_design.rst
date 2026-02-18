@@ -1,416 +1,285 @@
-Stabilization and Controller Design
-============================================
+Controller Design
+====================
 
-
-We consider the stabilization of time-delay systems described by the DDAE:
-
-.. math::
-    
-    E \dot{x}(t) = P_0 x(t) + \sum_{i=1}^{m} P_i x(t - \tau_i)
-
-using a controller of the form
-
-.. math::
-    
-    \dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i)  \\
-    
-         u(t) = \sum_{i=0}^{m_{C_c}} C_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{D_c}} D_{c_i} y(t - \tau_i)
-
-where :math:`y(t) = C x(t)` is the system output, and :math:`p \in \mathbb{R}^{n_p}` are the controller parameters.
-
-By defining an augmented state vector :math:`\tilde{x}(t)`, the resulting closed-loop system can be written as
-
-.. math::
-    
-    E \dot{x}(t) = \underbrace{(P_0 + B K_0(p) C)}_{A_0(p)} x(t) + \sum_{i=1}^{m} \underbrace{(P_i + B K_i(p) C)}_{A_i(p)} x(t - \tau_i)
-
-where the system matrices :math:`P_0, P_1, \ldots, P_m` are the plant matrices and :math:`K_i` the respective controller gains corresponding to delays :math:`\tau_i`, with :math:`p \in \mathbb{R}^{n_p}`.
-The stabilization objective is to find controller parameters :math:`p` such that the closed-loop system is stable, i.e., all characteristic roots have negative real part.
-
-In `TDSpy`, the controller is by default a :class:`tdspy.ddae` object, which allows for a more generic controller structure. 
-The above formulation allows for the design of controllers of the following types:
+`tdcpy` can be used for designing the following classes of controllers for time-delay systems:
 
 - Static feedback controllers
 - Dynamic controllers
 - Delayed feedback controllers
 
+The software natively supports the design of controllers for systems described by delay-differential algebraic equations (DDAEs) of the form
 
-Pre-checks
--------------
+.. math::
+    :label: eq_plant
+    
+    E \dot{x}(t) = \sum_{i=0}^{m_A} A_i x(t - \tau_i) + \sum_{i=0}^{m_B} B_i u(t - \tau_i)
+    
+    y(t) = \sum_{i=0}^{m_C} C_i x(t - \tau_i) + \sum_{i=0}^{m_D} D_i u(t - \tau_i)
 
-Before proceeding with the stabilization procedure, it is important to determine whether the system is of retarded type or neutral type, as this will determine the choice of stabilization approach.
+where :math:`(A_i, B_i, C_i, D_i)` are the system matrices corresponding to their respective delays.
+Both retarded and neutral systems can be easily converted to DDAEs, which is why the above model is rather convenient.
+
+In `tdcpy`, the controller, whether static, dynamic, or delayed, can generally be defined as a DDAE of the form:
+
+.. math::
+    :label: eq_controller
+    
+    \dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i)
+
+    u(t) = \sum_{i=0}^{m_{C_c}} C_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{D_c}} D_{c_i} y(t - \tau_i)
+
+where :math:`x_c(t) \in \mathbb{R}^{n_c}` is the controller state, :math:`n_c` denoting the order of the controller, and :math:`y(t)` is the system output.
+
+In the packed representation, the controller gain matrix can be viewed as:
+
+.. math::
+
+    K = \left[ \begin{array}{c | c}
+     A_C    &   B_C \\
+     \hline
+     C_C    &   D_C \\
+    \end{array} \right] 
+
+The interconnection of the plant and the controller can be visualized in the following block diagram:
+
+    .. code-block:: text
+                
+                                     ___________________
+                        u1[-1]      |                   |  y1[-1]    
+                    --------------->|                   |---------------->
+                u1[0],...,u1[nu-2]  |      SYSTEM       |  y1[0],...,y[ny-2]
+                             ------>|                   |-------
+                            |       |___________________|       |
+                            |                                   |
+                            |        ___________________        |
+        y2[0],...,y2[ny-2]  |       |                   |       | u2[0],...,u1[nu-2]
+                             -------|                   |<------
+                        y2[-1]      |    CONTROLLER     |  u2[-1]
+                    <---------------|                   |<---------------
+                                    |___________________|
+
+
+We distinguish between `TDS-Control` and `tdcpy` in how the inputs and outputs are defined.
+`tdcpy`, the user does not specifically differentiate between the matrices :math:`C_1, C_2` corresponding to the control outputs :math:`y(t)` (for feedback) and the system outputs :math:`z(t)` separately,
+or between the matrices :math:`B_1, B_2` corresponding to the respective control inputs :math:`u(t)` (for actuation) and the exogenous inputs :math:`w(t)`.
+Instead, the columns of the input matrix :math:`B` are stacked horizontally to include both the control inputs and the exogenous inputs, with the user specifies
+the indices corresponding to the control inputs `u_indices`. The remaining indices are automatically selected as `w_indices`. 
+The same case goes for the outputs, with `y_indices` and the `z_indices` the indices of the control outputs and performance outputs, respectively.
+We wish for the reader to keep the above picture in mind, as it shall be useful in the subsequent controller design.
+
+As a preliminary step to the controller design, the user defines the `DDAE` as
 
 .. code-block:: python
 
-    >>> is_neutral = ddae.is_essentially_neutral
+    from tdcpy import DDAE
+    ddae = DDAE(E, A, hA, B, hB, C, hC, D, hD)
 
+Alternately, if the system is defined as an `NDDE`, the user simply converts the `NDDE` to a `DDAE` using the `to_ddae` method.
 
-Case 1: Retarded system
-------------------------
+Defining a controller structure
+--------------------------------
 
-If the system is of **retarded** type, then the stabilization problem can be solved by minimizing the spectral abscissa of the closed-loop system using a gradient-based optimization algorithm, for example the BFGS quasi-Newton method.
-The function ``design_bfgs`` from the :mod:`tdspy.stabopt.controller_bfgs` module can be used for this purpose.
+For defining the controller, the user may proceed as follows:
+
+1. **Static output feedback controller:**
+
+A controller with static output feedback is defined as follows:
+
+.. math::
+
+    u(t) = K y(t)
+
+The simplest way to define such a controller structure is:
+
+.. code-block:: python
+    
+    K = np.zeros([nu, ny, 1])       # dimensions (nu, ny, m_D+1)
+
+Here, the controller is of order :math:`n_c=0` with no feedback delays i.e. `m_D=0`. 
+Comparing with :eq:`eq_controller`, the matrices :math:`A_{c_i}, B_{c_i}, C_{c_i}` are zero for all :math:`i`, 
+with :math:`D_{c_0} = K`. The function :func:`tdcpy.ClosedLoop` is then used to interconnect the plant and the controller to form the closed-loop system.
 
 .. code-block:: python
 
-    >>> sol = design_bfgs(E, P, hP, K0, hK, B, C)
+    from tdcpy import ClosedLoop
+    closed_loop = ClosedLoop(ddae,order,y_indices,u_indices,K)
 
+.. note::
+    :collapsible:
 
-Case 2: Neutral system
--------------------------
-
-If the system is of **neutral** type, then the stabilization problem is more challenging, as the spectral abscissa may be sensitive to small perturbations.
-In this case, we can either minimize the strong spectral abscissa of the closed-loop system, or we can solve a constrained optimization problem where the objective is to minimize the spectral abscissa.
-
-
-**Pre-requisites**
-The stabilization procedure relies on the following assumptions:
-
-1. The system is stabilizable with the selected controller structure. This can be checked using the following command:
+    A **second** approach to define a static output feedback controller is to use the :func:`create_static_controller` function from the 
+    :mod:`tdcpy.controller` module. Using this method, the software creates the controller directly as a `DDAE` object. The syntax is as follows:
 
     .. code-block:: python
 
-        # extract controller parameters affecting the delay-difference equation
-        from tdspy.stabopt.utils import diff_dependency_mask
-        r = diff_dependency_mask(Kmask, uE=uE, vE=vE, B=B, C=C)
-        
-        if not np.any(r):
-            raise ValueError("The delay difference equation is independent of the controller parameters, no feasible point exists.")    
+        from tdcpy.controller import create_static_controller
+        K = np.zeros([nu, ny])
+        controller = create_static_controller(K=K)
 
-Note that the above condition ensures that the selected controller structure can influence the neutral dynamics. 
-If the above condition is not satisfied, then we check if the spectrum of the delay-difference equation is stable. If yes, then proceed to minimize the spectral abscissa. 
-If not, the system cannot be stabilized with the selected controller structure.
-
-2. The gradient exists and is finite. This can be checked by computing :math:`\gamma_0` and :math:`C_D` at the initial controller parameters and checking if the value is finite.
+    the function returns a `DDAE` object with the fields `controller.A`, `controller.B`, `controller.C` as zero matrices, and `controller.D` containing the static gain `K`.
+    The interconnection of the plant and the controller is be performed using the `interconnect` function from the :mod:`tdcpy.controller` module:
 
     .. code-block:: python
 
-        from tdspy.stability.gamma_r import gamma_diff
-        g0, gammaInfo = gamma_diff(DD, hDD,r=0)
-        if not np.isfinite(g0):
-            raise ValueError("The gradient is not finite at the initial controller parameters, please choose a different initial point.")
+        from tdcpy.controller import interconnect
+        closed_loop = interconnect(ddae, controller, y_indices, u_indices)
 
 
-If the above conditions are satisfied, then we can proceed with the stabilization procedure, which consists of two :
+2. **Dynamic controller:**
 
-
-Option 1: Minimization of the strong spectral abscissa
---------------------------------------------------------
-
-Under the control paradigm, to achieve exponential stability of the closed-loop, it is required to find controller parameters :math:`p` 
-such that the spectral abscissa :math:`\alpha` of the closed-loop is strictly negative.  
-Furthermore since the closed-loop bears neutral dynamics, the spectral abscissa may be sensitive to small perturbations, in which case, we consider the strong spectral abscissa :math:`C_D`.
-
-The requirement for attaining strong stability of the closed-loop can thus be formulated as a constrained optimization problem of the form:
-
-.. math::
-
-    \min_{p} \quad & C(\tau;p) \\
-
-where :math:`C` denotes the strong spectral abscissa of the closed-loop system, with :math:`C = \max(\alpha, C_D)`.
-
-
-
-
-Option 2: Stabilization via constrained optimization
--------------------------------------------------------
-
-
-The optimization problem can be stated as:
-
-.. math::
-
-    \min_{p} \quad & \alpha(\tau;p) \\
-    \text{subject to} \quad & \gamma_0(p) < \gamma,
-
-where :math:`\gamma_0` denotes the spectral radius of the difference operator of the neutral system, and :math:`\gamma < 1` is a prescribed upper bound.
-
-
-Solution approach
-~~~~~~~~~~~~~~~~~
-
-The above constrained optimization problem is converted into an unconstrained optimization problem using a penalty method, 
-for example the logarithmic barrier method. 
-The first step consists of finding a feasible point :math:`p_0` such that :math:`\gamma_0(p_0) < \gamma`.
-
-Once a feasible point has been found, one can solve the subsequent unconstrained optimization problem which takes the form:
-
-.. math::
-    \min_{p} \quad \alpha(\tau;p) - r \log(\gamma - \gamma_0(p)),
-
-where :math:`r > 0` is the barrier parameter.
-
-The resulting unconstrained optimization problem is then solved using a gradient-based optimization algorithm, where the gradients
-
-
-Algorithm 1: logarithmic barrier method for stabilization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. _algorithm1:
-
-**Optimization problem:**
-
-.. math::
-    \min_{p} \quad \alpha(\tau;p) - r \log(\gamma - \gamma_0(p)),
-
-where :math:`r > 0` is the barrier parameter.
-
-
-**Step 1: Determine whether the time-delay system is of neutral type or retarded type.**
-
-This can be checked directly by using the command ``is_essentially_neutral`` from ``ddae`` module as follows:
-
-    >>> is_neutral = ddae.is_essentially_neutral
-
-The function finds the delay-difference equation and then checks whether the characteristic matrix of the system depends on :math:`s`.
-
-The associated delay-difference equation can be written as
-
-.. math::
-    D_0 x_2 (t) + \sum_{i=1}^N D_i(p) x_2 (t-\tau_i) = 0
-
-with :math:`D_0 = U^T A_0 V`, :math:`D_i = U^T (A_i + B K_i(p) C) V`.
-
-In the normalized form, this can be written as
-
-.. math::
-    I x_2 (t) + \sum_{i=1}^N H_i(p) x_2 (t-\tau_i) = 0
-with :math:`H_i = D_0^{-1} D_i(p)`.
-
-.. 1. Find the left and right null vectors of E: :math:`U` and :math:`V`.
-
-..     >>> U = linalg.null_space(E.T, rcond=rcond)
-..     >>> V = linalg.null_space(E, rcond=rcond)
-
-.. 2. Right multiply by :math:`V` and left multiply by :math:`U^{T}` 
-.. to obtain the reduced system matrices:
-    
-..     >>> A0_bar = U.T @ A0 @ V
-..     >>> Ai_bar = [U.T @ Ai @ V for Ai in A[:,:,1:]]
-
-.. 3. obtain the associated delay-difference equation 
-    
-.. .. math::
-..     D_0 x_2 (t) + \sum_{i=1}^N D_i x_2 (t-\tau_i) = 0
-
-.. with :math:`D_0 = U^T A_0(p) V`, :math:`D_i = U^T A_i (p) V`
-
-.. This can be obtained using the function `ddae_to_diff`
-
-..     >>> D,hD = ddae_to_diff(E,A,hA)
-
-.. Obtain also the normalized delay-difference equation
-
-.. .. math::
-..     I x_2 (t) + \sum_{i=2}^N H_i x_2 (t-\tau_i) = 0
-.. with :math:`H_i = D_0^{-1} D_i`
-
-
-..     >>> DD,hDD = normalize_diff(D,hD)
-
-.. 4. Check if the characteristic matrix depends on :math:`s` as
-
-.. .. math::
-
-..     \Delta_D (s) = D_0 + \sum_{i=1}^N D_i e^{-s \tau_i}
-
-.. If :math:`\det(\Delta_D(0)) = 0`, then the system is of neutral type, else it is of retarded type.
-
-.. Alternately, this can be checked using the following command:
-
-..     >>> if hD.shape[0] == 1 and hD[0] == 0.0:
-..     >>>    # retarded type
-..     >>> else:
-..     >>>     # neutral type
-
-
-**Step 2: Depending on the system type, proceed as follows:**
-
-i. If ``is_essentially_retarded``, then solve the unconstrained optimization problem
-    
-**Optimization problem:**
-
-.. math::
-
-    \min_{p} \quad \alpha(\tau;p),
-
-using a gradient-based optimization algorithm, using the function ``design_bfgs`` from the :mod:`tdspy.stabopt.controller_bfgs.design_bfgs` module.
-
-ii. If ``is_essentially_neutral``, proceed to Step 3.
-
-
-**Step 3: Find a feasible point** :math:`p_0` **such that** :math:`\gamma_0(p_0) < \gamma`
-
-Check if the initial controller parameters :math:`p_0` satisfy the feasibility condition :math:`\gamma_0(p_0) < \gamma`.
-If not, solve the optimization problem to obtain a feasible point :math:`p_0`.
+A dynamic controller of order :math:`n_c > 0` can be defined as follows
 
 .. math::
     
-    p  \rightarrow \min_{p} \quad \gamma_0(p).
-
-Refer :ref:`algorithm2` for details on the optimization problem and gradient computation.
-
-**Step 4: Solve the unconstrained optimization problem**
-
-.. math::
-
-    \min_{p} \quad \alpha(\tau;p) - r \log(\gamma - \gamma_0(p)),
-
-using a gradient-based optimization algorithm.
-
-
-
-Algorithm 2: Finding a feasible point for neutral systems
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. _algorithm2:
-
-.. math::
+    \dot{x}_c(t) = A_c x_c(t) + B_c y(t) \\
     
-    \min_{p} \quad \gamma_0(p).
+    u(t) = C_c x_c(t) + D_c y(t)
 
-with gradient
-
-.. math::
-
-    \frac{\partial \gamma_0(p)}{\partial p_k}  = \frac{1}{|\lambda|} \Re \left( \bar{\lambda} u^* \left( \frac{\partial H_1(p)}{\partial p_k} +
-                         \sum_{i=2}^m \frac{\partial H_i}{\partial p_k} e^{j\theta_i}  \right) v \right),
-
-where :math:`(\lambda, u, w, \theta)` are obtained from the function ``gamma_diff``.
-
-
-**Step 1: Precomputations**
-
-1. Extract the **original** delay difference equation (without controller)
-
-.. math::
-    D_{P_0} x(t) + \sum_{i=1}^m D_{P_i} x(t-\tau_i) = 0, \quad i = 0,1,\ldots,m
-
+Similar to the static case, once the matrices :math:`A_c, B_c, C_c, D_c` are defined, the controller can be created using:
 
 .. code-block:: python
     
-    >>> DP, hDP = ddae_to_diff(E, P, hP)
+    from tdcpy.controller import create_dynamic_controller
+    controller = create_dynamic_controller(Ac=Ac, Bc=Bc, Cc=Cc, Dc=Dc)
 
+The function returns a `DDAE` object with the fields `controller.A`, `controller.B`, `controller.C`, `controller.D` containing the respective matrices of the dynamic controller 
+and the interconnection of the plant and the controller is be performed using the `interconnect` function.
 
-2. Precompute the following **initial** quantities:
+3. **Delayed and dynamic feedback controller:**
 
-Obtain :math:`B_U = U^T B`, :math:`C_V = C V` with :math:`U` and :math:`V` the left and right null spaces of :math:`E`.
+In a similar way, a delayed and dynamic feedback controller can be defined as per controller equation :eq:`eq_controller`.
+
+In `tdcpy`, a neat way of creating such a controller structure for dynamic controllers is by using the function `concatenatw_2x2_by_delays` from the :mod:`tdcpy.common.composition` module. 
+The function creates a DDAE representation of the controller matrices by concatenating the respective matrices :math:`A_c, B_c, C_c, D_c` with the appropriate delays, 
+and internally adding appropriate slack variables where necessary. This enables an equivalent controller representation in the form:
+
+.. math::
     
-    >>> BU = U.T @ B
-    >>> CV = C @ V
+    \tilde{u}(t) = K \tilde{y}(t)
+
+with :math:`K = \begin{bmatrix} A_c & B_c \\\\ C_c & D_c \end{bmatrix}`.
+          
+The above structure is later used for creating the subsequent closed-loop using the :func:`tdcpy.ClosedLoop` function.
+
+.. code-block:: python
     
+    from tdcpy.closed_loop import ClosedLoop, concatenate_2x2_by_delays
+    from tdcpy.controller import create_dynamic_controller
+    from tdcpy import DDAE
 
-4. Now call the optimization solver with gradient function ``grad_gamma0`` from the :mod:`tdspy.stabopt.gradients` module to solve
+    Ac, hAc = np.zeros((nc, nc)), np.zeros(nAc)
+    Bc, hBc = np.zeros((nc, ny)), np.zeros(nBc)
+    Cc, hCc = np.zeros((nu, nc)), np.zeros(nCc)
+    Dc, hDc = np.zeros((nu, ny)), np.zeros(nDc)
 
-    >>> grad_gamma0(p, DP, hDP, indices, hK, BD, CD)
+    cont = DDAE(A=Ac,  B=Bc, C=Cc, D=Dc, hA=hAc, hB=hBc, hC=hCc, hD=hDc)        # create a dynamic controller as a DDAE object
+    E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)    # concatenate the controller matrices into a single matrix K
+    closed_loop = ClosedLoop(ddae, nc=0, y1_indices, u1_indices, K, hK)           # form the closed-loop
 
-
-**Step 2: Solve the unconstrained optimization problem**
-
-
-.. code-block:: python
-
-    >>> sol = optimize.minimize(
-    >>>         grad_gamma0,
-    >>>         x0,
-    >>>         args=(DP, hDP, Kmask, hK, uE.T @ B, C @ vE),
-    >>>         jac=True,
-    >>>         method=kwargs.get("method", "L-BFGS-B"),
-    >>>         options=options,
-    >>>         callback=kwargs.get("callback", None)
-    >>>       )
-
-with ``grad_gamma0``
-
-    >>> g0, grad = grad_gamma0(p, DP, hDP, Kmask, hK, BU, CV)
-
-1. **Gradient computation - precomputation:**
-
-i. Form the matrices of the DDE with controller parameters :math:`p`
-
-.. math::
-
-    D_i(p) = D_{P_i} + B_U K_i C_V, \quad i = 1,\ldots,m
+The `cont` object is now a `DDAE` with the fields `cont.A`, `cont.B`, `cont.C`, `cont.D` containing the respective matrices of the dynamic controller.
+The argument `nc=0` may seem redundant in this setting, since the controller has been defined already. However, it can be helpful when incorporated in high-level routines when the controller order is 
+increased iteratively. An alternate way of forming the closed-loop is by using the `interconnect` function.
 
 
-.. code-block:: python
+**Summary**
 
-    >>> # set controller parameters
-    >>> K = x.reshape((nu, ny, hK.shape[0]))
-    >>> BK  = np.einsum('lm,mki->lki', BU, K)   # B @ K_i for all i
-    >>> BKC = np.einsum('lki,kn->lni', BK, CV)  # (B @ K_i) @ C
-    >>> D, hD = np.concatenate([DP, BKC], axis=2), np.concatenate([hDP, hK], axis=0)
+==================================================     ===============================================================================
+    Command                                                     Description
+==================================================     ===============================================================================
+:func:`ClosedLoop`                                      Interconnect the plant and the controller to form the closed-loop system
+:func:`create_static_controller`                        Create a static output feedback controller as a DDAE object
+:func:`interconnect`                                    Interconnect the plant and the controller to form the closed-loop system  
+:func:`create_dynamic_controller`                       Design a stabilizing controller using the BFGS optimization method
+:func:`concatenate_2x2_by_delays`                       Concatenate the controller matrices into a single matrix K
+==================================================     ===============================================================================
 
-ii. Obtain the normalized delay-difference equation
+In what follows, we will see how the above controller structures can be used for designing stabilizing controllers.
+
+
+Design of a stabilizing controllers for a retarded time-delay system
+--------------------------------------------------------------------------------
+
+We consider the interconnection of a retarded time-delay system defined by:
 
 .. math::
-
-    I x(t) + \sum_{i=1}^m H_i(p) x(t-\tau_i) = 0, \quad i = 1,\ldots,m
-
-.. code-block:: python
-
-    >>> DD, hDD = normalize_diff(D, hD)
-
-iii. Compute the quantities :math:`(\lambda, u, v, \theta)` associated with :math:`\gamma_0(p)`
-
-.. code-block:: python
-
-    >>> g0, gammaInfo = gamma_normalized_diff(DD, hDD,r=0)
-    >>> s, u, v, th = gammaInfo.s, gammaInfo.u, gammaInfo.v, gammaInfo.th
-
-2. **Gradient computation - initialization:**
-
-Initialize the gradient vector as zeros
-
-.. code-block:: python
-
-    >>> grad = np.zeros_like(p)
-
-3. **Gradient computation - closed-form expression:**
-
-.. math::
-
-    \frac{\partial \gamma_0(p)}{\partial p_k}  = \frac{1}{|\lambda|} \Re \left( \bar{\lambda} u^* \left( \frac{\partial H_1(p)}{\partial p_k} +
-                         \sum_{i=2}^m \frac{\partial H_i}{\partial p_k} e^{j\theta_i}  \right) v \right),
-
-where :math:`(\lambda, u, w, \theta)` are obtained from the function ``gamma_diff``.
-
-
-i. Computing the gradients :math:`\partial H_i(p)/\partial p_k`:
-
-.. math::
-
-    \frac{\partial H_i(p)}{\partial p_k} = - D_0^{-1} \left( \frac{\partial D_0}{\partial p_k} \right) H_i(p) + D_0^{-1} \left( \frac{\partial D_i(p)}{\partial p_k} \right)
-
-
-ii. Computing the gradients :math:`\partial D_i(p)/\partial p_k`:
-
-.. math::
-    \frac{\partial D_i(p)}{\partial p_k} = B_U \left( \frac{\partial K_i(p)}{\partial p_k} \right) C_V
-
-with :math:`\partial D_0/\partial p_k = 0`.
-
-iii. Computing the closed-form expression for the gradient: :math:`\frac{\partial \gamma_0(p)}{\partial K}`
-
-.. math::
-
-    \frac{\partial \gamma_0(p)}{\partial K} = \frac{1}{|\lambda|} \Re \left(  \sum_{i=1}^m \bar{\lambda} \underbrace{(u^* D^{-1} B_U )^T}_{uDBU} \underbrace{(C_V v)^T}_{CVv} e^{j\theta_i} \right)
-
-.. code-block:: python
-
-    >>> uDBU = (np.conj(u).T @ linalg.solve(D[:,:,0], BU)).T # dimensions (nu,)
-    >>> CVv = (CV @ v).T # dimensions (ny,)
-    >>> for i in range(1, m+1):
-    >>>     grad += np.real(np.conj(s) * uDBU * CVv * np.exp(1j*th[i-1])) / np.abs(s)
-    >>> grad = grad.reshape(-1)
     
+    \dot{x}(t) = A_0 x(t) + \sum_{i=1}^{m} A_i x(t - \tau_i) + B u(t)
+
+    y(t) = C x(t)
+
+with a static output feedback controller of the form:
+
+.. math::
+    
+    u(t) = K y(t)
 
 
-The following code snippet illustrates the stabilization of a neutral time-delay system using the above approach.
+The above interconnection yields a closed-loop defined as:
+
+.. math::
+    
+    \dot{x}(t) = A_0 x(t) + \sum_{i=1}^{m} A_i x(t - \tau_i) + B K C x(t)
+
+The characteristic equation of the closed-loop system reads as:
+
+.. math::
+    
+    \det(\lambda I - A_0 - \sum_{i=1}^{m} A_i e^{-\lambda \tau_i} - B K C) = 0
+
+and its spectral abscissa:
+
+.. math::
+    
+    \alpha = \sup \{ \text{Re}(\lambda) : \det(\lambda I - A_0 - \sum_{i=1}^{m} A_i e^{-\lambda \tau_i} - B K C) = 0 \}
+
+For the above system to be stable, we require that :math:`\alpha < 0`. 
+The stabilization objective is therefore to find controller parameters :math:`K` such that the spectral abscissa of the closed-loop system is negative.
+
+For desiging a stabilizing controller, we used the `design_bfgs` function from the :mod:`tdcpy.stabopt` module, which utilizes the `L-BFGS` solver from the `scipy.optimize` library.
+The below example demonstrates the design of a stabilizing controller for a retarded time-delay system.
+
+**Summary**
+
+==================================================     ===============================================================================================================================
+    Command                                                     Description
+==================================================     ===============================================================================================================================
+:func:`design_bfgs`                                     Low-level function for stabilization of retarded systems
+:func:`func_sa`                                         Function to compute the objective function and the gradient of the spectral abscissa with respect to the controller parameters
+:func:`minimize_spectral_abscissa`                      High-level API for designing a stabilizing controller
+==================================================     ===============================================================================================================================
 
 
 
+.. admonition:: Example: Design of a stabilizing controller for a retarded time-delay system
+    :class: example
 
+    We consider the retarded system defined by the system matrices:
+
+    .. code-block:: python
+
+        from tdcpy.stabopt.controller_bfgs import minimize_spectral_abscissa
+        from tdcpy.ddae import DDAE
+        A0 = np.array([[-1., 0.], [0., -2.]])
+        A1 = np.array([[1., 0.], [0., 1.]])
+        A = np.stack([A0, A1], axis=2)
+        hA = np.array([0., 1.])
+        Bu = np.array([ [-0.1],[-0.2]    ])
+        B = np.stack([Bu],axis=2)
+        hB = np.array([0.5])
+        C = np.array(np.eye(2))
+        C = np.stack([C],axis=2)
+        hC = np.array([0])
+        D = np.zeros(shape=(2,1,1), dtype=float)    # must be defined, otherwise error!
+        hD = np.array([0.])
+        ddae = DDAE(A=A,hA=hA,B=B,hB=hB,C=C,hC=hC,D=D,hD=hD)
+
+        sa = tds.spectral_abscissa(ddae)
+        print(f"Spectral abscissa of the open-loop system: {sa:.4f}")
+
+        sol = minimize_spectral_abscissa(ddae, order=0, method="L-BFGS-B", options={"disp": True}, type = "barrier")
+        print(f"Optimal controller parameters: {sol.x}, objective function value: {sol.fun}, success: {sol.success}, message: {sol.message}")
+
+The function `minimize_spectral_abscissa` returns an optimization result `sol` which is a tuple containing the result from the optimization.
 
 
 

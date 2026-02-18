@@ -1,21 +1,21 @@
-tdspy.plot package
+tdcpy.plot package
 ==================
 
 Submodules
 ----------
 
-tdspy.plot.discretization\_animation module
+tdcpy.plot.discretization\_animation module
 -------------------------------------------
 
-.. automodule:: tdspy.plot.discretization_animation
+.. automodule:: tdcpy.plot.discretization_animation
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.plot.eigenvalues module
+tdcpy.plot.eigenvalues module
 -----------------------------
 
-.. automodule:: tdspy.plot.eigenvalues
+.. automodule:: tdcpy.plot.eigenvalues
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ tdspy.plot.eigenvalues module
 Module contents
 ---------------
 
-.. automodule:: tdspy.plot
+.. automodule:: tdcpy.plot
    :members:
    :undoc-members:
    :show-inheritance:

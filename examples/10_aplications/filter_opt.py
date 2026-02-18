@@ -94,7 +94,7 @@ The closed-loop system can then be rewritten as a DDAE of the form
     \end{aligned}
 """
 
-import tdspy
+import tdcpy
 import numpy as np
 from numpy.linalg import svd
 import matplotlib.pyplot as plt
@@ -111,7 +111,7 @@ def create_system(k: list[float]):
     A = np.stack([A0, A1], axis=2)
     tau = np.array([0, 0.2])
     E = np.block([[np.eye(3), np.zeros((3,1))], [(-1/k[2])*C, np.ones((1,1))]])
-    return tdspy.DDAE(E=E, A=A, hA=tau) # DDAE Definition 
+    return tdcpy.DDAE(E=E, A=A, hA=tau) # DDAE Definition 
 
 # Function to compute spectral abscissa and its gradient for given gains and filter parameter
 def closed_loop(k: list[float]):
@@ -131,8 +131,8 @@ def closed_loop(k: list[float]):
     tau = np.array([0, 0.2])
     E = np.block([[np.eye(3), np.zeros((3,1))], [(-1/k[2])*C, np.ones((1,1))]])
 
-    sys = tdspy.DDAE(E=E, A=A, hA=tau) # DDAE Definition 
-    sa = tdspy.sa(sys)
+    sys = tdcpy.DDAE(E=E, A=A, hA=tau) # DDAE Definition 
+    sa = tdcpy.sa(sys)
     # Singular value decomposition
     M = sa * E - A0 - A1 * np.exp(-tau[1] * sa)
     U, S, Vh = svd(M)
@@ -224,21 +224,10 @@ opt_param = [-1.0979, -1.2259, 0.1740]
 print("Right-most root before optimizing ", closed_loop(k0)[0], "After",closed_loop(opt_param)[0])
 opt_syst = create_system(opt_param)
 r = [-10, 1, -4, 4]
-roots_me, info = tdspy.roots(opt_syst, r=r)
-roots_a, info = tdspy.roots(create_system(k0), r =r)
+roots_me, info = tdcpy.roots(opt_syst, r=r)
+roots_a, info = tdcpy.roots(create_system(k0), r =r)
 # Plot configuration to mimic MATLAB's plot style
 # %%
-plt.rcParams.update({
-    "text.usetex": True,              
-    "font.family": "serif",           
-    "font.size": 14,                  
-    "axes.labelsize": 16,
-    "axes.titlesize": 16,
-    "legend.fontsize": 12,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12
-})
-
 
 plt.plot(np.real(roots_me), np.imag(roots_me), '*', markersize = 10, label='Right-most roots with optimized filter')
 plt.plot(np.real(roots_a), np.imag(roots_a), '*', markersize = 10, label='Right-most roots with Appeltans et al. controller')
@@ -266,5 +255,4 @@ ax.annotate(
 )
 
 plt.legend()
-plt.tight_layout()
 plt.show()

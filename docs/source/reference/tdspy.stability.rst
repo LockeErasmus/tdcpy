@@ -1,53 +1,57 @@
-tdspy.stability package
+tdcpy.stability package
 ============================
+
+The :py:mod:`tdcpy.stability` package contains functions for computing the characteristic roots, and spectral abscissa of time-delay systems. 
+
+
 
 Submodules
 ----------
 
-tdspy.stability.bounds module
+tdcpy.stability.bounds module
 --------------------------------
 
-.. automodule:: tdspy.stability.bounds
+.. automodule:: tdcpy.stability.bounds
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stability.characteristic\_roots module
+tdcpy.stability.characteristic\_roots module
 ---------------------------------------------
 
-.. automodule:: tdspy.stability.characteristic_roots
+.. automodule:: tdcpy.stability.characteristic_roots
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stability.discretization\_heuristic module
+tdcpy.stability.discretization\_heuristic module
 ------------------------------------------------
 
-.. automodule:: tdspy.stability.discretization_heuristic
+.. automodule:: tdcpy.stability.discretization_heuristic
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stability.gamma\_r module
+tdcpy.stability.gamma\_r module
 -----------------------------------------------
 
-.. automodule:: tdspy.stability.gamma_r
+.. automodule:: tdcpy.stability.gamma_r
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stability.newton module
+tdcpy.stability.newton module
 ----------------------------------
 
-.. automodule:: tdspy.stability.newton
+.. automodule:: tdcpy.stability.newton
    :members:
    :undoc-members:
    :show-inheritance:
 
-tdspy.stability.spectral\_abscissa module
+tdcpy.stability.spectral\_abscissa module
 -----------------------------
 
-.. automodule:: tdspy.stabiity.spectral_abscissa
+.. automodule:: tdcpy.stability.spectral_abscissa
    :members:
    :undoc-members:
    :show-inheritance:
@@ -55,7 +59,7 @@ tdspy.stability.spectral\_abscissa module
 Module contents
 ---------------
 
-.. automodule:: tdspy.stability
+.. automodule:: tdcpy.stability
    :members:
    :undoc-members:
    :show-inheritance:

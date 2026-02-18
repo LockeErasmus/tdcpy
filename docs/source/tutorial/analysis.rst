@@ -6,7 +6,7 @@ Computing the characteristic roots
 
 
 Unlike ordinary differential equations, the spectrum of time-delay systems consists of infinitely many characteristic roots.
-To this end, `TDSpy` provides tools for computing and plotting the characteristic roots.
+To this end, `tdcpy` provides tools for computing and plotting the characteristic roots.
 We distinguish between systems of retarded and neutral type and delay descriptor systems.
 
 
@@ -20,10 +20,10 @@ The characteristic equation of the retarded time delay system defined by :eq:`eq
 
     \det\left(\lambda I - A_0 - \sum_{i=1}^m A_i e^{-\lambda \tau_i}\right) = 0.
 
-Unlike ODEs, the characteristic function is a quasipolynomial, which in general consists of infinitely 
-many characteristic roots. However it is known that for retarded systems, there can exist only finitely many characteristic roots to a given half plane. 
+Unlike ODEs, the characteristic function is a quasipolynomial, and therefore there exist infinitely 
+many characteristic roots. However it is known that for retarded systems, there can exist only finitely many roots to a given half plane. 
 
-In `TDSpy` the function :func:`tdspy.roots` is used to compute the characteristic roots of the retarded system. 
+In `tdcpy` the function :func:`tdcpy.roots` can be used to compute the characteristic roots of the retarded system. 
 The user specifies the region of the complex plane in which the roots are to be computed, either by specifying the real part, or alternately the rectangular region of the complex plane. 
 
 .. code-block:: python
@@ -37,7 +37,7 @@ whereas in the second case, `region` is a list of the form `[-10, 2, -100, 100]`
 The roots are returned in the variable `roots` as a 1D array of complex numbers, 
 and the variable `info` contains additional information about the computation, such as the number of roots found, the number of iterations taken, and any warnings or errors encountered during the computation.
 
-Internally, `TDSpy` first discretizes the system using a spectral method, which yields a finite-dimensional approximation of the system, and computes the eigenvalues of the resulting matrix pencil.
+Internally, `tdcpy` first discretizes the system using a spectral method, which yields a finite-dimensional approximation of the system, and computes the eigenvalues of the resulting matrix pencil.
 This is followed by a correction step for improving the approximation.
 More details on the discretization can be found in the tutorial :doc:`/auto_examples/tutorials/tutorial01_discretization1` and in the original article :cite:`wu2012reliably`.
 
@@ -45,7 +45,7 @@ More details on the discretization can be found in the tutorial :doc:`/auto_exam
 .. admonition:: Example: Roots of a retarded time-delay system
     :class: example
 
-    The characteristic equation for the retarded system `rdde` defined in :doc:`/tutorial/definitions` reads as:
+    The characteristic equation of the retarded system `rdde` defined in :doc:`/tutorial/definitions` reads as:
 
     .. math::
 
@@ -57,23 +57,23 @@ More details on the discretization can be found in the tutorial :doc:`/auto_exam
 
     .. code-block:: python
 
-        roots, info = tdspy.roots(rdde, r=-10.0)
+        roots, info = tdcpy.roots(rdde, r=-10.0)
     
     The variable `roots` contains the characteristic roots as a 1D array of complex numbers, and the variable `info` contains additional information about the computation, such as the number of discretization points, any warnings or errors encountered during the computation.
     Alternatively, we can specify the rectangular region of the complex plane in which the roots are to be computed as:
     
     .. code-block:: python
 
-        roots, info = tdspy.roots(rdde, r=[-10,2,-100,100])
+        roots, info = tdcpy.roots(rdde, r=[-10,2,-100,100])
 
-    The roots can be visualized using the `eigen_plot` function from the :func:`tdspy.plot.eigenvalues` module as follows:
+    The roots can be visualized using the `eigen_plot` function from the :func:`tdcpy.plot.eigenvalues` module as follows:
 
     .. code-block:: python
 
         import numpy as np
-        import tdspy as tds
+        import tdcpy as tds
         import matplotlib.pyplot as plt
-        from tdspy.plot.eigenvalues import eigen_plot
+        from tdcpy.plot.eigenvalues import eigen_plot
 
         A0 = np.array([[1, 0], [0, 1]], dtype=float)
         A1 = np.array([[0, 1], [0.5, 0]], dtype=float)
@@ -93,11 +93,11 @@ More details on the discretization can be found in the tutorial :doc:`/auto_exam
 
 .. seealso::
     
-    For computation of characteristic roots using the low-level API, we can use :func:`tdspy.stability.characteristic_roots.roots_ddae` as follows:
+    For computation of characteristic roots using the low-level API, we can use :func:`tdcpy.stability.characteristic_roots.roots_ddae` as follows:
 
     .. code-block:: python
 
-        roots, info = tdspy.stability.characteristic_roots.roots_ddae(E, A, hA, r=-10.0)
+        roots, info = tdcpy.stability.characteristic_roots.roots_ddae(E, A, hA, r=-10.0)
 
     where `E=I` for a retarded system, and `A` and `hA` are the matrices and delays of the respective delay-differential algebraic equation (DDAE) representation of the `rdde`.
 
@@ -108,17 +108,35 @@ More often, for evaluating the stability of a system, it is required to compute 
 
     \alpha(\lambda;h_A) := \sup\{\Re(\lambda) : \det(\lambda I - A_0 - \sum_{k=1}^{m_A} A_k e^{-\lambda h_{A,k}}) = 0\}.
 
-for which the function :func:`tdspy.spectral_abscissa` can be used as follows:
+for which the function :func:`tdcpy.spectral_abscissa` can be used as follows:
 
 .. code-block:: python
 
     alpha = tds.spectral_abscissa(rdde)
 
 For the system to be stable, the spectral abscissa must be strictly negative, which is equivalent to all characteristic roots being in the left half plane. 
-Finally, if the user wishes to incorporate the rightmost root computation within a subfunction, the low-level API :func:`tdspy.stability.characteristic_roots.rightmost_root` can be called instead using: 
-`root_star, root_info = rightmost_root(E, A, hA, r=-10.0)`, 
-where `root_info` is a tuple containing additional information connected with the rightmost root. The above function
-is called internally within the high-level function :func:`tdspy.spectral_abscissa`.
+
+Finally, if the user wishes to incorporate the rightmost root computation within a subfunction, the low-level API :func:`tdcpy.stability.characteristic_roots.rightmost_root` can be called instead using: 
+Often, the user may wish to perform root computations within a subfunction, for example
+within an optimization routine. In such cases, the low-level API :func:`tdcpy.stability.characteristic_roots.rightmost_root` comes in handy.
+The rightmost root :math:`\lambda^*` and the related information can be obtained by calling the function as follows:
+
+.. code-block:: python
+    
+    from tdcpy.stability.characteristic_roots import rightmost_root
+    root_star, root_info = rightmost_root(E, A, hA, r=real_part)
+
+where `root_star` is the rightmost root found and `root_info` is a tuple containing the following:
+
+* `M`: Characteristic matrix evaluated at :math:`\lambda^*`
+* `DM`: Derivative of the characteristic matrix with respect to :math:`\lambda` evaluated at :math:`\lambda^*`
+* `u`: Left eigenvector of the characteristic matrix corresponding to :math:`\lambda^*`
+* `v`: Right eigenvector of the characteristic matrix corresponding to :math:`\lambda^*`
+* `root_star_found`: Boolean indicating whether the rightmost root was found
+* `cr_info.max_size_evp_enforced`: Maximum size of the eigenvalue problem enforced during computation.
+
+The above information is essential for computing the gradients of the spectral abscissa with respect to the system parameters, used 
+extensively for gradient computation with respect to system parameters in stabilization routines.
 
 **Summary**
 
@@ -153,7 +171,7 @@ The notion of strong stability therefore applies to neutral systems, which requi
 the strong spectral abscissa of the associated ADDE is strictly negative in addition to the requirement of the spectral abscissa of the closed-loop being strictly negative.
 
 The strong spectral abscissa is defined as the supremum of the real part of the roots of the ADDE that is insensitive to small delay perturbations
-and can be computed using the function :func:`tdspy.strong_spectral_abscissa` as follows:
+and can be computed using the function :func:`tdcpy.strong_spectral_abscissa` as follows:
 
 .. code-block:: python
 
@@ -175,7 +193,7 @@ The below example demonstrates the computation of the spectral abscissa and the 
     .. code-block:: python
 
         import numpy as np
-        import tdspy as tds
+        import tdcpy as tds
         A0 = np.array([[0.25]])
         A1 = np.array([[0.75]])
         hA = np.array([0.,2.])
@@ -195,13 +213,13 @@ The below example demonstrates the computation of the spectral abscissa and the 
         diff = ndde.get_delay_difference_equation()
         sa_diff,_ = tds.spectral_abscissa_diff(diff)
 
-    The corresponding low-level API is `spectral_abscissa_diff` from the `tdspy.stability.spectral_abscissa` module, which can be called using `sa_diff, info = spectral_abscissa_diff(H, hH, r=-1.0)`.
+    The corresponding low-level API is `spectral_abscissa_diff` from the `tdcpy.stability.spectral_abscissa` module, which can be called using `sa_diff, info = spectral_abscissa_diff(H, hH, r=-1.0)`.
     For the roots of the characteristic equation, we can use the function `roots` similar to the retarded case.
 
     .. code-block:: python
 
         import matplotlib.pyplot as plt
-        from tdspy.plot.eigenvalues import eigen_plot
+        from tdcpy.plot.eigenvalues import eigen_plot
         roots, info = tds.roots(ndde, r=[-5,2,-500,500])
         ax = eigen_plot(roots, title="Characteristic roots of a neutral system")
         plt.show()
@@ -266,7 +284,7 @@ The below example demonstrates the computation of the spectral abscissa and the 
     .. code-block:: python
 
         import numpy as np
-        import tdspy as tds
+        import tdcpy as tds
 
         E = np.array([[1, 0], [0, 0]], dtype=float)
         A0 = np.array([[0.25, 0], [0, 1]], dtype=float)

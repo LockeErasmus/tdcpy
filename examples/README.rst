@@ -3,7 +3,7 @@
 Examples
 ========
 
-Below are examples demonstrating the usage of `tdspy` package.
+Below are examples demonstrating the usage of `tdcpy` package.
 
 Examples are divided thematically into groups and we recommend to start from top.
 If you are coming from MATLAB package ``tds-control``, we recommend starting

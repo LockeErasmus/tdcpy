@@ -40,16 +40,16 @@ In Pieter's method, he uses the augmented state vector
 """
 
 
-import tdspy as tds
+import tdcpy as tds
 import numpy as np
-import tdspy.plot as plt
+import tdcpy.plot as plt
 
 # for closed-loop
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
-import tdspy.controller as controller
-from tdspy.controller import create_dynamic_controller
-from tdspy.common.compress import compress_matrices_delays
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+import tdcpy.controller as controller
+from tdcpy.controller import create_dynamic_controller
+from tdcpy.common.compress import compress_matrices_delays
 
 
 

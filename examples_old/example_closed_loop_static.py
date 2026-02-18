@@ -4,12 +4,12 @@ Example: Create closed-loop for the vibration control setup, interconnected by a
 """
 
 import numpy as np
-import tdspy as tds
-import tdspy.controller
-import tdspy.plot
+import tdcpy as tds
+import tdcpy.controller
+import tdcpy.plot
 
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
 
  # Masses
 m0, m1, m2, ma = 1.1750, 0.5050, 0.7290, 0.5200
@@ -100,8 +100,8 @@ def generate_system() -> tds.RDDE:
     D = np.zeros(shape=(7,3,1), dtype=float)
     hD = np.array([0.])
 
-    rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
-    # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
+    rdde = tdcpy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    # rdde = tdcpy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
 
     return rdde
 
@@ -136,7 +136,7 @@ def generate_system2() -> tds.RDDE:
     D = np.zeros(shape=(5,1,1), dtype=float)
     hD = np.array([0.])
 
-    rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    rdde = tdcpy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
     
 
     return rdde
@@ -146,7 +146,7 @@ def generate_controller1() -> tds.DDAE:
     Dc = [  ]
     """
 
-    controller = tdspy.controller.create_static_controller(
+    controller = tdcpy.controller.create_static_controller(
         K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     )
 
@@ -157,11 +157,11 @@ def generate_controller() -> tds.DDAE:
     Dc = [  ]
     """
 
-    # controller = tdspy.controller.create_static_controller(
+    # controller = tdcpy.controller.create_static_controller(
     #     K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     # )
 
-    controller = tdspy.controller.create_static_controller(
+    controller = tdcpy.controller.create_static_controller(
         K = np.array([[-1.031, 25.11, 0.898, 4.73, -348.19, -7.69],
                       [ 0.542, -23.02, -.0798, -52.14, 1.88, -15.50]])
     )
@@ -173,11 +173,11 @@ def generate_controller_delays() -> tds.DDAE:
     Dc = [  ]
     """
 
-    # controller = tdspy.controller.create_static_controller(
+    # controller = tdcpy.controller.create_static_controller(
     #     K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     # )
 
-    controller = tdspy.controller.create_static_controller(
+    controller = tdcpy.controller.create_static_controller(
         K = np.array([[-1.031, 25.11, 0.898, 4.73, -348.19, -7.69],
                       [ 0.542, -23.02, -.0798, -52.14, 1.88, -15.50]])
     )
@@ -185,7 +185,7 @@ def generate_controller_delays() -> tds.DDAE:
     return controller
 
 
-def generate_controller_2() -> tdspy.DDAE:
+def generate_controller_2() -> tdcpy.DDAE:
     """ generates dynamic controller of first order using output feedback single-input controller
     x'(t)   = Ac x(t) + Bc y(t)
     u(t)    = Cc x(t) + Dc y(t)
@@ -215,11 +215,11 @@ def generate_controller_2() -> tdspy.DDAE:
     D = np.stack([Dc1,Dc2,Dc3,Dc4],axis=2)
     hD = np.array([0.05, 0.10, 0.15, 0.20])
 
-    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    ddae = tdcpy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     return ddae
 
-    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # controller = tdcpy.controller.create_dynamic_controller(A,B,C,D)
     # return controller
 
 
@@ -248,7 +248,7 @@ def print_ddae(ddae: tds.DDAE):
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.ERROR)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -261,35 +261,35 @@ if __name__ == "__main__":
     cont = generate_controller()
     print_ddae(cont)
     E, K, hK = concatenate_2x2_by_delays(cont.E, cont.A, cont.B, cont.C, cont.D, cont.hA, cont.hB, cont.hC, cont.hD)
-    cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
+    cl = tdcpy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
     print_ddae(cl)
 
 
     # roots of original system, controller and closed loop
-    cr_system, _ = tdspy.roots(cl.system, r=-10)
-    cr_cl, _ = tdspy.roots(cl, r=-30)
+    cr_system, _ = tdcpy.roots(cl.system, r=-10)
+    cr_cl, _ = tdcpy.roots(cl, r=-30)
 
     # zeros closed loop
-    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=-1, output_index=-1)
+    zr_cl, _ = tdcpy.zeros(cl, r=[-10,2,0,200], input_index=-1, output_index=-1)
 
-    import tdspy.plot
+    import tdcpy.plot
     import matplotlib.pyplot as plt
 
-    # tdspy.plot.eigen_plot(cr)
+    # tdcpy.plot.eigen_plot(cr)
     # plt.show()
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
     
     ax1.set_title("system")
-    tdspy.plot.eigen_plot(cr_system, ax=ax1)
+    tdcpy.plot.eigen_plot(cr_system, ax=ax1)
 
     ax2.set_title("closed loop")
-    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+    tdcpy.plot.eigen_plot(cr_cl, ax=ax2)
 
     ax3.set_title("controller")
-    #tdspy.plot.eigen_plot(cr_controller, ax=ax3)
+    #tdcpy.plot.eigen_plot(cr_controller, ax=ax3)
 
     ax4.set_title("closed loop zeros")
-    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    tdcpy.plot.eigen_plot(zr_cl, ax=ax4)
     
     plt.show()
 
@@ -307,8 +307,8 @@ if __name__ == "__main__":
     Kmask = np.full_like(K0, fill_value=1, dtype=bool)
     Kshape = K0.shape
 
-    from tdspy.stabopt.controller_bfgs import design_bfgs
-    from tdspy.stabopt.gradients import func_cd, func_sa, gradient_test
+    from tdcpy.stabopt.controller_bfgs import design_bfgs
+    from tdcpy.stabopt.gradients import func_cd, func_sa, gradient_test
 
     K = np.copy(K0)
     # for i in range(50):
@@ -343,7 +343,7 @@ if __name__ == "__main__":
     hA = np.r_[hP, hK]
 
 
-    import tdspy.plot
+    import tdcpy.plot
     import matplotlib.pyplot as plt
 
     cr0, _ = tds.roots(tds.DDAE(A0, hA, E), r=-10)

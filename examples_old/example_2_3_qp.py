@@ -20,16 +20,16 @@ This can be represented by the QP:
         
 """
 import numpy as np
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 
-from tdspy.stability.characteristic_roots import rightmost_root
+from tdcpy.stability.characteristic_roots import rightmost_root
 
 from scipy import linalg
-from tdspy.common.quasipoly import compress_qp, qp_to_ndde
+from tdcpy.common.quasipoly import compress_qp, qp_to_ndde
 
 # Set up logging
-tdspy.init_logger(level="DEBUG")
+tdcpy.init_logger(level="DEBUG")
 
 omega=2.
 k=3.
@@ -40,14 +40,14 @@ delays = np.array([0.,tau])
 
 A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
 
-ndde = tdspy.NDDE(A=A,hA=hA,H=H,hH=hH)
+ndde = tdcpy.NDDE(A=A,hA=hA,H=H,hH=hH)
 ddae = ndde.to_ddae()
 
-cr, RootInfo = tdspy.roots(ndde,r=-2)
+cr, RootInfo = tdcpy.roots(ndde,r=-2)
 
 
 
-# plt = tdspy.plot.eigen_plot(cr)
+# plt = tdcpy.plot.eigen_plot(cr)
 # ax = plt.axis
 
 import matplotlib.pyplot as plt

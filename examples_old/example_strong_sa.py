@@ -3,7 +3,7 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import tdspy as tds
+import tdcpy as tds
 
 def crate_system(m1=1.1, m2=0.514, k1=1768, k2=424, c1=4.43, c2=2.41) -> tuple:
     """ returns A, Bu, Bd with correct shapes
@@ -55,7 +55,7 @@ def create_cl_ddae(kp=-20.0, tau1=0.2, tau2=0.3) -> tds.DDAE:
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
