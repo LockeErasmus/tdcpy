@@ -18,6 +18,6 @@ This package provides:
 
 ## Credits
 
-This project was developed as an alternative to
+This project is based on the
 [TDS-CONTROL](https://gitlab.kuleuven.be/u0011378/tds-control) MATLAB toolbox
 developed by Prof. Dr. ir. Wim Michiels and Dr. ir. Pieter Appeltans in 2023.
