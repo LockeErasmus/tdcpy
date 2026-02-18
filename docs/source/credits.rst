@@ -43,7 +43,7 @@ Team
    :width: 100
    :alt: Adrian Saldanha
 
-- **Diego Garcia**: The Optimizer, KU Leuven
+- **Diego Torres-Garcia**: Developer, KU Leuven
 
   .. image:: _static/team/diego.jpg
    :width: 100
