@@ -29,7 +29,7 @@ class ClosedLoop(TDSBase):
     """ Class representing system - controller interconnection """
     # Example
         
-    #     cl = tdspy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
+    #     cl = tdcpy.ClosedLoop(rdde, 0, [0,1,2,3,4,5], [0,1], K0=K, hK=hK)
     #     system: rdde
     #     order: 0
     #     y_indices: [0,1,2,3,4,5]
@@ -90,7 +90,7 @@ class ClosedLoop(TDSBase):
 
         Examples
         --------
-        >>> from tdspy import DDAE, ClosedLoop
+        >>> from tdcpy import DDAE, ClosedLoop
         >>> import numpy as np
         >>> A0 = np.array([[0., 1.], [-2., -3.]])
         >>> A = np.stack([A0], axis=2)

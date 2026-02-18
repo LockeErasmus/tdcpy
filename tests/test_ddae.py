@@ -14,7 +14,7 @@ import pytest
 import numpy as np
 from scipy import linalg
 
-import tdspy
+import tdcpy
 
 def generate_example_01():
     # Create DDAE representation
@@ -29,7 +29,7 @@ def generate_example_01():
     A = np.stack([A0, A1], axis=2)
     hA = np.array([0, 1.])
 
-    rdde = tdspy.DDAE(A=A, hA=hA)
+    rdde = tdcpy.DDAE(A=A, hA=hA)
     return rdde
 
 def generate_example_02(a: float=0.25, tau1: float=1.0, tau2: float=2.0):
@@ -69,7 +69,7 @@ def generate_example_02(a: float=0.25, tau1: float=1.0, tau2: float=2.0):
     A = np.stack([A0, A1, A2], axis=2)
     hA = np.array([0, tau1, tau2])
 
-    rdde = tdspy.ddae.DDAE(E=E, A=A, hA=hA)
+    rdde = tdcpy.ddae.DDAE(E=E, A=A, hA=hA)
     return rdde
 
 def test_compress():
@@ -79,7 +79,7 @@ def test_compress():
     A.extend([np.eye(n), -np.eye(n), np.eye(n)])
     hA = np.array([0 for _ in range(5)]+[1,1]+[2.5, 2.5, 2.5])
     A = np.stack(A, axis=2)
-    ddae = tdspy.ddae.DDAE(E=np.eye(n), A=A, hA=hA)
+    ddae = tdcpy.ddae.DDAE(E=np.eye(n), A=A, hA=hA)
     
     ddae.compress(inplace=True)
 

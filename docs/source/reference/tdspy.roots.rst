@@ -1,7 +1,7 @@
-tdspy.roots module
+tdcpy.roots module
 ------------------
 
-.. automodule:: tdspy.roots
+.. automodule:: tdcpy.roots
    :members:
    :undoc-members:
    :show-inheritance:

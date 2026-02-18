@@ -86,7 +86,7 @@ class DDAE(TDSBase):
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.ddae import DDAE
+    >>> from tdcpy.ddae import DDAE
     >>> A = np.array([[[1, 0], [0, 1]], [[0, 0], [0, 0]]], dtype=float).transpose((1,2,0))
     >>> hA = np.array([0.0, 1.0], dtype=float)
     >>> E = np.array([[1, 0], [0, 1]], dtype=float)

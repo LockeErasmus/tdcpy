@@ -40,7 +40,7 @@ def lower_bound(x: float, epsilon: float=0.15, gamma: float=1e-6):
 
     Examples
     --------
-    >>> from tdspy.stability.bounds import lower_bound, upper_bound
+    >>> from tdcpy.stability.bounds import lower_bound, upper_bound
     >>> lower_bound(100.0)
     85.0
     >>> lower_bound(-100.0)
@@ -86,7 +86,7 @@ def upper_bound(x: float, epsilon: float=1e-2, gamma: float=1e-2):
 
     Examples
     --------
-    >>> from tdspy.stability.bounds import lower_bound, upper_bound
+    >>> from tdcpy.stability.bounds import lower_bound, upper_bound
     >>> lower_bound(100.0)
     85.0
     >>> lower_bound(-100.0)

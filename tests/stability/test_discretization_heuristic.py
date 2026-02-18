@@ -8,7 +8,7 @@ Test discretization heuristic
 import numpy as np
 import pytest
 
-from tdspy.stability.discretization_heuristic import compute_n_rhp
+from tdcpy.stability.discretization_heuristic import compute_n_rhp
 
 A0 = np.array([[-1, 0, 0, 0],
                 [0, 1, 0, 0],

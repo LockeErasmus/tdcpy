@@ -51,7 +51,7 @@ def diff_dependency_mask(Kmask: npt.NDArray, uE: npt.NDArray, vE: npt.NDArray, B
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stabopt.utils import diff_dependency_mask
+    >>> from tdcpy.stabopt.utils import diff_dependency_mask
     >>> Kmask = np.array([[[1, 0], [0, 1]], [[0, 1], [1, 0]]], dtype=bool)
     >>> uE = np.array([[1], [0]])
     >>> vE = np.array([[1], [0]])

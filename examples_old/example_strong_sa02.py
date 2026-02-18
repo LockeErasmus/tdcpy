@@ -3,7 +3,7 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import tdspy as tds
+import tdcpy as tds
 
 np.random.seed(100)
 
@@ -31,7 +31,7 @@ def generate_example() -> tds.NDDE:
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")

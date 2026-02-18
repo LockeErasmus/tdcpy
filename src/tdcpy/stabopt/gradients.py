@@ -15,17 +15,17 @@ TODO:
 import logging
 from typing import Callable
 import time
-import tdspy as tds
+import tdcpy as tds
 
 import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
-from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
-from tdspy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
-from tdspy.common.compress import compress_matrices_delays
-from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
-from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff, _normalize_diff
+from tdcpy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+from tdcpy.stability.spectral_abscissa import spectral_abscissa, spectral_abscissa_diff
+from tdcpy.common.compress import compress_matrices_delays
+from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+from tdcpy.common.delay_difference_equation import ddae_to_diff, normalize_diff, _normalize_diff
 
 from .utils import diff_dependency_mask
 
@@ -253,7 +253,7 @@ def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stabopt.gradients import grad_gamma0, gradient_test
+    >>> from tdcpy.stabopt.gradients import grad_gamma0, gradient_test
     >>> np.random.seed(0)
     >>> E = np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 0.]])
     >>> P = np.random.rand(3,3,2)
@@ -271,10 +271,10 @@ def grad_gamma0(x: npt.NDArray, E: npt.NDArray, P: npt.NDArray, hP: npt.NDArray,
 
     """
     
-    from tdspy.stabopt.utils import diff_dependency_mask
-    from tdspy.common.delay_difference_equation import normalize_diff
-    from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
-    from tdspy.stability.bounds import lower_bound, upper_bound
+    from tdcpy.stabopt.utils import diff_dependency_mask
+    from tdcpy.common.delay_difference_equation import normalize_diff
+    from tdcpy.stability.gamma_r import gamma_normalized_diff, gamma_diff
+    from tdcpy.stability.bounds import lower_bound, upper_bound
     from scipy import linalg, optimize
 
     # unpack arguments
@@ -365,7 +365,7 @@ def gradient_test(func: Callable, x: npt.NDArray, args: tuple, h: float=1e-4, to
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stabopt.gradients import gradient_test
+    >>> from tdcpy.stabopt.gradients import gradient_test
     >>> def func_example(x, E, P, hP, hK, Kmask, B, C):
     ...     # example function returning cost and gradient
     ...     cost = np.sum(x**2)  # simple quadratic cost

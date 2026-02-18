@@ -14,8 +14,8 @@ import pytest
 import numpy as np
 from scipy import linalg
 
-from tdspy.common.compress import compress_matrices_delays
-from tdspy.common.closed_loop import controller_reprezentation
+from tdcpy.common.compress import compress_matrices_delays
+from tdcpy.common.closed_loop import controller_reprezentation
 
 
 def test_compression_empty():

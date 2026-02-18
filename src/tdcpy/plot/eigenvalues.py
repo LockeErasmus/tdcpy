@@ -46,7 +46,7 @@ def complex_scatter_axplot(roots: npt.NDArray, ax: Axes, *args, **kwargs) -> Non
     --------
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
-    >>> from tdspy.plot.eigenvalues import complex_scatter_axplot
+    >>> from tdcpy.plot.eigenvalues import complex_scatter_axplot
     >>> roots = np.array([1+2j, -1-1j, 0+0j, 3+0j])
     >>> fig, ax = plt.subplots()
     >>> complex_scatter_axplot(roots, ax, c='r', marker='x')
@@ -86,7 +86,7 @@ def eigen_plot(roots: npt.NDArray, ax=None, **kwargs):
     --------
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
-    >>> from tdspy.plot.eigenvalues import eigen_plot
+    >>> from tdcpy.plot.eigenvalues import eigen_plot
     >>> roots = np.array([1+2j, -1-1j, 0+0j, 3+0j])
     >>> ax = eigen_plot(roots)
     >>> plt.show()

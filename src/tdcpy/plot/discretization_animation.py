@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import scipy.linalg as linalg
-from tdspy.common.discretization import discretize_ddae
-from tdspy.rdde import RDDE
-from tdspy.ndde import NDDE
-from tdspy.ddae import DDAE
+from tdcpy.common.discretization import discretize_ddae
+from tdcpy.rdde import RDDE
+from tdcpy.ndde import NDDE
+from tdcpy.ddae import DDAE
 
 import logging
 
@@ -57,8 +57,8 @@ def discretization_animation(tds: RDDE | NDDE | DDAE, discretization, s0: comple
 
     Examples
     --------
-    >>> from tdspy.ddae import DDAE
-    >>> from tdspy.plot.discretization_animation import discretization_animation
+    >>> from tdcpy.ddae import DDAE
+    >>> from tdcpy.plot.discretization_animation import discretization_animation
     >>> import numpy as np
     >>> E = np.array([[1, 0], [0, 0]])
     >>> A = np.zeros((2,2,2))

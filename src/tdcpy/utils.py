@@ -3,7 +3,7 @@
 # Copyright (C) 2026 Adrian Saldanha
 
 """
-Docstring for tdspy.utils
+Docstring for tdcpy.utils
 """
 
 import numpy as np

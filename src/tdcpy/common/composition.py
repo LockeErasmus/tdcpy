@@ -122,7 +122,7 @@ def concatenate_2x2_by_delays(E: npt.NDArray, A: npt.NDArray, B: npt.NDArray,
     Examples
     ---------
     >>> import numpy as np
-    >>> from tdspy.common.composition import concatenate_2x2_by_delays
+    >>> from tdcpy.common.composition import concatenate_2x2_by_delays
     >>> E = np.array([[1, 0], [0, 0]])
     >>> A = np.array([[[0, -1], [1, 0]], [[0, 0], [0, 0]]])
     >>> B = np.array([[[0], [1]], [[0], [0]]])

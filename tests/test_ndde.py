@@ -11,7 +11,7 @@ TODO:
 
 import numpy as np
 
-import tdspy as tds
+import tdcpy as tds
 
 def generate_example_01() -> tds.NDDE:
     """ generates example from TDS MATLAB manual (page 23) """

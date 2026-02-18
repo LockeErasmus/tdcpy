@@ -89,7 +89,7 @@ def controller_reprezentation(order: int, n_inputs: int, n_outputs: int, hA: npt
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.closed_loop import controller_reprezentation
+    >>> from tdcpy.common.closed_loop import controller_reprezentation
     >>> E, K, hK = controller_reprezentation(order=1, n_inputs=2, n_outputs=1)
     >>> E.shape
     (2, 3)

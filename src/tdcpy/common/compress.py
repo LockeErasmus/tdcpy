@@ -80,7 +80,7 @@ def compress_matrices_delays(A: npt.NDArray, hA: npt.NDArray, rtol=1e-5, atol=1e
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.compress import compress_matrices_delays
+    >>> from tdcpy.common.compress import compress_matrices_delays
     >>> A0 = np.array([[0, 1],[1, 0]])
     >>> A1 = np.array([[1, 0],[0, 0]])
     >>> A2 = np.array([[0, 0],[0, 1]])
@@ -157,7 +157,7 @@ def compress_bool_matrices_delays(A: npt.NDArray, hA: npt.NDArray, keep_zeros=Fa
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.compress import compress_bool_matrices_delays
+    >>> from tdcpy.common.compress import compress_bool_matrices_delays
     >>> A0 = np.array([[0, 1],[1, 0]])
     >>> A1 = np.array([[1, 0],[0, 0]])
     >>> A2 = np.array([[0, 0],[0, 1]])
@@ -231,7 +231,7 @@ def sort_matrices_delays(A: npt.NDArray, hA: npt.NDArray):
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.compress import sort_matrices_delays
+    >>> from tdcpy.common.compress import sort_matrices_delays
     >>> A0 = np.array([[0, 1],[1, 0]])
     >>> A1 = np.array([[1, 0],[0, 0]])
     >>> A2 = np.array([[0, 0],[0, 1]])

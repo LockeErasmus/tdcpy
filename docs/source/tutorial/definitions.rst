@@ -9,26 +9,26 @@ A time-delay system (TDS) is a dynamical system in which the evolution of the st
 Such systems are commonly modeled using delay-differential equations (DDEs).
 
 Depending on the nature of the delays and their influence on the system dynamics, time-delay systems can be categorized into different classes, viz. retarded, neutral, and delay descriptor systems.
-``TDSpy`` allows to model linear time-invariant (LTI) time-delay systems with multiple discrete delays, and represented by delay-differential equations (DDEs) or as delay-differential-algebraic equations (DDAEs).
+``tdcpy`` allows to model linear time-invariant (LTI) time-delay systems with multiple discrete delays, and represented by delay-differential equations (DDEs) or as delay-differential-algebraic equations (DDAEs).
 
-We consider the following classes of time-delay systems and their corresponding `TDSpy` objects:
+We consider the following classes of time-delay systems and their corresponding `tdcpy` objects:
     
 =============================================== ============================
- **Type**                                           **TDSpy class**        
+ **Type**                                           **tdcpy class**        
 =============================================== ============================
- Retarded DDEs (RDDEs)                              :class:`tdspy.rdde`     
- Neutral DDEs (NDDEs)                               :class:`tdspy.ndde`     
- Delay-differential algebraic equations (DDAEs)     :class:`tdspy.ddae`     
+ Retarded DDEs (RDDEs)                              :class:`tdcpy.rdde`     
+ Neutral DDEs (NDDEs)                               :class:`tdcpy.ndde`     
+ Delay-differential algebraic equations (DDAEs)     :class:`tdcpy.ddae`     
 =============================================== ============================
 
-The :class:`tdspy.base` class provides the abstract parent class on which the `rdde`, `ndde`, and `ddae` classes are based.
+The :class:`tdcpy.base` class provides the abstract parent class on which the `rdde`, `ndde`, and `ddae` classes are based.
 Each class comes with its own set of methods and properties, which are detailed in the :doc:`API reference <../reference/api_reference>` section of the documentation.
 Additionally, the software also handles quasi-polynomial representation of time-delay systems.
 
 Retarded DDEs
 ---------------------
 
-``TDSpy`` handles LTI retarded time-delay systems with multiple discrete delays, represented by delay-differential equations (DDEs) of the general form:
+``tdcpy`` handles LTI retarded time-delay systems with multiple discrete delays, represented by delay-differential equations (DDEs) of the general form:
 
 .. math::
     :label: eq_rdde
@@ -42,7 +42,7 @@ The matrices :math:`B_j` and :math:`C_i` correspond to the input and output matr
 We will skip the input and output terms for now, and will focus mainly on the system matrices as these define the spectral properties.
 
 
-In ``TDSpy``, a retarded time-delay system can be created using the (high-level) `RDDE` function from the `:func:`tdspy.rdde` class.
+In ``tdcpy``, a retarded time-delay system can be created using the (high-level) `RDDE` function from the `:func:`tdcpy.rdde` class.
 
 .. note::
     :collapsible:
@@ -64,13 +64,13 @@ In ``TDSpy``, a retarded time-delay system can be created using the (high-level)
 
     where :math:`x(t)` is the state variable, :math:`A_0` and :math:`A_1` are constant matrices, and :math:`h_1` is the delay.
 
-    We create a ``TDSpy`` object defining this system using the following code snippet:
+    We create a ``tdcpy`` object defining this system using the following code snippet:
 
 
     .. code-block:: python
 
         import numpy as np
-        import tdspy as tds
+        import tdcpy as tds
         A0 = np.array([[1., 0.], [0., 1.]])
         A1 = np.array([[0., 1.], [0.5, 0.]])
         delays = np.array([0,0.5])
@@ -125,7 +125,7 @@ The associated delay-difference equation (ADDE) for the above is given by:
 
 For neutral systems, the ADDE is important for stability analysis, especially in connection with the so-called strong stability condition.
 
-A neutral time-delay system can be created using the :func:`tdspy.ndde` class as demonstrated in the example below. 
+A neutral time-delay system can be created using the :func:`tdcpy.ndde` class as demonstrated in the example below. 
 
 .. admonition:: Example: See Example 1.18 from :cite:`michielsStability2007`
     :class: example
@@ -136,7 +136,7 @@ A neutral time-delay system can be created using the :func:`tdspy.ndde` class as
 
         \dot{x}(t) - \frac{3}{4} x(t-1) + \frac{1}{2} x(t-2) = \frac{1}{4} x(t) + \frac{3}{4} x(t - 2)
 
-    We create the respective :class:`tdspy.ndde` object using the code:
+    We create the respective :class:`tdcpy.ndde` object using the code:
 
     .. code-block:: python
 
@@ -148,13 +148,13 @@ A neutral time-delay system can be created using the :func:`tdspy.ndde` class as
         hH = np.array([1.,2.])
         ndde = tds.NDDE(H = [H1,H2], hH = hH, A = [A0, A1], hA=hA)
 
-    To obtain the associated delay-difference equation, we can use the in-built method :func:`get_delay_difference_equation` from the :class:`tdspy.ndde` class as:
+    To obtain the associated delay-difference equation, we can use the in-built method :func:`get_delay_difference_equation` from the :class:`tdcpy.ndde` class as:
 
     .. code-block:: python
 
         adde = ndde.get_delay_difference_equation()
 
-    Alternately, one can use the low-level API :func:`ndde_to_diff` function from the `tdspy.common.delay_difference_equation` module as:
+    Alternately, one can use the low-level API :func:`ndde_to_diff` function from the `tdcpy.common.delay_difference_equation` module as:
 
     .. code-block:: python
 
@@ -183,7 +183,7 @@ In the case of DDAEs, the system dynamics are described by a combination of diff
 It can be shown also, that the above DDAE can be used to represent delay-differential equations of both retarded and neutral type and therefore, the DDAE framework 
 is a more general framework used for representing a wide class of time-delay systems.  
 
-In ``TDSpy``, a DDAE can be created using the :class:`tdspy.ddae` class.
+In ``tdcpy``, a DDAE can be created using the :class:`tdcpy.ddae` class.
 
 .. admonition:: Example: Defining a DDAE
     :class: example
@@ -195,7 +195,7 @@ In ``TDSpy``, a DDAE can be created using the :class:`tdspy.ddae` class.
         E \dot{x}(t) = A_0 x(t) + A_1 x(t - h_1)
 
     where :math:`E`, :math:`A_0` and :math:`A_1` are constant matrices, and :math:`h_1` is the delay.
-    To create this system in ``TDSpy``, we use the following code snippet:
+    To create this system in ``tdcpy``, we use the following code snippet:
 
     .. code-block:: python
 
@@ -208,20 +208,20 @@ In ``TDSpy``, a DDAE can be created using the :class:`tdspy.ddae` class.
         delays = np.array([0,1])
         ddae = tds.DDAE(E=E, A = [A0, A1], hA=delays)
 
-    To identify the retarded or neutral nature, we can use the in-built method `is_essentially_retarded` (or alternately `is_essentially_neutral`) from the :class:`tdspy.ddae` class:
+    To identify the retarded or neutral nature, we can use the in-built method `is_essentially_retarded` (or alternately `is_essentially_neutral`) from the :class:`tdcpy.ddae` class:
 
     .. code-block:: python
 
         is_retarded = ddae.is_essentially_retarded()
 
     Upon execution, it can be seen that the above system is neutral. Consequently, the system consists of a delay-difference equation which can 
-    be extracted similar to the neutral case using the `get_delay_difference_equation` function from the :class:`tdspy.ddae` class as:
+    be extracted similar to the neutral case using the `get_delay_difference_equation` function from the :class:`tdcpy.ddae` class as:
 
     .. code-block:: python
 
         adde = ddae.get_delay_difference_equation()
 
-    Alternately, one can use the low-level API :func:`ddae_to_diff` function from the `tdspy.common.delay_difference_equation` module as:
+    Alternately, one can use the low-level API :func:`ddae_to_diff` function from the `tdcpy.common.delay_difference_equation` module as:
 
     .. code-block:: python
 

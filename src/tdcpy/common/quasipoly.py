@@ -75,7 +75,7 @@ def compress_qp(coefs: npt.NDArray, delays: npt.NDArray, atol: float=None, rtol:
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.quasipoly import compress_qp
+    >>> from tdcpy.common.quasipoly import compress_qp
     >>> coefs = np.array([[0.0, 1.0], [0.0, 2.0], [0.0, 0.0]])
     >>> delays = np.array([0.0, 1.0, 2.0])
     >>> new_coefs, new_delays = compress_qp(coefs, delays)
@@ -179,7 +179,7 @@ def qp_to_ndde(coefs, delays, ascending=True) -> tuple[npt.NDArray, npt.NDArray,
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.quasipoly import qp_to_ndde
+    >>> from tdcpy.common.quasipoly import qp_to_ndde
     >>> coefs = np.array([[1.0, 0.0], [0.0, 2.0]])
     >>> delays = np.array([0.0, 1.0])
     >>> A, hA, H, hH = qp_to_ndde(coefs, delays, ascending=False)

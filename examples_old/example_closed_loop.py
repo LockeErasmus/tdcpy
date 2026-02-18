@@ -6,11 +6,11 @@ Example: Create closed-loop for the vibration control setup, interconnected by a
 """
 
 import numpy as np
-import tdspy as tds
-import tdspy.controller
-import tdspy.plot
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.common.compress import compress_matrices_delays
+import tdcpy as tds
+import tdcpy.controller
+import tdcpy.plot
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.common.compress import compress_matrices_delays
 
  # Masses
 
@@ -140,8 +140,8 @@ def generate_system() -> tds.RDDE:
     D = np.zeros(shape=(7,3,1), dtype=float)
     hD = np.array([0.])
 
-    rdde = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
-    # rdde = tdspy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
+    rdde = tdcpy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    # rdde = tdcpy.RDDE(A=A, hA=hA,B=B, hB = hB, C = C, hC=hC)
 
     return rdde
 
@@ -150,7 +150,7 @@ def generate_controller1() -> tds.DDAE:
     Dc = [  ]
     """
 
-    controller = tdspy.controller.create_static_controller(
+    controller = tdcpy.controller.create_static_controller(
         K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     )
 
@@ -161,18 +161,18 @@ def generate_controller() -> tds.DDAE:
     Dc = [  ]
     """
 
-    # controller = tdspy.controller.create_static_controller(
+    # controller = tdcpy.controller.create_static_controller(
     #     K = np.array([[-523.50, 9.93,  617.88, -8.61, 144.06, -7.73]])
     # )
 
-    controller = tdspy.controller.create_static_controller(
+    controller = tdcpy.controller.create_static_controller(
         K = np.array([[ -1.031,     25.11,      0.898,      4.73,       -348.19,    -7.69   ],
                       [ 0.542,      -23.02,     -.0798,     -52.14,     1.88,       -15.50 ]])
     )
 
     return controller
 
-def generate_controller_0() -> tdspy.DDAE:
+def generate_controller_0() -> tdcpy.DDAE:
     """ generates dynamic controller of 0 order using output feedback single-input controller
     according to the article TDS2024
     xc'(t)  = Ac xc(t) + Bc1 y(t-tau1) + Bc2 y(t-tau2) + Bc3 y(t-tau3) + Bc4 y(t-tau4)
@@ -202,15 +202,15 @@ def generate_controller_0() -> tdspy.DDAE:
     D = np.stack([Dc1,Dc2,Dc3,Dc4],axis=2)
     hD = np.array([0.05, 0.10, 0.15, 0.20])
 
-    ddae = tdspy.DDAE(A=Ac, hA=hA, B=Bc, hB=hB, C=Cc, hC=hC, D=D, hD=hD)
+    ddae = tdcpy.DDAE(A=Ac, hA=hA, B=Bc, hB=hB, C=Cc, hC=hC, D=D, hD=hD)
 
     return ddae
 
-    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # controller = tdcpy.controller.create_dynamic_controller(A,B,C,D)
     # return controller
 
 
-def generate_controller_2() -> tdspy.DDAE:
+def generate_controller_2() -> tdcpy.DDAE:
     """ generates dynamic controller of first order using output feedback single-input controller
     according to the article TDS2024
     xc'(t)  = Ac xc(t) + Bc1 y(t-tau1) + Bc2 y(t-tau2) + Bc3 y(t-tau3) + Bc4 y(t-tau4)
@@ -246,14 +246,14 @@ def generate_controller_2() -> tdspy.DDAE:
     D = np.stack([Dc1,Dc2,Dc3,Dc4], axis=2)
     hD = np.array([0.05, 0.10, 0.15, 0.20])
 
-    ddae = tdspy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
+    ddae = tdcpy.DDAE(A=A, hA=hA, B=B, hB=hB, C=C, hC=hC, D=D, hD=hD)
 
     _, K, hK = concatenate_2x2_by_delays(np.eye(1), A, B, C, D, hA, hB, hC, hD)
     K, hK = compress_matrices_delays(K, hK)
 
     return ddae, K, hK
 
-    # controller = tdspy.controller.create_dynamic_controller(A,B,C,D)
+    # controller = tdcpy.controller.create_dynamic_controller(A,B,C,D)
     # return controller
 
 
@@ -261,7 +261,7 @@ def generate_controller_2() -> tdspy.DDAE:
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -272,59 +272,59 @@ if __name__ == "__main__":
 
     # create closed loop representation
     controller, K, hK = generate_controller_2()
-    cl = tdspy.ClosedLoop(rdde, 1, [0,1,4,5], [0], K0=K, hK=np.array([0.0, 0.05, 0.10, 0.15, 0.20]))
+    cl = tdcpy.ClosedLoop(rdde, 1, [0,1,4,5], [0], K0=K, hK=np.array([0.0, 0.05, 0.10, 0.15, 0.20]))
 
     # roots of original system, controller and closed loop
-    cr_system, _ = tdspy.roots(cl.system, r=-10)
-    cr_controller, _ = tdspy.roots(cl.controller, r=-30)
-    cr_cl, _ = tdspy.roots(cl, r=-10)
+    cr_system, _ = tdcpy.roots(cl.system, r=-10)
+    cr_controller, _ = tdcpy.roots(cl.controller, r=-30)
+    cr_cl, _ = tdcpy.roots(cl, r=-10)
 
     # zeros closed loop
-    zr_cl, _ = tdspy.zeros(cl, r=[-10,2,0,200], input_index=0, output_index=0)
+    zr_cl, _ = tdcpy.zeros(cl, r=[-10,2,0,200], input_index=0, output_index=0)
 
-    import tdspy.plot
+    import tdcpy.plot
     import matplotlib.pyplot as plt
 
-    # tdspy.plot.eigen_plot(cr)
+    # tdcpy.plot.eigen_plot(cr)
     # plt.show()
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
     
     ax1.set_title("system")
-    tdspy.plot.eigen_plot(cr_system, ax=ax1)
+    tdcpy.plot.eigen_plot(cr_system, ax=ax1)
 
     ax2.set_title("closed loop")
-    tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+    tdcpy.plot.eigen_plot(cr_cl, ax=ax2)
 
     ax3.set_title("controller")
-    tdspy.plot.eigen_plot(cr_controller, ax=ax3)
+    tdcpy.plot.eigen_plot(cr_controller, ax=ax3)
 
     ax4.set_title("closed loop zeros")
-    tdspy.plot.eigen_plot(zr_cl, ax=ax4)
+    tdcpy.plot.eigen_plot(zr_cl, ax=ax4)
     
     plt.show()
 
 
-    # zeros, zeros_info = tdspy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
+    # zeros, zeros_info = tdcpy.zeros(rdde, r=[-2, 1, -60, 60], input_index=1, output_index=6)
     
     # # cont = generate_controller()
-    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
+    # # system = tdcpy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0,1], [0,1])
 
     # # cont = generate_controller1()
-    # # system = tdspy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
+    # # system = tdcpy.controller.interconnect(rdde, cont, [0,1,2,3,4,5], [0,1,2,3,4,5], [0], [0])
 
     # cont = generate_controller_2()
-    # system = tdspy.controller.interconnect(rdde, cont, [0,1,4,5], [0,1,2,3], [0], [0])
+    # system = tdcpy.controller.interconnect(rdde, cont, [0,1,4,5], [0,1,2,3], [0], [0])
 
 
-    # cr, cr_info = tdspy.roots(rdde, r=-10)
+    # cr, cr_info = tdcpy.roots(rdde, r=-10)
     # print(f"rightmost root of the ol is {np.max(np.real(cr))}")
 
     # system.is_essentially_retarded 
-    # cr, cr_info = tdspy.roots(system, r=-10)
+    # cr, cr_info = tdcpy.roots(system, r=-10)
     # print(f"rightmost root of the cl is {np.max(np.real(cr))}")
     # print(cr)
 
-    # zr, zr_info = tdspy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
+    # zr, zr_info = tdcpy.zeros(system, r=[-10,2,0,200], input_index=-1, output_index=-1)
     # print(zr)
 
 

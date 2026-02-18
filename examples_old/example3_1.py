@@ -24,9 +24,9 @@ with
     B1, C1, defined in TDS-CONTROL
 """
 
-import tdspy as tds
+import tdcpy as tds
 import numpy as np
-from tdspy.stability.characteristic_roots import rightmost_root
+from tdcpy.stability.characteristic_roots import rightmost_root
 
 # tds.init_logger("DEBUG")
 
@@ -71,12 +71,12 @@ print(np.max(np.real(z)))
 # u = Dc y
 
 import numpy as np
-import tdspy as tds
-from tdspy.stabopt.controller_bfgs import design_bfgs, func_sa
-from tdspy.stabopt.gradients import func_sa, gradient_test
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.stabopt.gradients import func_sa, gradient_test
-import tdspy.controller as controller
+import tdcpy as tds
+from tdcpy.stabopt.controller_bfgs import design_bfgs, func_sa
+from tdcpy.stabopt.gradients import func_sa, gradient_test
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.stabopt.gradients import func_sa, gradient_test
+import tdcpy.controller as controller
 
 # cont = controller.create_static_controller(np.array([[-0.1659, -0.2968, -0.3612, -0.3629, 0.0168]]))
 # A_ = np.empty(shape=(0,0,0))
@@ -96,11 +96,11 @@ cl = tds.ClosedLoop(plant,order=0,y_indices=[0,1,2,3,4],u_indices=[0],K0=K0,hK=h
 # cr_cl, _ = tds.roots(cl, r=-0.2)
 
 # import matplotlib.pyplot as plt
-# import tdspy.plot
+# import tdcpy.plot
 
 # fig, (ax1, ax2) = plt.subplots(1,2)
-# tdspy.plot.eigen_plot(cr_system, ax=ax1)
-# tdspy.plot.eigen_plot(cr_cl, ax=ax2)
+# tdcpy.plot.eigen_plot(cr_system, ax=ax1)
+# tdcpy.plot.eigen_plot(cr_cl, ax=ax2)
 
 # plt.show()
 

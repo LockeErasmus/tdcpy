@@ -1,7 +1,7 @@
 Controller Design
 ====================
 
-`TDSpy` can be used for designing the following classes of controllers for time-delay systems:
+`tdcpy` can be used for designing the following classes of controllers for time-delay systems:
 
 - Static feedback controllers
 - Dynamic controllers
@@ -19,7 +19,7 @@ The software natively supports the design of controllers for systems described b
 where :math:`(A_i, B_i, C_i, D_i)` are the system matrices corresponding to their respective delays.
 Both retarded and neutral systems can be easily converted to DDAEs, which is why the above model is rather convenient.
 
-In `TDSpy`, the controller, whether static, dynamic, or delayed, can generally be defined as a DDAE of the form:
+In `tdcpy`, the controller, whether static, dynamic, or delayed, can generally be defined as a DDAE of the form:
 
 .. math::
     :label: eq_controller
@@ -59,8 +59,8 @@ The interconnection of the plant and the controller can be visualized in the fol
                                     |___________________|
 
 
-We distinguish between `TDS-Control` and `TDSpy` in how the inputs and outputs are defined.
-`TDSpy`, the user does not specifically differentiate between the matrices :math:`C_1, C_2` corresponding to the control outputs :math:`y(t)` (for feedback) and the system outputs :math:`z(t)` separately,
+We distinguish between `TDS-Control` and `tdcpy` in how the inputs and outputs are defined.
+`tdcpy`, the user does not specifically differentiate between the matrices :math:`C_1, C_2` corresponding to the control outputs :math:`y(t)` (for feedback) and the system outputs :math:`z(t)` separately,
 or between the matrices :math:`B_1, B_2` corresponding to the respective control inputs :math:`u(t)` (for actuation) and the exogenous inputs :math:`w(t)`.
 Instead, the columns of the input matrix :math:`B` are stacked horizontally to include both the control inputs and the exogenous inputs, with the user specifies
 the indices corresponding to the control inputs `u_indices`. The remaining indices are automatically selected as `w_indices`. 
@@ -71,7 +71,7 @@ As a preliminary step to the controller design, the user defines the `DDAE` as
 
 .. code-block:: python
 
-    from tdspy import DDAE
+    from tdcpy import DDAE
     ddae = DDAE(E, A, hA, B, hB, C, hC, D, hD)
 
 Alternately, if the system is defined as an `NDDE`, the user simply converts the `NDDE` to a `DDAE` using the `to_ddae` method.
@@ -97,31 +97,31 @@ The simplest way to define such a controller structure is:
 
 Here, the controller is of order :math:`n_c=0` with no feedback delays i.e. `m_D=0`. 
 Comparing with :eq:`eq_controller`, the matrices :math:`A_{c_i}, B_{c_i}, C_{c_i}` are zero for all :math:`i`, 
-with :math:`D_{c_0} = K`. The function :func:`tdspy.ClosedLoop` is then used to interconnect the plant and the controller to form the closed-loop system.
+with :math:`D_{c_0} = K`. The function :func:`tdcpy.ClosedLoop` is then used to interconnect the plant and the controller to form the closed-loop system.
 
 .. code-block:: python
 
-    from tdspy import ClosedLoop
+    from tdcpy import ClosedLoop
     closed_loop = ClosedLoop(ddae,order,y_indices,u_indices,K)
 
 .. note::
     :collapsible:
 
     A **second** approach to define a static output feedback controller is to use the :func:`create_static_controller` function from the 
-    :mod:`tdspy.controller` module. Using this method, the software creates the controller directly as a `DDAE` object. The syntax is as follows:
+    :mod:`tdcpy.controller` module. Using this method, the software creates the controller directly as a `DDAE` object. The syntax is as follows:
 
     .. code-block:: python
 
-        from tdspy.controller import create_static_controller
+        from tdcpy.controller import create_static_controller
         K = np.zeros([nu, ny])
         controller = create_static_controller(K=K)
 
     the function returns a `DDAE` object with the fields `controller.A`, `controller.B`, `controller.C` as zero matrices, and `controller.D` containing the static gain `K`.
-    The interconnection of the plant and the controller is be performed using the `interconnect` function from the :mod:`tdspy.controller` module:
+    The interconnection of the plant and the controller is be performed using the `interconnect` function from the :mod:`tdcpy.controller` module:
 
     .. code-block:: python
 
-        from tdspy.controller import interconnect
+        from tdcpy.controller import interconnect
         closed_loop = interconnect(ddae, controller, y_indices, u_indices)
 
 
@@ -139,7 +139,7 @@ Similar to the static case, once the matrices :math:`A_c, B_c, C_c, D_c` are def
 
 .. code-block:: python
     
-    from tdspy.controller import create_dynamic_controller
+    from tdcpy.controller import create_dynamic_controller
     controller = create_dynamic_controller(Ac=Ac, Bc=Bc, Cc=Cc, Dc=Dc)
 
 The function returns a `DDAE` object with the fields `controller.A`, `controller.B`, `controller.C`, `controller.D` containing the respective matrices of the dynamic controller 
@@ -149,7 +149,7 @@ and the interconnection of the plant and the controller is be performed using th
 
 In a similar way, a delayed and dynamic feedback controller can be defined as per controller equation :eq:`eq_controller`.
 
-In `TDSpy`, a neat way of creating such a controller structure for dynamic controllers is by using the function `concatenatw_2x2_by_delays` from the :mod:`tdspy.common.composition` module. 
+In `tdcpy`, a neat way of creating such a controller structure for dynamic controllers is by using the function `concatenatw_2x2_by_delays` from the :mod:`tdcpy.common.composition` module. 
 The function creates a DDAE representation of the controller matrices by concatenating the respective matrices :math:`A_c, B_c, C_c, D_c` with the appropriate delays, 
 and internally adding appropriate slack variables where necessary. This enables an equivalent controller representation in the form:
 
@@ -159,13 +159,13 @@ and internally adding appropriate slack variables where necessary. This enables 
 
 with :math:`K = \begin{bmatrix} A_c & B_c \\\\ C_c & D_c \end{bmatrix}`.
           
-The above structure is later used for creating the subsequent closed-loop using the :func:`tdspy.ClosedLoop` function.
+The above structure is later used for creating the subsequent closed-loop using the :func:`tdcpy.ClosedLoop` function.
 
 .. code-block:: python
     
-    from tdspy.closed_loop import ClosedLoop, concatenate_2x2_by_delays
-    from tdspy.controller import create_dynamic_controller
-    from tdspy import DDAE
+    from tdcpy.closed_loop import ClosedLoop, concatenate_2x2_by_delays
+    from tdcpy.controller import create_dynamic_controller
+    from tdcpy import DDAE
 
     Ac, hAc = np.zeros((nc, nc)), np.zeros(nAc)
     Bc, hBc = np.zeros((nc, ny)), np.zeros(nBc)
@@ -235,7 +235,7 @@ and its spectral abscissa:
 For the above system to be stable, we require that :math:`\alpha < 0`. 
 The stabilization objective is therefore to find controller parameters :math:`K` such that the spectral abscissa of the closed-loop system is negative.
 
-For desiging a stabilizing controller, we used the `design_bfgs` function from the :mod:`tdspy.stabopt` module, which utilizes the `L-BFGS` solver from the `scipy.optimize` library.
+For desiging a stabilizing controller, we used the `design_bfgs` function from the :mod:`tdcpy.stabopt` module, which utilizes the `L-BFGS` solver from the `scipy.optimize` library.
 The below example demonstrates the design of a stabilizing controller for a retarded time-delay system.
 
 **Summary**
@@ -257,8 +257,8 @@ The below example demonstrates the design of a stabilizing controller for a reta
 
     .. code-block:: python
 
-        from tdspy.stabopt.controller_bfgs import minimize_spectral_abscissa
-        from tdspy.ddae import DDAE
+        from tdcpy.stabopt.controller_bfgs import minimize_spectral_abscissa
+        from tdcpy.ddae import DDAE
         A0 = np.array([[-1., 0.], [0., -2.]])
         A1 = np.array([[1., 0.], [0., 1.]])
         A = np.stack([A0, A1], axis=2)

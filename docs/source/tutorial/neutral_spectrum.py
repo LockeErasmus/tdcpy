@@ -1,5 +1,5 @@
 import numpy as np
-import tdspy as tds
+import tdcpy as tds
 A0 = np.array([[0.25]])
 A1 = np.array([[0.75]])
 hA = np.array([0.,2.])
@@ -15,7 +15,7 @@ diff = ndde.get_delay_difference_equation()
 CD_diff,_ = tds.spectral_abscissa_diff(diff)
 
 import matplotlib.pyplot as plt
-from tdspy.plot.eigenvalues import eigen_plot
+from tdcpy.plot.eigenvalues import eigen_plot
 
 fig, (ax1, ax2) = plt.subplots(1,2, sharex=True, sharey=True)
 

@@ -12,15 +12,15 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
-from tdspy.common.delay_difference_equation import ddae_to_diff
-from tdspy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
-from tdspy.common.compress import compress_matrices_delays
+from tdcpy.common.delay_difference_equation import ddae_to_diff
+from tdcpy.stability.characteristic_roots import rightmost_root, RightmostRootInfo
+from tdcpy.common.compress import compress_matrices_delays
 from .gradients import func_sa, func_cd, grad_gamma0
-from tdspy.controller import create_static_controller, interconnect3
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy import DDAE, ClosedLoop  
-from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
-from tdspy.stability.spectral_abscissa import spectral_abscissa_diff
+from tdcpy.controller import create_static_controller, interconnect3
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy import DDAE, ClosedLoop  
+from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+from tdcpy.stability.spectral_abscissa import spectral_abscissa_diff
 
 logger = logging.getLogger("__name__")
 
@@ -65,7 +65,7 @@ def design_bfgs(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B, C, **k
 
     Examples
     --------
-    >>> from tdspy.stabopt.controller_bfgs import design_bfgs
+    >>> from tdcpy.stabopt.controller_bfgs import design_bfgs
     >>> import numpy as np
     >>> E = np.eye(2)
     >>> P0 = np.array([[-1., 0.], [0., -2.]])
@@ -197,8 +197,8 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     Examples
     --------
     
-    >>> from tdspy.stabopt.controller_bfgs import minimize_spectral_abscissa
-    >>> from tdspy.ddae import DDAE
+    >>> from tdcpy.stabopt.controller_bfgs import minimize_spectral_abscissa
+    >>> from tdcpy.ddae import DDAE
     >>> A0 = np.array([[-1., 0.], [0., -2.]])
     >>> A1 = np.array([[1., 0.], [0., 1.]])
     >>> A = np.stack([A0, A1], axis=2)
@@ -217,8 +217,8 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
     """
 
     # import necessary functions
-    from tdspy.ddae import DDAE
-    from tdspy.stabopt.controller_bfgs import design_bfgs
+    from tdcpy.ddae import DDAE
+    from tdcpy.stabopt.controller_bfgs import design_bfgs
 
     ##################################### Step 0: Preprocessing and unpacking arguments ######################################
     
@@ -310,10 +310,10 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
         ################################## Case 2: Neutral system ###############################
         
         # import necessary functions
-        from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
-        from tdspy.stability.spectral_abscissa import spectral_abscissa_diff
-        from tdspy.stabopt.utils import diff_dependency_mask
-        from tdspy.common.delay_difference_equation import normalize_diff
+        from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff, func
+        from tdcpy.stability.spectral_abscissa import spectral_abscissa_diff
+        from tdcpy.stabopt.utils import diff_dependency_mask
+        from tdcpy.common.delay_difference_equation import normalize_diff
 
         ################################# Step 2.1: Check feasibility and gradient existence #####################################
 
@@ -541,7 +541,7 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stabopt.controller_bfgs import find_feasible_point
+    >>> from tdcpy.stabopt.controller_bfgs import find_feasible_point
     >>> E = np.array([[1,0,0],[0,1,0],[0,0,0]])
     >>> P = np.zeros((3,3,1))
     >>> hP = np.array([0])
@@ -555,11 +555,11 @@ def find_feasible_point(E: npt.NDArray, P:npt.NDArray, hP:npt.NDArray, K0, hK, B
     """
     
     from scipy import linalg, optimize
-    from tdspy.common.delay_difference_equation import ddae_to_diff
-    from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff
-    from tdspy.common.delay_difference_equation import normalize_diff
-    from tdspy.stabopt.utils import diff_dependency_mask
-    from tdspy.stabopt.gradients import grad_gamma0
+    from tdcpy.common.delay_difference_equation import ddae_to_diff
+    from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff
+    from tdcpy.common.delay_difference_equation import normalize_diff
+    from tdcpy.stabopt.utils import diff_dependency_mask
+    from tdcpy.stabopt.gradients import grad_gamma0
 
     # unpack arguments
     n, nu, ny = E.shape[0], B.shape[1], C.shape[0]

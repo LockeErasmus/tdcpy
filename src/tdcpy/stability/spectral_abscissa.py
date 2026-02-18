@@ -31,7 +31,7 @@ import numpy as np
 import numpy.typing as npt
 from scipy import linalg, optimize
 
-from tdspy.common.delay_difference_equation import normalize_diff
+from tdcpy.common.delay_difference_equation import normalize_diff
 from .gamma_r import gamma_normalized_diff, GammaInfo
 
 logger = logging.getLogger(__name__)

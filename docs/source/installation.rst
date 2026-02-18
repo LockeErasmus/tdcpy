@@ -1,7 +1,7 @@
 Installation
 ============
 
-This section describes how to install ``tdspy`` using ``pip`` or from source.
+This section describes how to install ``tdcpy`` using ``pip`` or from source.
 It is recommended to install the package inside a virtual environment.
 
 Prerequisites
@@ -35,28 +35,28 @@ is active.
 Installing with pip
 -------------------
 
-The easiest way to install ``tdspy`` is via ``pip``:
+The easiest way to install ``tdcpy`` is via ``pip``:
 
 .. code-block:: bash
 
-   pip install tdspy
+   pip install tdcpy
 
 To upgrade to the latest version:
 
 .. code-block:: bash
 
-   pip install --upgrade tdspy
+   pip install --upgrade tdcpy
 
 
 Installing from source
 ----------------------
 
-To install ``tdspy`` from source, clone the GitHub repository:
+To install ``tdcpy`` from source, clone the GitHub repository:
 
 .. code-block:: bash
 
-   git clone https://github.com/LockeErasmus/tdspy.git
-   cd tdspy
+   git clone https://github.com/LockeErasmus/tdcpy.git
+   cd tdcpy
 
 Install the package using ``pip``:
 

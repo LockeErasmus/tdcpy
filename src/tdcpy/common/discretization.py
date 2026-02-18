@@ -19,8 +19,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy.special
 
-from tdspy.base import TDSBase
-from tdspy.dae import DAE
+from tdcpy.base import TDSBase
+from tdcpy.dae import DAE
 
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def discretize_ddae(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, discretizat
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.discretization import discretize_ddae
+    >>> from tdcpy.common.discretization import discretize_ddae
     >>> E = np.array([[1,0],[0,1]])
     >>> A = np.zeros(shape=(2,2,2))
     >>> A[:,:,0] = np.array([[0,1],[0,0]])

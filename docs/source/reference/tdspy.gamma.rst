@@ -1,7 +1,7 @@
-tdspy.gamma module
+tdcpy.gamma module
 ------------------
 
-.. automodule:: tdspy.gamma
+.. automodule:: tdcpy.gamma
    :members:
    :undoc-members:
    :show-inheritance:

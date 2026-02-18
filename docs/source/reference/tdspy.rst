@@ -1,7 +1,7 @@
-tdspy package
+tdcpy package
 =============
 
-The main `tdspy` package contains the core modules for 
+The main `tdcpy` package contains the core modules for 
 time-delay system representation, analysis and control.
 
 
@@ -9,10 +9,10 @@ Subpackages
 -----------
 
 =================  ==============================================
-`tdspy.common`       Common functions and utilities
-`tdspy.stability`    Stability analysis 
-`tdspy.plot`         Visualization tools
-`tdspy.stabopt`      Stabilization and controller design
+`tdcpy.common`       Common functions and utilities
+`tdcpy.stability`    Stability analysis 
+`tdcpy.plot`         Visualization tools
+`tdcpy.stabopt`      Stabilization and controller design
 =================  ==============================================
 
 
@@ -20,17 +20,17 @@ Modules
 ----------
 
 ==========================  ===============================================================
-`tdspy.base`                  Base classes and functions
-`tdspy.closed_loop`           Closed-loop representation
-`tdspy.controller`            Controller representation
-`tdspy.dae`                   Differential-algebraic equation (DAE) representation
-`tdspy.ddae`                  Delay differential-algebraic equation (DDAE) representation
-`tdspy.gamma`                 Computation of gamma_r
-`tdspy.ndde`                  NDDE classes and functions
-`tdspy.rdde`                  RDDE classes
-`tdspy.roots`                 Characteristic roots
-`tdspy.spectral_abscissa`     Spectral abscissa 
-`tdspy.zeros`                 Zeros computation
+`tdcpy.base`                  Base classes and functions
+`tdcpy.closed_loop`           Closed-loop representation
+`tdcpy.controller`            Controller representation
+`tdcpy.dae`                   Differential-algebraic equation (DAE) representation
+`tdcpy.ddae`                  Delay differential-algebraic equation (DDAE) representation
+`tdcpy.gamma`                 Computation of gamma_r
+`tdcpy.ndde`                  NDDE classes and functions
+`tdcpy.rdde`                  RDDE classes
+`tdcpy.roots`                 Characteristic roots
+`tdcpy.spectral_abscissa`     Spectral abscissa 
+`tdcpy.zeros`                 Zeros computation
 ==========================  ===============================================================
 
 
@@ -40,98 +40,98 @@ Modules
 .. .. toctree::
 ..    :maxdepth: 4
 
-..    tdspy.common
-..    tdspy.stability
-..    tdspy.plot
-..    tdspy.stabopt
+..    tdcpy.common
+..    tdcpy.stability
+..    tdcpy.plot
+..    tdcpy.stabopt
 
 .. Submodules
 .. ----------
 
-.. tdspy.base module
+.. tdcpy.base module
 .. -----------------
 
-.. .. automodule:: tdspy.base
+.. .. automodule:: tdcpy.base
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.closed\_loop module
+.. tdcpy.closed\_loop module
 .. -------------------------
 
-.. .. automodule:: tdspy.closed_loop
+.. .. automodule:: tdcpy.closed_loop
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.controller module
+.. tdcpy.controller module
 .. -----------------------
 
-.. .. automodule:: tdspy.controller
+.. .. automodule:: tdcpy.controller
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.dae module
+.. tdcpy.dae module
 .. ----------------
 
-.. .. automodule:: tdspy.dae
+.. .. automodule:: tdcpy.dae
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.ddae module
+.. tdcpy.ddae module
 .. -----------------
 
-.. .. automodule:: tdspy.ddae
+.. .. automodule:: tdcpy.ddae
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.gamma module
+.. tdcpy.gamma module
 .. ------------------
 
-.. .. automodule:: tdspy.gamma
+.. .. automodule:: tdcpy.gamma
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.ndde module
+.. tdcpy.ndde module
 .. -----------------
 
-.. .. automodule:: tdspy.ndde
+.. .. automodule:: tdcpy.ndde
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.rdde module
+.. tdcpy.rdde module
 .. -----------------
 
-.. .. automodule:: tdspy.rdde
+.. .. automodule:: tdcpy.rdde
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.roots module
+.. tdcpy.roots module
 .. ------------------
 
-.. .. automodule:: tdspy.roots
+.. .. automodule:: tdcpy.roots
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.spectral\_abscissa module
+.. tdcpy.spectral\_abscissa module
 .. -------------------------------
 
-.. .. automodule:: tdspy.spectral_abscissa
+.. .. automodule:: tdcpy.spectral_abscissa
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
 
-.. tdspy.zeros module
+.. tdcpy.zeros module
 .. ------------------
 
-.. .. automodule:: tdspy.zeros
+.. .. automodule:: tdcpy.zeros
 ..    :members:
 ..    :undoc-members:
 ..    :show-inheritance:
@@ -139,7 +139,7 @@ Modules
 Module contents
 ---------------
 
-.. automodule:: tdspy
+.. automodule:: tdcpy
    :members:
    :undoc-members:
    :show-inheritance:

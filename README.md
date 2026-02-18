@@ -3,8 +3,8 @@
 This Python pacakge contains tools for analysis and controller design for linear
 time-invariant dynamical systems with discrete delays.
 
-- Website and documentation: https://lockeerasmus.github.io/tdspy
-- Bug reports: https://github.com/lockeerasmus/tdspy/issues
+- Website and documentation: https://lockeerasmus.github.io/tdcpy
+- Bug reports: https://github.com/lockeerasmus/tdcpy/issues
 
 This package provides:
 

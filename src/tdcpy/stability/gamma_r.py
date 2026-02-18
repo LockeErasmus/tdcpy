@@ -27,8 +27,8 @@ import numpy.typing as npt
 from scipy import linalg
 from scipy import optimize
 
-from tdspy.common.delay_difference_equation import normalize_diff
-from tdspy.common.compress import compress_matrices_delays
+from tdcpy.common.delay_difference_equation import normalize_diff
+from tdcpy.common.compress import compress_matrices_delays
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +300,7 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.stability.gamma_r import gamma_normalized_diff
+    >>> from tdcpy.stability.gamma_r import gamma_normalized_diff
     >>> DD = np.zeros((2,2,2), dtype=complex)
     >>> DD[:,:,0] = np.array([[0.7, 0], [0, 0.7]])
     >>> DD[:,:,1] = np.array([[0.1, 0], [0, 0.1]])
@@ -503,7 +503,7 @@ def gamma_diff(D: npt.NDArray, hD: npt.NDArray, r: float, **kwargs) -> tuple[flo
     --------
 
     >>> import numpy as np
-    >>> from tdspy.stability.gamma_r import gamma_diff
+    >>> from tdcpy.stability.gamma_r import gamma_diff
     >>> D = np.zeros(shape=(2,2,3))
     >>> D[:,:,0] = np.array([[1.0, 0.0], [0.0, 1.0]])
     >>> D[:,:,1] = np.array([[0.5, 0.0], [0.0, 0.5]])

@@ -26,11 +26,11 @@ space.
 """
 
 import numpy as np
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 import matplotlib.pyplot as plt
-from tdspy.common.quasipoly import qp_to_ndde
-from tdspy.common.quasipoly import compress_qp, qp_to_ndde
+from tdcpy.common.quasipoly import qp_to_ndde
+from tdcpy.common.quasipoly import compress_qp, qp_to_ndde
 
 
 tau, delta = 1., 0.5
@@ -40,7 +40,7 @@ delays = np.array([0.,tau,tau+delta])
 
 A, hA, H, hH = qp_to_ndde(coeffs,delays,ascending=True)
 
-ndde = tdspy.NDDE(A=A,hA=hA,H=H,hH=hH)
+ndde = tdcpy.NDDE(A=A,hA=hA,H=H,hH=hH)
 
 tau_grid = np.linspace(0, 8, 201)
 delta_grid = np.linspace(-8, 10, 451)
@@ -56,16 +56,16 @@ Z = np.zeros((len(delta_grid), len(tau_grid)))
 #                 tau = 1e-8
 #             hH[0],hH[1] = tau, 1e-8
 #             hA[1],hA[2] = tau, 1e-8
-#             ndde = tdspy.NDDE(H=H,hH=hH,A=A,hA=hA)
-#             Z[i1,i2] = tdspy.strong_spectral_abscissa(ndde)
+#             ndde = tdcpy.NDDE(H=H,hH=hH,A=A,hA=hA)
+#             Z[i1,i2] = tdcpy.strong_spectral_abscissa(ndde)
 #         elif tau + delta < 0:
 #             # case: "real" delay cannot be negative
 #             Z[i1,i2] = -np.inf
 #         else:
 #             hH[0], hH[1] = tau, tau+delta
 #             hA[1], hA[2] = tau, tau+delta
-#             ndde = tdspy.NDDE(H=H,hH=hH,A=A,hA=hA)
-#             Z[i1,i2] = tdspy.strong_spectral_abscissa(ndde)
+#             ndde = tdcpy.NDDE(H=H,hH=hH,A=A,hA=hA)
+#             Z[i1,i2] = tdcpy.strong_spectral_abscissa(ndde)
 
 # X, Y = np.meshgrid(tau_grid,delta_grid)
 # plt.contour(X,Y,Z,[0])

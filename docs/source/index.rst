@@ -1,4 +1,4 @@
-TDSpy Documentation
+tdcpy Documentation
 ===========================
 
 
@@ -8,11 +8,11 @@ TDSpy Documentation
       :padding: 2
       :columns: 7
 
-      **TDSpy: Control of time-delay systems in Python**
+      **tdcpy: Control of time-delay systems in Python**
 
-      **TDSpy** is a package for analysis and control of time-delay systems. 
+      **tdcpy** is a package for analysis and control of time-delay systems. 
       The software is based on the ``TDS-Control`` toolbox in MATLAB :cite:`appeltans2023analysis`.
-      Like ``TDS-Control``, ``TDSpy`` provides tools for modeling, spectral analysis and controller design of time-delay systems.
+      Like ``TDS-Control``, ``tdcpy`` provides tools for modeling, spectral analysis and controller design of time-delay systems.
 
       * :doc:`Modelling <tutorial/definitions>` time-delay systems 
       * Performing :doc:`spectral analysis <tutorial/analysis>`

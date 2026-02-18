@@ -1,7 +1,7 @@
-tdspy.ndde module
+tdcpy.ndde module
 -----------------
 
-.. automodule:: tdspy.ndde
+.. automodule:: tdcpy.ndde
    :members:
    :undoc-members:
    :show-inheritance:

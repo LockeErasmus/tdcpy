@@ -3,12 +3,12 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import tdspy as tds
-import tdspy.controller
+import tdcpy as tds
+import tdcpy.controller
 from numpy.linalg import inv
-from tdspy.common.composition import concatenate_2x2_by_delays
-from tdspy.stability.gamma_r import gamma_normalized_diff, gamma_diff
-from tdspy.common.delay_difference_equation import ddae_to_diff, normalize_diff
+from tdcpy.common.composition import concatenate_2x2_by_delays
+from tdcpy.stability.gamma_r import gamma_normalized_diff, gamma_diff
+from tdcpy.common.delay_difference_equation import ddae_to_diff, normalize_diff
 
 
 def create_system() -> tds.ddae:
@@ -74,7 +74,7 @@ def print_ddae(ddae: tds.DDAE):
 if __name__ == "__main__":
     # Set up logging
     import logging
-    logger = logging.getLogger("tdspy")
+    logger = logging.getLogger("tdcpy")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")

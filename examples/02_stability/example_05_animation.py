@@ -32,8 +32,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-import tdspy
-import tdspy.plot
+import tdcpy
+import tdcpy.plot
 
 # Create RDDE matrix representation
 A0 = np.array([[-1, 0, 0, 0],
@@ -44,34 +44,34 @@ A1 = np.array([[3, 3, 3, 3],
                [0, -1.5, 0, 0],
                [0, 0, 3, -5],
                [0, 5, 5, 5]])
-rdde = tdspy.RDDE(A=[A0, A1], hA=[0, 1])
+rdde = tdcpy.RDDE(A=[A0, A1], hA=[0, 1])
 
-# %% Obtain roots for `r = -5` via `tdspy.roots(.)`, we leave the discretization
+# %% Obtain roots for `r = -5` via `tdcpy.roots(.)`, we leave the discretization
 # to be determined by the heuristic. It is possible to access the discretization
 # and also raw eigenvalues of constructed eigenvalue problem from `info`.
 
-roots, info = tdspy.roots(rdde, r=-2)
+roots, info = tdcpy.roots(rdde, r=-2)
 print(f"N = {info.discretization}")
 print(f"First 5 raw eigenvalues: {info.discretization_eigenvalues[:5]}")
 
 # %% Define discretization manually and compare the results. Plot the
 # discretization eigenvalues for both cases.
-roots2, info2 = tdspy.roots(rdde, r=-2, discretization=15)
+roots2, info2 = tdcpy.roots(rdde, r=-2, discretization=15)
 
 fix, (ax1, ax2) = plt.subplots(1, 2)
 
-tdspy.plot.complex_scatter_axplot(info.discretization_eigenvalues, ax=ax1,
+tdcpy.plot.complex_scatter_axplot(info.discretization_eigenvalues, ax=ax1,
                                   marker="x", color="b")
-tdspy.plot.complex_scatter_axplot(info2.discretization_eigenvalues, ax=ax1,
+tdcpy.plot.complex_scatter_axplot(info2.discretization_eigenvalues, ax=ax1,
                                   marker="o", edgecolors="r", facecolors='none')
 ax1.axvline(x=-2, color="k", linestyle="--", label="r=-2")
 ax1.set_xlabel(r"$\Re (\lambda)$")
 ax1.set_ylabel(r"$\Im (\lambda)$")
 
-tdspy.plot.complex_scatter_axplot(info.discretization_eigenvalues, ax=ax2, 
+tdcpy.plot.complex_scatter_axplot(info.discretization_eigenvalues, ax=ax2, 
                                   marker="x", color="b",
                                   label=f"N={info.discretization} (heuristic)")
-tdspy.plot.complex_scatter_axplot(info2.discretization_eigenvalues, ax=ax2,
+tdcpy.plot.complex_scatter_axplot(info2.discretization_eigenvalues, ax=ax2,
                                   marker="o", edgecolors="r", facecolors='none',
                                   label=f"N={info2.discretization} (manual)")
 ax2.axvline(x=-2, color="k", linestyle="--", label="r=-2")
@@ -86,8 +86,8 @@ plt.show()
 # %%
 # We use the build-in function for creating the discretization animation. 
 # If further customization would be needed, we encourage to read the source
-# code of `tdspy.plot.discretization_animation(.)` and adapt it.
-ani = tdspy.plot.discretization_animation(
+# code of `tdcpy.plot.discretization_animation(.)` and adapt it.
+ani = tdcpy.plot.discretization_animation(
     rdde,
     s0=0,
     discretization=range(10, 100, 5),

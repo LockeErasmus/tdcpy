@@ -113,8 +113,8 @@ def interconnect(tds1: DDAE, tds2: DDAE, y1_indices: list=None, u2_indices:list 
 
     Examples
     --------
-    >>> from tdspy.controller import interconnect
-    >>> from tdspy.ddae import DDAE
+    >>> from tdcpy.controller import interconnect
+    >>> from tdcpy.ddae import DDAE
     >>> A1 = np.array([[[1.0]]])
     >>> hA1 = np.array([0.0])
     >>> E1 = np.eye(1)
@@ -311,7 +311,7 @@ def create_static_controller(K: npt.NDArray) -> DDAE:
     
     Examples
     --------
-    >>> from tdspy.controller import create_static_controller
+    >>> from tdcpy.controller import create_static_controller
     >>> K = np.array([[1.0, 2.0], [3.0, 4.0]])
     >>> controller = create_static_controller(K)
     >>> controller.A.shape
@@ -372,7 +372,7 @@ def create_dynamic_controller(A: npt.NDArray, B: npt.NDArray, C: npt.NDArray,
 
     Examples
     --------
-    >>> from tdspy.controller import create_dynamic_controller
+    >>> from tdcpy.controller import create_dynamic_controller
     >>> A = np.array([[0.0, 1.0], [-2.0, -3.0]])
     >>> B = np.array([[0.0], [1.0]])
     >>> C = np.array([[1.0, 0.0]])
@@ -447,8 +447,8 @@ def interconnect2(tds1: DDAE, y1_indices: list=None, u1_indices:list = None,
 
     Examples
     --------
-    >>> from tdspy.controller import interconnect2
-    >>> from tdspy.ddae import DDAE
+    >>> from tdcpy.controller import interconnect2
+    >>> from tdcpy.ddae import DDAE
     >>> A1 = np.array([[[1.0]]])
     >>> hA1 = np.array([0.0])
     >>> E1 = np.eye(1)

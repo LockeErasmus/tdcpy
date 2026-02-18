@@ -16,8 +16,8 @@ from tests.examples import TDS_CONTROL_MANUAL_NEUTRAL_CASES
     argvalues=TDS_CONTROL_MANUAL_NEUTRAL_CASES,
 )
 def test_gamma_r_neutral(factory, enable_plot: bool) -> None:
-    from tdspy.common.delay_difference_equation import ndde_to_diff, normalize_diff
-    from tdspy.stability.gamma_r import gamma_diff, gamma_normalized_diff
+    from tdcpy.common.delay_difference_equation import ndde_to_diff, normalize_diff
+    from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff
 
     A, hA, H, hH = factory
 

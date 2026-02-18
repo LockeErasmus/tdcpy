@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
  
 def init_logger(level=logging.INFO, format: str="%(asctime)s - %(name)s - %(levelname)s - %(message)s") -> logging.Logger:
-    """ Initializes tdspy logger with Streamhandler and level """
+    """ Initializes tdcpy logger with Streamhandler and level """
     logger = logging.getLogger(__name__)
     stream_formatter = logging.Formatter(format)
     stream_handler = logging.StreamHandler()

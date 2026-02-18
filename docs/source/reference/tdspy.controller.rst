@@ -1,7 +1,7 @@
-tdspy.controller module
+tdcpy.controller module
 -----------------------
 
-.. automodule:: tdspy.controller
+.. automodule:: tdcpy.controller
    :members:
    :undoc-members:
    :show-inheritance:

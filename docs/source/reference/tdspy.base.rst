@@ -1,7 +1,7 @@
-tdspy.base module
+tdcpy.base module
 -----------------
 
-.. automodule:: tdspy.base
+.. automodule:: tdcpy.base
    :members:
    :undoc-members:
    :show-inheritance:

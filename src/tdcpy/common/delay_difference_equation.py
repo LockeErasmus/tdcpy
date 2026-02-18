@@ -96,7 +96,7 @@ def ddae_to_diff(E, A, hA, uE=None, vE=None, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.delay_difference_equation import ddae_to_diff
+    >>> from tdcpy.common.delay_difference_equation import ddae_to_diff
     >>> E = np.array([[1,0,0],[0,0,0],[0,0,1]])
     >>> A = np.zeros(shape=(3,3,3))
     >>> A[:,:,0] = np.array([[0,1,0],[0,0,0],[0,0,0]])
@@ -183,7 +183,7 @@ def ndde_to_diff(H, hH, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.delay_difference_equation import ndde_to_diff
+    >>> from tdcpy.common.delay_difference_equation import ndde_to_diff
     >>> H = np.zeros(shape=(2,2,2))
     >>> H[:,:,0] = np.array([[0,1],[0,0]])
     >>> H[:,:,1] = np.array([[0,0],[1,0]])
@@ -314,7 +314,7 @@ def normalize_diff(D: npt.NDArray, hD: npt.NDArray) -> tuple:
     Examples
     --------
     >>> import numpy as np
-    >>> from tdspy.common.delay_difference_equation import normalize_diff
+    >>> from tdcpy.common.delay_difference_equation import normalize_diff
     >>> D = np.zeros(shape=(2,2,3))
     >>> D[:,:,0] = np.array([[1,0],[0,1]])
     >>> D[:,:,1] = np.array([[0,1],[1,0]])
