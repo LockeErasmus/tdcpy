@@ -23,7 +23,7 @@ are damping and stiffness matrices, respectively, defined as
 
 .. math::
     
-    \begin{align}
+    \begin{aligned}
         C &=
         \begin{bmatrix}
             c_a & -c_a & 0 & 0 \\
@@ -38,7 +38,7 @@ are damping and stiffness matrices, respectively, defined as
             0 & -k_2 & k_2 + k_3 & -k_3 \\
             0 & 0 & -k_3 & k_3 + k_4
         \end{bmatrix},
-    \end{align} 
+    \end{aligned} 
 
 input matrices are defined as
 
