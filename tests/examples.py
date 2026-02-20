@@ -40,19 +40,11 @@ def tds_control_manual_example_2_6(tau2=2.0) -> npt.NDArray[np.float64]:
 
     return A, hA, H, hH
 
-
 import pytest
 
-TDS_CONTROL_RETARDED_CASES = [
+TDS_CONTROL_MANUAL_RETARDED_CASES = [ # all in form (A, hA)
     pytest.param(
         tds_control_manual_example_2_1(),
-        { # options
-            "roots": {
-                "args": (),
-                "kwargs": {"r": -1.5},
-                "expected_results": None,
-            }
-        },
         id="tds_control_manual_example_2_1",
     ),
 ]
@@ -67,8 +59,6 @@ TDS_CONTROL_MANUAL_NEUTRAL_CASES = [
         id="tds_control_manual_example_2_6_tau2=2.05",
     ),
 ]
-
-
 
 STABOPT_NEUTRAL_EXAMPLES = [
 ]
