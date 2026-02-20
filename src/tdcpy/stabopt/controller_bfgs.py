@@ -377,7 +377,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                 gamma0_args = (E, P, hP, Kmask, hK, B, C)
                 sa_args = (E, P, hP, hK, Kmask, B, C)
 
-                log_points = np.logspace(0,-8,9)   # different values of w2 to try, default is [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
+                # log_points = np.logspace(-3,-6,4)   # different values of w2 to try, default is [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
                 log_points = 6.5e-3 * (0.3 ** np.arange(10))   # 6.5e-3, 1.95e-3, 5.85e-4, ...
                 best = None
                 eps = 1e-8
@@ -415,7 +415,7 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                 x=x0
 
                 for w2 in log_points:
-                    print(f"Optimizing with w2={w2}...")
+                    logger.debug(f"Optimizing with w2={w2}...")
                     sol = optimize.minimize(
                         obj_fn,
                         x0=x,
@@ -426,9 +426,10 @@ def minimize_spectral_abscissa(ddae: DDAE, order: int, **kwargs):
                         callback=None
                     )
 
-                    # logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={grad_gamma0(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
                     results.append((w2, sol.fun, sol.x))
                     x = sol.x  # warm start the next optimization with the current solution
+
+                logger.info(f"Optimization with w2={w2} completed. Optimal fval={sol.fun}, optimal gamma0={grad_gamma0(sol.x, *gamma0_args)}, optimal sa={func_sa(sol.x, *sa_args)[0]}")
 
                 return sol
             
