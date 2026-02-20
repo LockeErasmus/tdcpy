@@ -502,9 +502,6 @@ def rightmost_root(E: npt.NDArray, A: npt.NDArray, hA: npt.NDArray, r: float=0.0
         imax = np.argmax(np.real(cr))
         root_star1 = cr[imax]
 
-        # imax = np.argmax(np.real(cr_discretization))
-        # root_star1 = cr_discretization[imax]
-
         # check the roots possibly right of root_star1
         u = np.vectorize(upper_bound)(np.real(cr_discretization), 0.05, 1.e-3)
         u = np.sort_complex(u)
