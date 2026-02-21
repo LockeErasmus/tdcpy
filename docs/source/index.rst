@@ -26,7 +26,7 @@ tdcpy Documentation
       .. image:: /_static/strong_stability.gif
          :align: center
          :width: 100%
-         :target: ./auto_examples/stabopt/example_strong_sa.html
+         :target: ./auto_examples/03_stabopt/example_strong_sa.html
          
 
 .. grid:: 1 1 2 2
@@ -62,7 +62,7 @@ tdcpy Documentation
    .. grid-item-card::
       :padding: 2
       :columns: 3
-      :link: reference/api_reference   
+      :link: reference/index
       :link-type: doc
       :text-align: center
       :class-card: sd-v-stretch  
@@ -94,6 +94,6 @@ tdcpy Documentation
 
    installation
    User Guide <tutorial/index>
-   API Reference <reference/api_reference>
+   API Reference <reference/index>
    Examples <auto_examples/index>
    credits
