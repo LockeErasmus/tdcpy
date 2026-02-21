@@ -8,9 +8,27 @@ Docstring for test.stability.test_gamma_r
 
 import logging
 import pytest
+import numpy as np
+
+from tdcpy.stability.spectral_abscissa import spectral_abscissa_diff
 
 from tests.examples import TDS_CONTROL_MANUAL_NEUTRAL_CASES
 
+def problem_cd_20260220():
+    DD = np.zeros((4, 4, 2))
+    DD[:,:,0] = np.array([[ 0.  , -3.  ,  0.  ,  0.  ],
+                        [ 0.  , -0.08,  0.  ,  0.  ],
+                        [ 0.  , -1.  ,  0.  ,  0.  ],
+                        [ 0.  , -4.  ,  0.  ,  0.  ]])
+    DD[:,:,1] = np.array([[ 0.   , -0.4  ,  0.   ,  0.   ],
+                        [ 0.   ,  0.004,  0.   ,  0.   ],
+                        [ 0.   ,  0.4  ,  0.   ,  0.   ],
+                        [ 0.   ,  0.4  ,  0.   ,  0.   ]])
+    
+    hDD = np.array([2.5, 5.])    
+
+    return DD, hDD
+ 
 @pytest.mark.parametrize(
     argnames="factory",
     argvalues=TDS_CONTROL_MANUAL_NEUTRAL_CASES,
@@ -18,7 +36,6 @@ from tests.examples import TDS_CONTROL_MANUAL_NEUTRAL_CASES
 def test_func_cd(factory, enable_plot: bool) -> None:
     from tdcpy.common.delay_difference_equation import ndde_to_diff, normalize_diff
     from tdcpy.stability.gamma_r import gamma_diff, gamma_normalized_diff
-    from tdcpy.stability.spectral_abscissa import spectral_abscissa_diff
 
     A, hA, H, hH = factory
 
@@ -32,3 +49,22 @@ def test_func_cd(factory, enable_plot: bool) -> None:
 
     if enable_plot:
         raise NotImplementedError("Plotting not implemented yet for gamma_r tests.")
+
+CASES = [
+    pytest.param(
+        problem_cd_20260220(),
+        {},
+        {},
+        id="problem-20260220-rootfail",
+    ),
+]
+
+@pytest.mark.parametrize(
+    argnames="normalized_diff, func_kwargs, expected_results",
+    argvalues=CASES,
+)
+def test_spectral_abscissa_diff(normalized_diff, func_kwargs, expected_results):
+    DD, hDD = normalized_diff
+    val, info = spectral_abscissa_diff(DD, hDD)
+    
+    print(val, info)
