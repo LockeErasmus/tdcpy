@@ -360,6 +360,7 @@ def gamma_normalized_diff(DD: npt.NDArray, hDD: npt.NDArray, r: float, **kwargs)
         vals_abs = np.abs(vals)
         gamma_r_index = np.argmax(vals_abs) # index of dominant eigenvalue
         gamma_r = vals_abs[gamma_r_index]
+        logger.debug(f"radius: {radius}, gamma_r: {gamma_r}")
         
         if gamma_r > radius:
             radius = gamma_r
