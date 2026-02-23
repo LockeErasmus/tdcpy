@@ -143,11 +143,10 @@ tdcpy.plot.eigen_plot(cr_system, ax=ax)
 ax.axvline(x=ssa, color="red", linestyle="--")
 ax.text(ssa, 0, f"CD = {ssa:.4f}", color="red", fontsize=10,
         verticalalignment="bottom", horizontalalignment="right")
+ax.legend()
 ax.title = ax.set_title("Open-loop roots and strong spectral abscissa")
 ax.set_xlim(region[0], region[1])
 ax.set_ylim(region[2], region[3])
-ax.set_xlabel(r"$\Re (\lambda)$")
-ax.set_ylabel(r"$\Im (\lambda)$")
 plt.show()
 
 # %%
@@ -189,6 +188,7 @@ tdcpy.plot.eigen_plot(cr_cl, ax=ax)
 ax.axvline(x=cd, color="red", linestyle="--")
 ax.text(cd, 0, f"CD = {cd:.4f}", color="red", fontsize=10,
         verticalalignment="bottom", horizontalalignment="left")
+ax.legend()
 title = ax.set_title("Closed-loop roots after optimization with L-BFGS-B")
 ax.set_xlim(region[0], region[1])
 ax.set_ylim(region[2], region[3])
@@ -231,7 +231,5 @@ ax.axvline(x=cd, color="red", linestyle="--")
 ax.text(cd, 0, f"CD = {cd:.4f}", color="red", fontsize=10,
         verticalalignment="bottom", horizontalalignment="left")
 ax.legend()
-ax.set_xlabel(r"$\Re (\lambda)$")
-ax.set_ylabel(r"$\Im (\lambda)$")
 plt.show()
 
