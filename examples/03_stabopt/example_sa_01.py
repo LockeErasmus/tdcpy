@@ -7,7 +7,7 @@ import tdcpy
 
 from tdcpy.stability.characteristic_roots import rightmost_root
 
-tdcpy.init_logger("DEBUG")
+# tdcpy.init_logger("DEBUG")
 
 Th, Ta,Td, Tc = 14, 3, 3, 25
 Kb, Ka, Kd, Kc, Ku = 0.24, 1, 0.94, 0.81, 0.39
@@ -92,46 +92,50 @@ A7[0,:] = Ku/Th * Dc1
 
 # print(A7)
 
-
-Dc = np.zeros(shape=(1,5))
-
 E = np.eye(*A0.shape)
 A = np.stack([A0, A1, A2, A3, A4, A5, A6, A7], axis=2)
 hA = np.r_[hA, hB]
 
-for i in range(0):
-    A[0:1, :, -1] = Dc
+np.random.seed(42)
+Dc = 2 * (np.random.rand(1,5) - 0.5)
+
+# for i in range(5):
+#     A[0:1, :, -1] = Dc
     
-    rmr, rmr_info = rightmost_root(E, A, hA, r=0)
+#     rmr, rmr_info = rightmost_root(E, A, hA, r=0)
     
-    # calculate gradient
-    conj_u_T = np.conj(rmr_info.u[np.newaxis,:]) # u* with shape=(1,n)
-    v = rmr_info.v[:,np.newaxis] # v with shape=(n,1)
-    dM = rmr_info.DM # dM(s)/ds evaluated at s=rmr
-    den = conj_u_T @ dM @ v # gradient denumenator
-    matrix = (conj_u_T @ B0).T @ v.T
+#     # calculate gradient
+#     conj_u_T = np.conj(rmr_info.u[np.newaxis,:]) # u* with shape=(1,n)
+#     v = rmr_info.v[:,np.newaxis] # v with shape=(n,1)
+#     dM = rmr_info.DM # dM(s)/ds evaluated at s=rmr
+#     den = conj_u_T @ dM @ v # gradient denumenator
+#     matrix = (conj_u_T @ B0).T @ v.T
 
-    # only real part, see spectral abscissa definition
-    sa = np.real(rmr)
-    sa_grad = np.real(1/den * (np.exp(-rmr*tu)) * matrix)
+#     # only real part, see spectral abscissa definition
+#     sa = np.real(rmr)
+#     sa_grad = np.real(1/den * (np.exp(-rmr*tu)) * matrix)
 
-    # fgrad = np.real(1/den * (np.exp(-rmr*hK)) * matrix[:,:,np.newaxis])
+#     # fgrad = np.real(1/den * (np.exp(-rmr*hK)) * matrix[:,:,np.newaxis])
+#     # print(rmr, rmr_info)
 
+#     # print(sa, sa_grad)
 
-    # print(rmr, rmr_info)
+#     Dc[:,:] -= 100 * sa_grad
 
-    # print(sa, sa_grad)
-
-    Dc[:,:] -= 0.1 * sa_grad
-
-    print(f"{i}| {sa=}   | Dc={Dc[0]}")
-
-
+#     print(f"{i}| {sa=}   | Dc={Dc[0]}")
 
 from scipy import optimize
+from tdcpy.optimize.bfgs import bfgs_weak_wolfe
+
+np.random.seed(42)
+x0 = np.random.rand(5) / 10
+
+# x0 = np.array([-0.1203415, -1.79379771, -2.82030911, -3.21863685, 0.12180471])
+# x0 = np.array([-0.15727864, -1.77317767, -2.93791649, -3.34760858, 0.12724418])
+# x0 = np.array([-0.22598795, -1.6787636, -3.08676567, -3.57860851, 0.13518047])
 
 def func(x):
-    A[0, :, -1] = x
+    A[0, :, -1] = Ku/Th * x
     rmr, rmr_info = rightmost_root(E, A, hA, r=0)
     
     # calculate gradient
@@ -143,27 +147,41 @@ def func(x):
 
     # only real part, see spectral abscissa definition
     sa = np.real(rmr)
-    sa_grad = np.ravel(np.real(1/den * (np.exp(-rmr*tu)) * matrix))
+    sa_grad = np.ravel(np.real(1/den * (np.exp(-rmr*hA[-1])) * matrix))
 
     return sa, sa_grad
 
+def callback(xk):
+    print(f"Iteration: {callback.nit} | x={xk}")
+    callback.nit += 1
+
+callback.nit = 0
+
 sol = optimize.minimize(
     func,
-    np.zeros(5),
+    x0=x0,
     jac=True,
-    method="BFGS",
-    # options=kwargs.get("options", {}),
-    # callback=kwargs.get("callback", None)
+    method=bfgs_weak_wolfe, # method="BFGS",
+    options={
+        "c1": 1e-4,
+        "c2": 0.01,
+        "gtol": 1e-6,
+        "disp": True,
+    },
+    # callback=callback,
 )
 
 print(sol.x)
 
+x_star = np.array([-0.1203415, -1.79379771, -2.82030911, -3.21863685, 0.12180471])
+x_star = sol.x
+A[0, :, -1] = Ku/Th * x_star
+rdde = tdcpy.RDDE(A, hA)
+cr, info = tdcpy.roots(rdde, r=-0.2, max_size_evp=1200)
 
+import matplotlib.pyplot as plt
+import tdcpy.plot
 
-
-# import matplotlib.pyplot as plt
-# import tdcpy.plot
-
-# tdcpy.plot.eigen_plot(cr)
-# plt.show()
+tdcpy.plot.eigen_plot(cr)
+plt.show()
 
