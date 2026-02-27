@@ -21,3 +21,8 @@ This package provides:
 This project is based on the
 [TDS-CONTROL](https://gitlab.kuleuven.be/u0011378/tds-control) MATLAB toolbox
 developed by Prof. Dr. ir. Wim Michiels and Dr. ir. Pieter Appeltans in 2023.
+
+The presented research was supported by the European Union under the project
+ROBOPROX - Robotics and advanced industrial production, reg. no.
+CZ.02.01.01/00/22\_008/0004590 and by the Czech Science Foundation project 
+24-10301S.

@@ -52,7 +52,7 @@ Team
 Contributors
 ------------
 
-Place for contributors outside of team.
+Place for contributors outside of a team.
 
 Scientific Advisors
 ---------------------
@@ -63,10 +63,16 @@ Scientific Advisors
    :alt: Wim Michiels
 
 - **Prof. Ing. Tomaš Vyhlídal**: Czech Technical University
-
+  
+  .. image:: _static/team/tomas.jpg
+   :width: 100
+   :alt: Tomas Vyhlidal
 
 
 Acknowledgements
 ----------------
 
-Place for any other acknowledgements (like projects etc.).
+The presented research was supported by the European Union under the project
+ROBOPROX - Robotics and advanced industrial production, reg. no.
+CZ.02.01.01/00/22\_008/0004590 and by the Czech Science Foundation project
+24-10301S.
