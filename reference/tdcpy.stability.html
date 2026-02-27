@@ -1,0 +1,1703 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>tdcpy.stability package &#8212; tdcpy 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/tdcpy.stability';</script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tdcpy.stabopt package" href="tdcpy.stabopt.html" />
+    <link rel="prev" title="tdcpy.plot package" href="tdcpy.plot.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.1" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="tdcpy 0.0.1 documentation - Home"/>
+    <img src="../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="tdcpy 0.0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorial/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorial/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.html">tdcpy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.common.html">tdcpy.common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.plot.html">tdcpy.plot</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">tdcpy.stability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.stabopt.html">tdcpy.stabopt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.base.html">tdcpy.base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.closed_loop.html">tdcpy.closed_loop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.controller.html">tdcpy.controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.dae.html">tdcpy.dae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.ddae.html">tdcpy.ddae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.gamma.html">tdcpy.gamma</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.ndde.html">tdcpy.ndde</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.rdde.html">tdcpy.rdde</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.roots.html">tdcpy.roots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.spectral_abscissa.html">tdcpy.spectral_abscissa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdcpy.zeros.html">tdcpy.zeros</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API Reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">tdcpy.stability package</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="tdcpy-stability-package">
+<h1>tdcpy.stability package<a class="headerlink" href="#tdcpy-stability-package" title="Link to this heading">#</a></h1>
+<p>The <a class="reference internal" href="#module-tdcpy.stability" title="tdcpy.stability"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tdcpy.stability</span></code></a> package contains functions for computing the characteristic roots, and spectral abscissa of time-delay systems.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-tdcpy.stability.bounds">
+<span id="tdcpy-stability-bounds-module"></span><h2>tdcpy.stability.bounds module<a class="headerlink" href="#module-tdcpy.stability.bounds" title="Link to this heading">#</a></h2>
+<section id="set-of-functions-to-compute-the-lower-bounds-and-upper-bounds">
+<h3>Set of functions to compute the lower bounds and upper bounds<a class="headerlink" href="#set-of-functions-to-compute-the-lower-bounds-and-upper-bounds" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Implemented functions:</dt><dd><ol class="arabic simple">
+<li><p>lower_bound -&gt; returns the lower bound at x, given (x,epsilon,gamma)</p></li>
+<li><p>upper_bound -&gt; returns the upper bound at x, given (x,epsilon,gamma)</p></li>
+</ol>
+</dd>
+<dt>Original matlab files:</dt><dd><ul class="simple">
+<li><p>tds-control/code/+tds_control/+stability/lowerbound.m</p></li>
+<li><p>tds-control/code/+tds_control/+stability/upperbound.m</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.bounds.lower_bound">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.bounds.</span></span><span class="sig-name descname"><span class="pre">lower_bound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.bounds.lower_bound" title="Link to this definition">#</a></dt>
+<dd><p>Calculates lower bound</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – point to calculate lower bound at</p></li>
+<li><p><strong>epsilon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – small positive parameter, default 1e-2</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – small positive parameter, default 1e-2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>lower bound at x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>for <a href="#id2"><span class="problematic" id="id3">|x|</span></a> large enough, lower bound is (1-epsilon)*x or
+(1+epsilon)*x</p></li>
+<li><p>for <a href="#id4"><span class="problematic" id="id5">|x|</span></a> small enough, lower bound is x - gamma</p></li>
+</ol>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.bounds</span><span class="w"> </span><span class="kn">import</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">85.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">-115.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">-1e-06</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">115.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">-85.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">1e-06</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.bounds.upper_bound">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.bounds.</span></span><span class="sig-name descname"><span class="pre">upper_bound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.bounds.upper_bound" title="Link to this definition">#</a></dt>
+<dd><p>Calculates upper bound</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – point to calculate upper bound at</p></li>
+<li><p><strong>epsilon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – small positive parameter, default 1e-2</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – small positive parameter, default 1e-2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>upper bound at x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>for <a href="#id6"><span class="problematic" id="id7">|x|</span></a> large enough, upper bound is (1+epsilon)*x or
+(1-epsilon)*x</p></li>
+<li><p>for <a href="#id8"><span class="problematic" id="id9">|x|</span></a> small enough, upper bound is x + gamma</p></li>
+</ol>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.bounds</span><span class="w"> </span><span class="kn">import</span> <span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">85.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">-115.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bound</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">-1e-06</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">115.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="go">-85.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bound</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">1e-06</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-tdcpy.stability.characteristic_roots">
+<span id="tdcpy-stability-characteristic-roots-module"></span><h2>tdcpy.stability.characteristic_roots module<a class="headerlink" href="#module-tdcpy.stability.characteristic_roots" title="Link to this heading">#</a></h2>
+<section id="characteristic-roots">
+<h3>Characteristic roots<a class="headerlink" href="#characteristic-roots" title="Link to this heading">#</a></h3>
+<p>Set of functionalities connected to characteristic roots of DDAE</p>
+<p>Implemented functions:</p>
+<ol class="arabic simple">
+<li><p>roots_ddae: characteristic roots of DDAE</p></li>
+<li><p>rightmost_root: right most root and necessary things for gradient</p></li>
+</ol>
+<p>TODO:
+1.  split rootd_ddae into roots_ddae_rhp and roots_ddae_region and move
+higher logic into high level API (tdcpy.roots)</p>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">tdcpy.stability.characteristic_roots.</span></span><span class="sig-name descname"><span class="pre">RootsInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">discretization</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_r_exceeds_one</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_exceeds_one</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discretization_eigenvalues</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size_evp_enforced</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_inital_guesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_final_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_residuals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_unconverged_initial_guesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newton_large_corrections</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.discretization">
+<span class="sig-name descname"><span class="pre">discretization</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.discretization" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.discretization_eigenvalues">
+<span class="sig-name descname"><span class="pre">discretization_eigenvalues</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.discretization_eigenvalues" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.gamma_r_exceeds_one">
+<span class="sig-name descname"><span class="pre">gamma_r_exceeds_one</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.gamma_r_exceeds_one" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.index_exceeds_one">
+<span class="sig-name descname"><span class="pre">index_exceeds_one</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.index_exceeds_one" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.max_size_evp_enforced">
+<span class="sig-name descname"><span class="pre">max_size_evp_enforced</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.max_size_evp_enforced" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.newton_final_values">
+<span class="sig-name descname"><span class="pre">newton_final_values</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_final_values" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 6</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.newton_inital_guesses">
+<span class="sig-name descname"><span class="pre">newton_inital_guesses</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_inital_guesses" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.newton_large_corrections">
+<span class="sig-name descname"><span class="pre">newton_large_corrections</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_large_corrections" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 9</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.newton_residuals">
+<span class="sig-name descname"><span class="pre">newton_residuals</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_residuals" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 7</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RootsInfo.newton_unconverged_initial_guesses">
+<span class="sig-name descname"><span class="pre">newton_unconverged_initial_guesses</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_unconverged_initial_guesses" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 8</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">tdcpy.stability.characteristic_roots.</span></span><span class="sig-name descname"><span class="pre">RightmostRootInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">found</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_size_evp_enforced</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.DM">
+<span class="sig-name descname"><span class="pre">DM</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.DM" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.M">
+<span class="sig-name descname"><span class="pre">M</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.M" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.found">
+<span class="sig-name descname"><span class="pre">found</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.found" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.max_size_evp_enforced">
+<span class="sig-name descname"><span class="pre">max_size_evp_enforced</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.max_size_evp_enforced" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 5</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.u">
+<span class="sig-name descname"><span class="pre">u</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.u" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.RightmostRootInfo.v">
+<span class="sig-name descname"><span class="pre">v</span></span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.v" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.roots_ddae">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.characteristic_roots.</span></span><span class="sig-name descname"><span class="pre">roots_ddae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.roots_ddae" title="Link to this definition">#</a></dt>
+<dd><p>Computes the roots of DDAE represented via E, A, hA in region r</p>
+<p>TDS is assumed to be defined via E, A, hA as</p>
+<div class="math notranslate nohighlight">
+\[E \dot{x}(t) = \sum\limits_{k=1}^N x(t-h_{A,k})  \ldots \qquad (1)\]</div>
+<dl class="simple">
+<dt>region is defined either by (1) r is float:</dt><dd><p>region = {z in C: Re(z) &gt;= r &amp;&amp; Im(z) &gt;= 0}</p>
+</dd>
+<dt>or r is list of 4 floats  [Re_min, Re_max, Im_min, Im_max]</dt><dd><dl class="simple">
+<dt>region = {z in C: Re(z) in [Re_min, Re_max] and</dt><dd><p>Im(z) in [Im_min, Im_max]}</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> (<em>array</em>) – 2d array defining LHS of DDAE</p></li>
+<li><p><strong>A</strong> (<em>array</em>) – 3d array defining the Ai matrices on the RHS</p></li>
+<li><p><strong>hA</strong> (<em>array</em>) – 1d array defining the delays associated with A</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – definition of region, either float (half-plane) or list of 4 floats (rectangle)</p></li>
+<li><p><strong>**kwargs</strong> – <dl class="simple">
+<dt>discretization (int): discretization for discretizing DDAE into DAE,</dt><dd><p>optional, default None, if not specified, heuristic will be used
+to obtain sufficient discretization</p>
+</dd>
+<dt>max_size_evp (int): maximum allowed size of eigenvalue problem (EVP)</dt><dd><p>optional, default 600</p>
+</dd>
+<dt>base_delay (float): base delay in case delays are commensurate,</dt><dd><p>optional, default None, used in discretization heuristic</p>
+</dd>
+<dt>cd (float): c_D value of provided DDAE, optional, default None, if not</dt><dd><p>provided condition c_D &lt; r will be checked in case of RHP region
+and heuristic for obtaining discretization will be envoked if
+condition is not satisfied, if provided, condition c_D &lt; r will be
+checked and warning will be raised if not satisfied. If you want to
+skip this check, provide any value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">cd</span></code> smaller then <code class="xref py py-obj docutils literal notranslate"><span class="pre">r</span></code>,
+setting <code class="xref py py-obj docutils literal notranslate"><span class="pre">cd=-np.inf</span></code> makes sure check will never be performed.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple containing:</p>
+<dl>
+<dt>cr<span class="classifier">array</span></dt><dd><p>vector of obtained roots</p>
+</dd>
+<dt>roots_info<span class="classifier">RootsInfo</span></dt><dd><p>RMR metadata containing:</p>
+<dl class="simple">
+<dt>discretization<span class="classifier">int</span></dt><dd><p>discretization used for obtaining EVP</p>
+</dd>
+<dt>gamma_r_exceeds_one<span class="classifier">bool</span></dt><dd><p>flag indicating gamma(r) &gt; 1</p>
+</dd>
+<dt>index_exceeds_one<span class="classifier">bool</span></dt><dd><p>flag that index exceeds one</p>
+</dd>
+<dt>discretization_eigenvalues<span class="classifier">array</span></dt><dd><p>eigenvalues of EVP</p>
+</dd>
+<dt>max_size_evp_enforced<span class="classifier">bool</span></dt><dd><p>flag if maximum size of EVP was enforced</p>
+</dd>
+<dt>newton_inital_guesses<span class="classifier">array</span></dt><dd><p>roots before newton corrections</p>
+</dd>
+<dt>newton_final_values<span class="classifier">array</span></dt><dd><p>roots after newton corrections</p>
+</dd>
+<dt>newton_residuals<span class="classifier">array</span></dt><dd><p>newton residuals</p>
+</dd>
+<dt>newton_unconverged_initial_guesses<span class="classifier">array</span></dt><dd><p>mask of unconverged newton initial guesses</p>
+</dd>
+<dt>newton_large_corrections<span class="classifier">array</span></dt><dd><p>mask of “large” corrections</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>assumes non-empty, real E, A, hA</p></li>
+<li><p>assumes dimensions E.shape[:2] == A.shape[:2] and A.shape[2] == hA.shape[0]</p></li>
+<li><p>if hA[0] &gt; 0, prepends zero-delay term to hA and A</p></li>
+<li><p>if region is half-plane and no roots found, warns user</p></li>
+<li><p>if region is rectangle and no roots found, warns user</p></li>
+<li><p>uses Newton corrections to refine roots obtained via spectral discretization</p></li>
+<li><p>if discretization is not provided, heuristic is used to obtain sufficient discretization</p></li>
+</ol>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.characteristic_roots</span><span class="w"> </span><span class="kn">import</span> <span class="n">roots_ddae</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hA</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">roots_ddae</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">hA</span><span class="p">,</span><span class="n">r</span><span class="o">=-</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cr</span>
+<span class="go">array([0.61803399+0.j, -1.61803399+0.j, -0.30901699+0.95105652j,</span>
+<span class="go">       -0.30901699-0.95105652j])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="o">.</span><span class="n">discretization</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="o">.</span><span class="n">gamma_r_exceeds_one</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="o">.</span><span class="n">index_exceeds_one</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.characteristic_roots.rightmost_root">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.characteristic_roots.</span></span><span class="sig-name descname"><span class="pre">rightmost_root</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.characteristic_roots.rightmost_root" title="Link to this definition">#</a></dt>
+<dd><p>Find the rightmost root (RMR) of DDAE represented via E, A, hA</p>
+<p>TDS is assumed to be defined via E, A, hA as</p>
+<div class="math notranslate nohighlight">
+\[E \dot{x}(t) = \sum\limits_{k=1}^N A_k x(t-h_{A,k})\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> (<em>array</em>) – 2d array defining LHS of DDAE</p></li>
+<li><p><strong>A</strong> (<em>array</em>) – 3d array defining the Ai matrices on the RHS</p></li>
+<li><p><strong>hA</strong> (<em>array</em>) – 1d array defining delays associated with A</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – definition of complex half-plane, also discretization
+is perfomed around this point, optional, default 0.0</p></li>
+<li><p><strong>**kwargs</strong> – <dl class="simple">
+<dt>residual_max<span class="classifier">float</span></dt><dd><p>roots with norm=||M(s) &#64; v|| bellow this
+threshold will be considered as correct solutions, default 1e-6</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple containing:</p>
+<dl>
+<dt>root_star<span class="classifier">complex</span></dt><dd><p>rightmost root</p>
+</dd>
+<dt>root_info<span class="classifier">RightmostRootInfo</span></dt><dd><p>RMR metadata containing:
+M : array</p>
+<blockquote>
+<div><p>characteristic matrix evaluated at <code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star</span></code></p>
+</div></blockquote>
+<dl class="simple">
+<dt>DM<span class="classifier">array</span></dt><dd><p>derivative of characteristic matrix evaluated at
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star</span></code></p>
+</dd>
+<dt>u<span class="classifier">array</span></dt><dd><p>left eigenvector associated with <code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star</span></code></p>
+</dd>
+<dt>v<span class="classifier">array</span></dt><dd><p>right eigenvector associated with <code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star</span></code></p>
+</dd>
+<dt>found<span class="classifier">bool</span></dt><dd><p>flag if RMR succesfully found</p>
+</dd>
+<dt>max_size_evp_enforced<span class="classifier">bool</span></dt><dd><p>flag if maximum size of EVP was enforced</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-tdcpy.stability.discretization_heuristic">
+<span id="tdcpy-stability-discretization-heuristic-module"></span><h2>tdcpy.stability.discretization_heuristic module<a class="headerlink" href="#module-tdcpy.stability.discretization_heuristic" title="Link to this heading">#</a></h2>
+<section id="discretization-heuristic">
+<h3>Discretization heuristic<a class="headerlink" href="#discretization-heuristic" title="Link to this heading">#</a></h3>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] Wu, Z., &amp; Michiels, W. Reliably computing all characteristic roots of</dt><dd><p>delay differential equations in a given right half plane using a
+spectral method. Journal of Computational and Applied Mathematics,
+236(9), 2012, pp. 2499-2514.</p>
+</dd>
+</dl>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.discretization_heuristic.grid_generator">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.discretization_heuristic.</span></span><span class="sig-name descname"><span class="pre">grid_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_grid_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.discretization_heuristic.grid_generator" title="Link to this definition">#</a></dt>
+<dd><p>Generator for m-dimensional space grid points in [0, pi] x [-pi, pi]^{m-1}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – number of dimensions</p></li>
+<li><p><strong>n_grid_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – number of grid points in each dimension (default 10)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>generator yielding m-dimensional grid points</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>generator</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>first dimension is in [0, pi]</p></li>
+<li><p>other dimensions are in [-pi, pi]</p></li>
+<li><p>total number of points generated is n_grid_points**m</p></li>
+</ol>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">grid_generator</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+<span class="go">[0.         0.        ]</span>
+<span class="go">[0.         3.14159265]</span>
+<span class="go">[0.         -3.14159265]</span>
+<span class="go">[1.57079633 0.        ]</span>
+<span class="go">[1.57079633 3.14159265]</span>
+<span class="go">[1.57079633 -3.14159265]</span>
+<span class="go">[3.14159265 0.        ]</span>
+<span class="go">[3.14159265 3.14159265]</span>
+<span class="go">[3.14159265 -3.14159265]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.discretization_heuristic.commensurate_gk">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.discretization_heuristic.</span></span><span class="sig-name descname"><span class="pre">commensurate_gk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.discretization_heuristic.commensurate_gk" title="Link to this definition">#</a></dt>
+<dd><p>TODO</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><em>dtype</em></a>[<em>_ScalarT</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.discretization_heuristic.incommensurate_gk">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.discretization_heuristic.</span></span><span class="sig-name descname"><span class="pre">incommensurate_gk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.discretization_heuristic.incommensurate_gk" title="Link to this definition">#</a></dt>
+<dd><p>TODO - in original implementation, only 3 non zero delays allowed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><em>dtype</em></a>[<em>_ScalarT</em>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.discretization_heuristic.compute_n_rhp">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.discretization_heuristic.</span></span><span class="sig-name descname"><span class="pre">compute_n_rhp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basic_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.discretization_heuristic.compute_n_rhp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>basic_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – define if delays are commensurate, default None</p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><em>dtype</em></a><em>[</em><em>_ScalarT</em><em>]</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+<dl>
+<dt>kwargs:</dt><dd><p>n_minimal (int): minimal degree of discretization, default 8
+n_grid (int): number of grids point in interval [0, pi] for discretizing</p>
+<blockquote>
+<div><p>Psi, default 20</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>number of discretization points necessary</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="tdcpy.base.html#tdcpy.base.TDSBase.n" title="tdcpy.base.TDSBase.n">n</a> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a>)</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tau</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><em>Any</em></a><em>, </em><em>...</em><em>]</em><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><em>dtype</em></a><em>[</em><em>_ScalarT</em><em>]</em><em>]</em>)</p></li>
+<li><p><strong>basic_delay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>See:</dt><dd><dl class="simple">
+<dt>[1] Wu, Z., &amp; Michiels, W. Reliably computing all characteristic roots of</dt><dd><p>delay differential equations in a given right half plane using a
+spectral method. Journal of Computational and Applied Mathematics,
+236(9), 2012, pp. 2499-2514.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.discretization_heuristic.compute_n_rect">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.discretization_heuristic.</span></span><span class="sig-name descname"><span class="pre">compute_n_rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_max</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.discretization_heuristic.compute_n_rect" title="Link to this definition">#</a></dt>
+<dd><p>Computes the deegree of the spectral discretization for rectanuglar
+region in complex plane</p>
+<p>Computes the degree of the spectral discretisation and a shift of the origin
+such that exp(-s*taum) is sufficiently well approximated in the rectanuglar
+region in complex plane:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>region[1]+1j*region[4] --------- region[2]+1j*region[4]
+        |                                |
+        |                                |
+region[1]+1j*region[3] --------- region[2]+1j*region[3]
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – tuple representing rectangular region in complex plane,
+example: (-10, 0, 0, 100) represents region D from complex plane
+D={z from C: -10&lt;=Re(z)&lt;=0, 0&lt;=Im(z)&lt;=100}</p></li>
+<li><p><strong>tau_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – maximal delay, has to be &gt;= 0</p></li>
+<li><p><strong>kwargs</strong></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul>
+<li><p><em>tuple containing</em> –</p>
+<ul class="simple">
+<li><p>n (int): number of discretization points necessary</p></li>
+<li><p>origin (complex): origin TODO</p></li>
+</ul>
+</li>
+<li><p><em>See</em> –</p>
+<dl class="simple">
+<dt>[1] Wu, Z., &amp; Michiels, W. (2012) Reliably computing all</dt><dd><p>characteristic roots of delay differential equations in a given
+right half plane using a  spectral method. Journal of
+Computational and Applied Mathematics, 236(9), pp. 2499-2514.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-tdcpy.stability.gamma_r">
+<span id="tdcpy-stability-gamma-r-module"></span><h2>tdcpy.stability.gamma_r module<a class="headerlink" href="#module-tdcpy.stability.gamma_r" title="Link to this heading">#</a></h2>
+<section id="computation-of-gamma-r-diff">
+<h3>Computation of gamma(r, DIFF)<a class="headerlink" href="#computation-of-gamma-r-diff" title="Link to this heading">#</a></h3>
+<p>DIFF - delay difference equation represented via matrices (3D array)
+and delays (1D array)</p>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoizeJac</span></code> decorator can be used because of (i) keep implementation as</dt><dd><p>simillar as possible to MATLAB® and (ii) to optimize calculation of
+function value and jacobian as some operations are shared</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">GammaInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">th</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo.M">
+<span class="sig-name descname"><span class="pre">M</span></span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo.M" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo.s">
+<span class="sig-name descname"><span class="pre">s</span></span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo.s" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo.th">
+<span class="sig-name descname"><span class="pre">th</span></span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo.th" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo.u">
+<span class="sig-name descname"><span class="pre">u</span></span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo.u" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.GammaInfo.v">
+<span class="sig-name descname"><span class="pre">v</span></span><a class="headerlink" href="#tdcpy.stability.gamma_r.GammaInfo.v" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 4</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.rho_normalized_diff">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">rho_normalized_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.rho_normalized_diff" title="Link to this definition">#</a></dt>
+<dd><p>Calculates spectral radius of matrix M</p>
+<p>Matrix M is given as sum of rotations of normalized delay difference
+equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>DD</strong> (<em>ndarray</em>) – Coefficient matrices packed into 3D array of shape (n, n, m).
+Note that coefficients for x(t) are assumed to be identity matrix
+and therefore omitted (see functions for converting DDAE to delay
+difference equation and normalizing).</p></li>
+<li><p><strong>hDD</strong> (<em>ndarray</em>) – Delays represented by 1D array of shape (m,). Note that delay 0 is
+omitted.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Point from complex plane.</p></li>
+<li><p><strong>theta</strong> (<em>ndarray</em>) – Non-empty 1d array of rotations of shape (m-1,) in [0, 2*pi).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Spectral radius matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Does not check for valid inputs.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.func">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.func" title="Link to this definition">#</a></dt>
+<dd><p>Calculates value and jacobian of the vector function F(x)</p>
+<p>vector x, shape=(4*ndiff + 2 + (m-1), ):</p>
+<blockquote>
+<div><p>x = [Re(v), Im(v), Re(u), Im(u), Re(lambda), Im(s), th]</p>
+</div></blockquote>
+<p>function F(x):</p>
+<blockquote>
+<div><p>M * v - s * v                                                   = 0
+u^{H} * M  - s * u^{H}                                          = 0
+u^{H} * v  - 1                                                  = 0
+v0^{H} * v - 1                                                  = 0
+Im(conj(lambda)*(u^{H}*DD{k}*v)*exp(-r*hDD(k))*exp(1j*theta(k)) = 0 for k = 1,…,m</p>
+</div></blockquote>
+<p>with th = [0; th_v], v0 a normalization vector and</p>
+<blockquote>
+<div><p>M = DD[0]*exp(-r*hDD[0])*exp(1j*th[1]) + … + DD[m]*exp(-r*hDD[m])*exp(1j*th[m])</p>
+</div></blockquote>
+<p>using fsolve (#optim. variables: 4*ndiff + 2 + (m-1), #constraints: 4*ndiff + 2 + (m-1) ).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>ndarray</em>) – 1D array of shape (4*ndiff + 2 + (m-1), ) representing optimization variables</p></li>
+<li><p><strong>DD</strong> (<em>ndarray</em>) – Coefficient matrices packed into 3D array of shape (n, n, m).</p></li>
+<li><p><strong>hDD</strong> (<em>ndarray</em>) – Delays represented by 1D array of shape (m,).</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Point in complex plane.</p></li>
+<li><p><strong>v0</strong> (<em>ndarray</em>) – Normalization vector of shape (n, ).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>tuple containing</em></p></li>
+<li><p><strong>y</strong> (<em>ndarray</em>) – 1D array representing function F evaluated at x</p></li>
+<li><p><strong>jac</strong> (<em>ndarray</em>) – Jacobian of F evaluated at x, shape (2*(2*ndiff+2) + n_opt, 2*(2*ndiff+1) + n_opt)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>shape of <code class="xref py py-obj docutils literal notranslate"><span class="pre">x</span></code> (n_opt, ), n_opt = 4*ndiff + 2 + (m-1)</p></li>
+<li><p>shape of <code class="xref py py-obj docutils literal notranslate"><span class="pre">jac</span></code> (2*(2*n_diff+2) + n_opt, 2*(2*n_diff+1) + n_opt),
+n_diff … dimension of the state vector of the delay-difference equation</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.l2_func">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">l2_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.l2_func" title="Link to this definition">#</a></dt>
+<dd><p>returns L2 of F(x) and its jacobian</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.theta_generator">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">theta_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_real</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.theta_generator" title="Link to this definition">#</a></dt>
+<dd><p>Generator for theta grid points in [0, 2*pi)^{m}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_opt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>n_theta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>is_real</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.gamma_normalized_diff">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">gamma_normalized_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.gamma_normalized_diff" title="Link to this definition">#</a></dt>
+<dd><p>Computes gamma(r) of the normalized delay difference equation</p>
+<dl class="simple">
+<dt>Normalized delay difference equation takes form</dt><dd><p>0 = x(t) + DD[0] * x(t-hDD[0]) + … + DD[m-1]*x(t-hDD[m-1]),      (1)</p>
+</dd>
+</dl>
+<p>where m == len(DD) == len(hDD).</p>
+<dl>
+<dt>The gamma(r) of (1) is given by the following optimization problem:</dt><dd><dl class="simple">
+<dt>find maximum theta from [0, 2*pi)^m of expression:</dt><dd><p>rho( SUM for all k DD[k]*exp(-r*hDD[k])*exp(1j*theta[k]) )     (2)</p>
+</dd>
+</dl>
+<p>where rho(.) is spectral radius of its matrix argument.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>DD</strong> (<em>ndarray</em>) – Coefficient matrices packed into 3D array shaped (n,n,m),
+note that coefficients for x(t) are assumed to be identity matrix
+and therefore omitted (see functions for converting DDAE to delay
+difference equation and normalizing).</p></li>
+<li><p><strong>hDD</strong> (<em>ndarray</em>) – Delays represented by 1D array shaped (m,), note that delay
+0 is omitted.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Point from complex plane.</p></li>
+<li><p><strong>kwargs</strong> – <p>n_theta (int): theta discretization, has to be &gt; 0, default 10
+correction (bool): if correction is applied, default True
+scipy_root_method (str): scipy.optimize.root method, default ‘lm’,</p>
+<blockquote>
+<div><p>i.e. Levenberg-Marquardt algorithm, note: carefull, not all
+methods attempt to solve problem</p>
+</div></blockquote>
+<dl class="simple">
+<dt>scipy_root_tol (float): Tolerance for termination. For detailed</dt><dd><p>control, use <code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy_root_options</span></code>, default None</p>
+</dd>
+<dt>scipy_root_callback (function): Optional callback function. It is</dt><dd><p>called on every iteration as <code class="xref py py-obj docutils literal notranslate"><span class="pre">callback(x,</span> <span class="pre">f)</span></code> where x is the
+current solution and f the corresponding residual. For all
+methods but ‘hybr’ and ‘lm’.</p>
+</dd>
+<dt>scipy_root_options (dict): a dictionary of solver options (method),</dt><dd><p>default None</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>gamma (float): quantity gamma(r, DD, hDD)</p></li>
+<li><p>info (GammaInfo): gamma metadata</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple containing</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>1. for all kwargs starting with ‘scipy_*’ check the following documentation
+<a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html</a>
+2. uses grid search + optional correction via scipy.optimize.root</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.gamma_r</span><span class="w"> </span><span class="kn">import</span> <span class="n">gamma_normalized_diff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DD</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DD</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hDD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="n">j</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamma</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">gamma_normalized_diff</span><span class="p">(</span><span class="n">DD</span><span class="p">,</span> <span class="n">hDD</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">n_theta</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;gamma: </span><span class="si">{</span><span class="n">gamma</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">gamma: 0.4613594059159876</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;theta: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">th</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">theta: [0.  0.5]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dominant eigenvalue: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">dominant eigenvalue: (0.40488096939597285-0.22118748167138752j)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;right eigenvector: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">right eigenvector: [0.-0.j 1.-0.j]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;left eigenvector: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">u</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">left eigenvector: [ 0.        +0.j         -0.68163876-0.73168887j]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.gamma_r.gamma_diff">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.gamma_r.</span></span><span class="sig-name descname"><span class="pre">gamma_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.gamma_r.gamma_diff" title="Link to this definition">#</a></dt>
+<dd><p>Computes gamma(r) of delay difference equation (DIFF)</p>
+<dl class="simple">
+<dt>Delay difference equation takes form</dt><dd><p>0 = D[0]*x(t) + D[1] * x(t-hD[1]) + … + DD[m-1]*x(t-hDD[m-1]),   (1)</p>
+</dd>
+</dl>
+<p>where m == len(DD) == len(hDD).</p>
+<p>quantity gamma(r; D, hD) is then:
+1.  gamma(r; D, hD) = 0 IF number of delays (vector hD) is less then 2
+2.  obtained via predictor corrector approach, i.e.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>2a. normalize DIFF (multiply equation (1) by inverse of D[0]) and</dt><dd><p>omit first delay = 0 and first normalized matrix = identity</p>
+</dd>
+</dl>
+<p>2b. call <code class="xref py py-obj docutils literal notranslate"><span class="pre">gamma_diff_normalized</span></code></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>D</strong> (<em>array</em>) – Coefficient matrices packed into 3D array shaped (n, n, m).</p></li>
+<li><p><strong>hD</strong> (<em>array</em>) – Delays represented by 1D array shaped (m,).</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Point from complex plane.</p></li>
+<li><p><strong>kwargs</strong> – kwargs passed into <code class="xref py py-obj docutils literal notranslate"><span class="pre">gamma_diff_normalized</span></code> function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>gamma (float): quantity gamma(r, D, hD)</p></li>
+<li><p>info (GammaInfo): gamma metadata</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple containing</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic simple">
+<li><p>if compressed version of DIFF contains 2 or more delays,
+invertibility of D[0] is assumed.</p></li>
+<li><p>DIFF representation (D, hD) can be emtpy, result will be
+gamma(r; D, hD) = 0.0. Test for emptyness is hD.size == 0.</p></li>
+<li><p>for r = 0.0, quantity gamma(r; D, hD) DOES NOT depend on the delays,
+see implementation of <code class="xref py py-obj docutils literal notranslate"><span class="pre">gamma_diff_normalized</span></code></p></li>
+</ol>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.gamma_r</span><span class="w"> </span><span class="kn">import</span> <span class="n">gamma_diff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span><span class="p">[:,:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gamma_val</span><span class="p">,</span> <span class="n">gamma_info</span> <span class="o">=</span> <span class="n">gamma_diff</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">hD</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">gamma_val</span><span class="p">)</span>
+<span class="go">0.7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">gamma_info</span><span class="p">)</span>
+<span class="go">GammaInfo(th=array([0., 0.]), M=array([[0.7.+0.j , 0. +0.j ],</span>
+<span class="go">        [0. +0.j , 0.7+0.j ]]), s=(0.7+0j), u=array([0.+0.j, 1.+0.j]),</span>
+<span class="go">        v=array([0.-0.j, 1.-0.j]))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-tdcpy.stability.newton">
+<span id="tdcpy-stability-newton-module"></span><h2>tdcpy.stability.newton module<a class="headerlink" href="#module-tdcpy.stability.newton" title="Link to this heading">#</a></h2>
+<section id="newton-method-for-increasing-precision-of-roots">
+<h3>Newton method for increasing precision of roots<a class="headerlink" href="#newton-method-for-increasing-precision-of-roots" title="Link to this heading">#</a></h3>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.newton.newton_correction">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.newton.</span></span><span class="sig-name descname"><span class="pre">newton_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roots0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hA</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.newton.newton_correction" title="Link to this definition">#</a></dt>
+<dd><p>Newton corrections applied initial guess <code class="xref py py-obj docutils literal notranslate"><span class="pre">roots0</span></code></p>
+<p>root <code class="xref py py-obj docutils literal notranslate"><span class="pre">s</span></code> (element of <code class="xref py py-obj docutils literal notranslate"><span class="pre">roots0</span></code>) is an initial guess of the eigenvalue of
+characteristic matrix M(s) and its derivative dM(s)
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">M</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">=</span> <span class="n">E</span><span class="o">*</span><span class="n">s</span> <span class="o">-</span> <span class="n">A_0</span><span class="o">*</span><span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">h_</span><span class="p">{</span><span class="n">A</span><span class="p">,</span><span class="mi">0</span><span class="p">}}</span> <span class="o">-</span> <span class="o">...</span> <span class="o">-</span> <span class="n">A_</span><span class="p">{</span><span class="n">mA</span><span class="p">}</span><span class="o">*</span><span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">hA_</span><span class="p">{</span><span class="n">mA</span><span class="p">}}</span>
+<span class="n">dM</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">=</span> <span class="n">E</span> <span class="o">+</span> <span class="n">hA_0</span><span class="o">*</span><span class="n">A_0</span><span class="o">*</span><span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">hA_0</span><span class="p">}</span> <span class="o">+</span> <span class="o">...</span> <span class="o">+</span> <span class="n">hA_</span><span class="p">{</span><span class="n">mA</span><span class="p">}</span><span class="o">*</span><span class="n">A_</span><span class="p">{</span><span class="n">mA</span><span class="p">}</span><span class="o">*</span><span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="n">s</span><span class="o">*</span><span class="n">hA_</span><span class="p">{</span><span class="n">mA</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>and we look for a solution of system n+1 non-linear equations
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">M</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span>      <span class="o">==</span>  <span class="mi">0121</span>
+<span class="n">v0</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">1</span>  <span class="o">==</span>  <span class="mi">0</span>
+</pre></div>
+</div>
+<p>with jacobian
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>J = egin{bmatrix} M(s) &amp; dM(s)*v \
+     v0.H &amp;0      \end{bmatrix}
+</pre></div>
+</div>
+<p>Update rule for newton corrections stands as
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">dv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">ds</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">PINV</span><span class="p">(</span> <span class="n">J</span> <span class="p">)</span> <span class="o">@</span> <span class="p">[</span><span class="n">M</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">*</span><span class="n">v</span><span class="p">,</span> <span class="n">v0</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="n">dv</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">-</span> <span class="n">ds</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roots0</strong> (<em>npt.NDArray</em>) – 1D vector of initial guesses for roots.</p></li>
+<li><p><strong>E</strong> (<em>npt.NDArray</em>) – E matrix from TDS representation shaped (n, n).</p></li>
+<li><p><strong>A</strong> (<em>npt.NDArray</em>) – A matrices from TDS representation shaped (n, n, mA).</p></li>
+<li><p><strong>hA</strong> (<em>npt.NDArray</em>) – hA vector of delays from TDS representation shaped (mA,).</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Additional arguments:</p>
+<ul>
+<li><p>return_residuals (bool): Whether to also return residuals or not.
+Default False.</p></li>
+<li><p>tol (float): Absolute tolerance. Default 1e-10.</p></li>
+<li><p>max_iterations (int): Maximum number of newton iterations.
+Default 20.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>roots (npt.NDArray): 1D array of roots with improved precision.</p></li>
+<li><p>residuals (npt.NDArray): 1D array of residuals.</p></li>
+<li><p>converged_mask (npt.NDArray): 1D bool array indicating if root converged.</p></li>
+<li><p>large_correction_mask (npt.NDArray): 1D bool array indicating if correction
+is large.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple containing</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ol class="arabic">
+<li><dl>
+<dt>The expected shapes of input arrays:</dt><dd><ul class="simple">
+<li><p>E … (n,n)</p></li>
+<li><p>A … (n,n,mA)</p></li>
+<li><p>hA … (mA,)</p></li>
+</ul>
+<p>shapes are not checked to speed up computation.</p>
+</dd>
+</dl>
+</li>
+<li><p>It is possible some corrections won’t converge (<code class="xref py py-obj docutils literal notranslate"><span class="pre">residual</span></code> check)</p></li>
+<li><dl class="simple">
+<dt>It is possible some corrections converge, hoewever corrections are</dt><dd><p>“large” (see “newton method - basin of attraction”), these corrections
+should be taken with a grain of salt because root can converge to root
+which is already present in solution.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</dd></dl>
+
+</section>
+<section id="tdcpy-stability-spectral-abscissa-module">
+<h2>tdcpy.stability.spectral_abscissa module<a class="headerlink" href="#tdcpy-stability-spectral-abscissa-module" title="Link to this heading">#</a></h2>
+<section id="spectral-abscissa">
+<span id="module-tdcpy.stability.spectral_abscissa"></span><h3>Spectral abscissa<a class="headerlink" href="#spectral-abscissa" title="Link to this heading">#</a></h3>
+<p>We distinguish between three types:</p>
+<ol class="arabic simple">
+<li><p>spectral abscissa (denote <code class="docutils literal notranslate"><span class="pre">alpha</span></code>)</p></li>
+<li><p>spectral abscissa of delay-difference equation (denote <code class="docutils literal notranslate"><span class="pre">cd</span></code>)</p></li>
+<li><p>strong spectral abscissa := MAX(alpha, cd)</p></li>
+</ol>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spectral_abscissa</span></code>: placeholder for classic spectral abscissa routines.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: evaluate <code class="docutils literal notranslate"><span class="pre">f(r)=gamma(r)-1</span></code> and its derivative at a scalar <code class="docutils literal notranslate"><span class="pre">r</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CdRootProblem</span></code>: root-problem wrapper object used by <code class="docutils literal notranslate"><span class="pre">scipy.optimize.root</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code>: compute the delay-difference contribution <code class="docutils literal notranslate"><span class="pre">cd</span></code>.</p></li>
+</ul>
+<p class="rubric">References</p>
+<p>[1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and
+computation for time-delay systems: an eigenvalue-based approach.
+Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.spectral_abscissa">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.spectral_abscissa.</span></span><span class="sig-name descname"><span class="pre">spectral_abscissa</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.spectral_abscissa" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.func">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.spectral_abscissa.</span></span><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.func" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate f(r) = gamma(r) - 1 and its derivative.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Real number defining right-half complex plane for
+characteristic roots computation</p></li>
+<li><p><strong>DD</strong> (<em>npt.NDArray</em>) – Normalized delay-difference matrices defining the operator.</p></li>
+<li><p><strong>hDD</strong> (<em>npt.NDArray</em>) – Delays corresponding to the slices of <code class="docutils literal notranslate"><span class="pre">DD</span></code> (shape must match
+<code class="docutils literal notranslate"><span class="pre">DD.shape[2]</span></code>).</p></li>
+<li><p><strong>gamma_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional keyword arguments forwarded to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">gamma_normalized_diff</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fval</strong> (<em>float</em>) – The scalar value <code class="docutils literal notranslate"><span class="pre">gamma(r)</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>df</strong> (<em>float</em>) – The derivative df/dr evaluated at <code class="docutils literal notranslate"><span class="pre">r</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The implementation calls <code class="xref py py-func docutils literal notranslate"><span class="pre">gamma_normalized_diff</span></code> to obtain
+the normalized spectral radius and associated metadata, then computes
+the derivative using the expression derived from the numerator
+involving the left/right eigenvectors returned by the helper.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.CdRootProblem">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">tdcpy.stability.spectral_abscissa.</span></span><span class="sig-name descname"><span class="pre">CdRootProblem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.CdRootProblem" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.CdRootProblem.root_options">
+<span class="sig-name descname"><span class="pre">root_options</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'jac':</span> <span class="pre">True,</span> <span class="pre">'scipy_root_callback':</span> <span class="pre">None,</span> <span class="pre">'scipy_root_method':</span> <span class="pre">'hybr',</span> <span class="pre">'scipy_root_options':</span> <span class="pre">None,</span> <span class="pre">'scipy_root_tol':</span> <span class="pre">None}</span></span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.root_options" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.CdRootProblem.gamma_kwargs">
+<span class="sig-name descname"><span class="pre">gamma_kwargs</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.gamma_kwargs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.CdRootProblem.fun">
+<span class="sig-name descname"><span class="pre">fun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.fun" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tdcpy.stability.spectral_abscissa.spectral_abscissa_diff">
+<span class="sig-prename descclassname"><span class="pre">tdcpy.stability.spectral_abscissa.</span></span><span class="sig-name descname"><span class="pre">spectral_abscissa_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hDD</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tdcpy.stability.spectral_abscissa.spectral_abscissa_diff" title="Link to this definition">#</a></dt>
+<dd><p>Compute the strong spectral abscissa of a normalized delay-difference equation.</p>
+<p>This routine follows the formulation in Michiels &amp; Niculescu (2014)
+and locates roots of <code class="docutils literal notranslate"><span class="pre">f(r)=gamma(r)-1</span></code> using <code class="docutils literal notranslate"><span class="pre">scipy.optimize.root</span></code>
+to determine the delay-difference contribution to the strong spectral
+abscissa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>DD</strong> (<em>npt.NDArray</em>) – Normalized delay-difference matrices of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">n,</span> <span class="pre">m)</span></code>.</p></li>
+<li><p><strong>hDD</strong> (<em>npt.NDArray</em>) – Delays corresponding to the third dimension of <code class="docutils literal notranslate"><span class="pre">DD</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(m,)</span></code>).</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – <p>Optional keyword arguments:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">cd0</span></code> (float): initial guess for the strong spectral abscissa,
+default <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scipy_root_method</span></code> (str): method for <code class="docutils literal notranslate"><span class="pre">scipy.optimize.root</span></code>,
+default <code class="docutils literal notranslate"><span class="pre">'hybr'</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scipy_root_tol</span></code> (float): tolerance for the root solver.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scipy_root_callback</span></code> (callable): optional callback <code class="docutils literal notranslate"><span class="pre">callback(x,</span> <span class="pre">f)</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scipy_root_options</span></code> (dict): solver-specific options.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gamma_kwargs</span></code> (dict): kwargs forwarded to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">gamma_normalized_diff</span></code>.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>cd</strong> (<em>float</em>) – The strong spectral abscissa of the associated delay-difference
+equation. May be <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> or <code class="docutils literal notranslate"><span class="pre">np.inf</span></code> in degenerate cases.</p></li>
+<li><p><strong>info</strong> (<em>CDInfo</em>) – Metadata returned from <code class="xref py py-func docutils literal notranslate"><span class="pre">gamma_normalized_diff</span></code> corresponding
+to the root with smallest residual (or <code class="docutils literal notranslate"><span class="pre">None</span></code> when unavailable).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a>, <a class="reference internal" href="#tdcpy.stability.gamma_r.GammaInfo" title="tdcpy.stability.gamma_r.GammaInfo"><em>GammaInfo</em></a>]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">DD.shape[1]</span> <span class="pre">==</span> <span class="pre">0</span></code> the function returns <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> to indicate
+no meaningful contribution from the delay-difference operator.</p></li>
+<li><p>If the root-finding fails but the zero-frequency gamma satisfies
+<code class="docutils literal notranslate"><span class="pre">gamma(0)</span> <span class="pre">&gt;=</span> <span class="pre">1</span></code>, the routine treats the strong spectral abscissa
+as <code class="docutils literal notranslate"><span class="pre">np.inf</span></code>; otherwise <code class="docutils literal notranslate"><span class="pre">-np.inf</span></code> is used. In the current
+implementation a failed root solve raises <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>
+instead of returning a metadata-rich result.</p></li>
+</ul>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] Michiels, W. and Niculescu, S.I. (2014). Stability, control, and</dt><dd><p>computation for time-delay systems: an eigenvalue-based approach.
+Society for Industrial and Applied Mathematics (SIAM), Philadelphia, PA</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-tdcpy.stability">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-tdcpy.stability" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tdcpy.plot.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">tdcpy.plot package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="tdcpy.stabopt.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">tdcpy.stabopt package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability.bounds">tdcpy.stability.bounds module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#set-of-functions-to-compute-the-lower-bounds-and-upper-bounds">Set of functions to compute the lower bounds and upper bounds</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.bounds.lower_bound"><code class="docutils literal notranslate"><span class="pre">lower_bound</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.bounds.upper_bound"><code class="docutils literal notranslate"><span class="pre">upper_bound</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability.characteristic_roots">tdcpy.stability.characteristic_roots module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#characteristic-roots">Characteristic roots</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo"><code class="docutils literal notranslate"><span class="pre">RootsInfo</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.discretization"><code class="docutils literal notranslate"><span class="pre">RootsInfo.discretization</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.discretization_eigenvalues"><code class="docutils literal notranslate"><span class="pre">RootsInfo.discretization_eigenvalues</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.gamma_r_exceeds_one"><code class="docutils literal notranslate"><span class="pre">RootsInfo.gamma_r_exceeds_one</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.index_exceeds_one"><code class="docutils literal notranslate"><span class="pre">RootsInfo.index_exceeds_one</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.max_size_evp_enforced"><code class="docutils literal notranslate"><span class="pre">RootsInfo.max_size_evp_enforced</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_final_values"><code class="docutils literal notranslate"><span class="pre">RootsInfo.newton_final_values</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_inital_guesses"><code class="docutils literal notranslate"><span class="pre">RootsInfo.newton_inital_guesses</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_large_corrections"><code class="docutils literal notranslate"><span class="pre">RootsInfo.newton_large_corrections</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_residuals"><code class="docutils literal notranslate"><span class="pre">RootsInfo.newton_residuals</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RootsInfo.newton_unconverged_initial_guesses"><code class="docutils literal notranslate"><span class="pre">RootsInfo.newton_unconverged_initial_guesses</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.DM"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.DM</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.M"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.M</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.found"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.found</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.max_size_evp_enforced"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.max_size_evp_enforced</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.u"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.u</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.RightmostRootInfo.v"><code class="docutils literal notranslate"><span class="pre">RightmostRootInfo.v</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.roots_ddae"><code class="docutils literal notranslate"><span class="pre">roots_ddae</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.characteristic_roots.rightmost_root"><code class="docutils literal notranslate"><span class="pre">rightmost_root</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability.discretization_heuristic">tdcpy.stability.discretization_heuristic module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#discretization-heuristic">Discretization heuristic</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.discretization_heuristic.grid_generator"><code class="docutils literal notranslate"><span class="pre">grid_generator</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.discretization_heuristic.commensurate_gk"><code class="docutils literal notranslate"><span class="pre">commensurate_gk</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.discretization_heuristic.incommensurate_gk"><code class="docutils literal notranslate"><span class="pre">incommensurate_gk</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.discretization_heuristic.compute_n_rhp"><code class="docutils literal notranslate"><span class="pre">compute_n_rhp</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.discretization_heuristic.compute_n_rect"><code class="docutils literal notranslate"><span class="pre">compute_n_rect</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability.gamma_r">tdcpy.stability.gamma_r module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#computation-of-gamma-r-diff">Computation of gamma(r, DIFF)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo"><code class="docutils literal notranslate"><span class="pre">GammaInfo</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo.M"><code class="docutils literal notranslate"><span class="pre">GammaInfo.M</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo.s"><code class="docutils literal notranslate"><span class="pre">GammaInfo.s</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo.th"><code class="docutils literal notranslate"><span class="pre">GammaInfo.th</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo.u"><code class="docutils literal notranslate"><span class="pre">GammaInfo.u</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.GammaInfo.v"><code class="docutils literal notranslate"><span class="pre">GammaInfo.v</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.rho_normalized_diff"><code class="docutils literal notranslate"><span class="pre">rho_normalized_diff</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.func"><code class="docutils literal notranslate"><span class="pre">func</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.l2_func"><code class="docutils literal notranslate"><span class="pre">l2_func</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.theta_generator"><code class="docutils literal notranslate"><span class="pre">theta_generator</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.gamma_normalized_diff"><code class="docutils literal notranslate"><span class="pre">gamma_normalized_diff</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.gamma_r.gamma_diff"><code class="docutils literal notranslate"><span class="pre">gamma_diff</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability.newton">tdcpy.stability.newton module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#newton-method-for-increasing-precision-of-roots">Newton method for increasing precision of roots</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.newton.newton_correction"><code class="docutils literal notranslate"><span class="pre">newton_correction</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy-stability-spectral-abscissa-module">tdcpy.stability.spectral_abscissa module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spectral-abscissa">Spectral abscissa</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.spectral_abscissa"><code class="docutils literal notranslate"><span class="pre">spectral_abscissa</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.func"><code class="docutils literal notranslate"><span class="pre">func</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.CdRootProblem"><code class="docutils literal notranslate"><span class="pre">CdRootProblem</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.root_options"><code class="docutils literal notranslate"><span class="pre">CdRootProblem.root_options</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.gamma_kwargs"><code class="docutils literal notranslate"><span class="pre">CdRootProblem.gamma_kwargs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.CdRootProblem.fun"><code class="docutils literal notranslate"><span class="pre">CdRootProblem.fun</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tdcpy.stability.spectral_abscissa.spectral_abscissa_diff"><code class="docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tdcpy.stability">Module contents</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/tdcpy.stability.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Adam Peichl.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

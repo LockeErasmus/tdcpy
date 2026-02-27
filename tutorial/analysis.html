@@ -1,0 +1,778 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Computing the characteristic roots &#8212; tdcpy 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorial/analysis';</script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Controller Design" href="controller_design.html" />
+    <link rel="prev" title="Creating TDS Objects" href="definitions.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.1" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="tdcpy 0.0.1 documentation - Home"/>
+    <img src="../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="tdcpy 0.0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="definitions.html">Creating TDS Objects</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Computing the characteristic roots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="controller_design.html">Controller Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Computing the characteristic roots</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="computing-the-characteristic-roots">
+<h1>Computing the characteristic roots<a class="headerlink" href="#computing-the-characteristic-roots" title="Link to this heading">#</a></h1>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#spectrum-of-a-retarded-system" id="id2">Spectrum of a retarded system</a></p></li>
+<li><p><a class="reference internal" href="#spectrum-of-a-neutral-system" id="id3">Spectrum of a neutral system</a></p></li>
+<li><p><a class="reference internal" href="#spectrum-of-a-ddae" id="id4">Spectrum of a DDAE</a></p></li>
+</ul>
+</nav>
+<p>Unlike ordinary differential equations, the spectrum of time-delay systems consists of infinitely many characteristic roots.
+To this end, <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a> provides tools for computing and plotting the characteristic roots.
+We distinguish between systems of retarded and neutral type and delay descriptor systems.</p>
+<section id="spectrum-of-a-retarded-system">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Spectrum of a retarded system</a><a class="headerlink" href="#spectrum-of-a-retarded-system" title="Link to this heading">#</a></h2>
+<p>The characteristic equation of the retarded time delay system defined by <a class="reference internal" href="definitions.html#equation-eq-rdde">(1)</a> can be written as</p>
+<div class="math notranslate nohighlight" id="equation-eq-retarded-spectrum">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eq-retarded-spectrum" title="Link to this equation">#</a></span>\[\det\left(\lambda I - A_0 - \sum_{i=1}^m A_i e^{-\lambda \tau_i}\right) = 0.\]</div>
+<p>Unlike ODEs, the characteristic function is a quasipolynomial, and therefore there exist infinitely
+many characteristic roots. However it is known that for retarded systems, there can exist only finitely many roots to a given half plane.</p>
+<p>In <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a> the function <a class="reference internal" href="../reference/tdcpy.roots.html#module-tdcpy.roots" title="tdcpy.roots"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.roots</span></code></a> can be used to compute the characteristic roots of the retarded system.
+The user specifies the region of the complex plane in which the roots are to be computed, either by specifying the real part, or alternately the rectangular region of the complex plane.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">rdde</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="n">real_part</span><span class="p">)</span>
+<span class="c1"># or alternately</span>
+<span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">rdde</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the first case <code class="xref py py-obj docutils literal notranslate"><span class="pre">real_part</span></code> specifies the real part of the complex plane to the right of which the roots are to be computed,
+whereas in the second case, <code class="xref py py-obj docutils literal notranslate"><span class="pre">region</span></code> is a list of the form <code class="xref py py-obj docutils literal notranslate"><span class="pre">[-10,</span> <span class="pre">2,</span> <span class="pre">-100,</span> <span class="pre">100]</span></code>, specifying the respective x- and y-limits of the rectangular region in the complex plane.
+The roots are returned in the variable <code class="xref py py-obj docutils literal notranslate"><span class="pre">roots</span></code> as a 1D array of complex numbers,
+and the variable <code class="xref py py-obj docutils literal notranslate"><span class="pre">info</span></code> contains additional information about the computation, such as the number of roots found, the number of iterations taken, and any warnings or errors encountered during the computation.</p>
+<p>Internally, <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a> first discretizes the system using a spectral method, which yields a finite-dimensional approximation of the system, and computes the eigenvalues of the resulting matrix pencil.
+This is followed by a correction step for improving the approximation.
+More details on the discretization can be found in the tutorial <span class="xref std std-doc">/auto_examples/tutorials/tutorial01_discretization1</span> and in the original article <span id="id1">[<a class="reference internal" href="references.html#id5" title="Zhen Wu and Wim Michiels. Reliably computing all characteristic roots of delay differential equations in a given right half plane using a spectral method. Journal of Computational and Applied Mathematics, 236(9):2499–2514, 2012.">Wu and Michiels, 2012</a>]</span>.</p>
+<div class="example admonition">
+<p class="admonition-title">Example: Roots of a retarded time-delay system</p>
+<p>The characteristic equation of the retarded system <code class="xref py py-obj docutils literal notranslate"><span class="pre">rdde</span></code> defined in <a class="reference internal" href="definitions.html"><span class="doc">Creating TDS Objects</span></a> reads as:</p>
+<div class="math notranslate nohighlight">
+\[\det\left(\lambda I - A_0 - A_1 e^{-\lambda h_1}\right) = 0.\]</div>
+<p>where <span class="math notranslate nohighlight">\(x(t)\)</span> is the state variable, <span class="math notranslate nohighlight">\(A_0\)</span> and <span class="math notranslate nohighlight">\(A_1\)</span> are constant matrices, and <span class="math notranslate nohighlight">\(h_1\)</span> is the delay.</p>
+<p>We can compute the characteristic roots of this system using the code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tdcpy</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">rdde</span><span class="p">,</span> <span class="n">r</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The variable <code class="xref py py-obj docutils literal notranslate"><span class="pre">roots</span></code> contains the characteristic roots as a 1D array of complex numbers, and the variable <code class="xref py py-obj docutils literal notranslate"><span class="pre">info</span></code> contains additional information about the computation, such as the number of discretization points, any warnings or errors encountered during the computation.
+Alternatively, we can specify the rectangular region of the complex plane in which the roots are to be computed as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tdcpy</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">rdde</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The roots can be visualized using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">eigen_plot</span></code> function from the <a class="reference internal" href="../reference/tdcpy.plot.html#module-tdcpy.plot.eigenvalues" title="tdcpy.plot.eigenvalues"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.plot.eigenvalues</span></code></a> module as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tds</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.plot.eigenvalues</span><span class="w"> </span><span class="kn">import</span> <span class="n">eigen_plot</span>
+
+<span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">delays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">])</span>
+<span class="n">rdde</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">RDDE</span><span class="p">(</span><span class="n">A</span> <span class="o">=</span> <span class="p">[</span><span class="n">A0</span><span class="p">,</span> <span class="n">A1</span><span class="p">],</span> <span class="n">hA</span><span class="o">=</span><span class="n">delays</span><span class="p">)</span>
+
+<span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">rdde</span><span class="p">,</span> <span class="n">r</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">eigen_plot</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Characteristic roots of the retarded system&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-center">
+<img alt="../_images/retarded_spectrum.png" class="plot-directive" src="../_images/retarded_spectrum.png" />
+</figure>
+<p>As can be seen from the plot, the system has infinitely many characteristic roots in the right half of <span class="math notranslate nohighlight">\(r=-10\)</span>.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For computation of characteristic roots using the low-level API, we can use <a class="reference internal" href="../reference/tdcpy.stability.html#tdcpy.stability.characteristic_roots.roots_ddae" title="tdcpy.stability.characteristic_roots.roots_ddae"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.stability.characteristic_roots.roots_ddae</span></code></a> as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tdcpy</span><span class="o">.</span><span class="n">stability</span><span class="o">.</span><span class="n">characteristic_roots</span><span class="o">.</span><span class="n">roots_ddae</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">hA</span><span class="p">,</span> <span class="n">r</span><span class="o">=-</span><span class="mf">10.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="xref py py-obj docutils literal notranslate"><span class="pre">E=I</span></code> for a retarded system, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">A</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">hA</span></code> are the matrices and delays of the respective delay-differential algebraic equation (DDAE) representation of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">rdde</span></code>.</p>
+</div>
+<p>More often, for evaluating the stability of a system, it is required to compute the spectral abscissa, which is defined as</p>
+<div class="math notranslate nohighlight" id="equation-eq-spectral-abscissa">
+<span class="eqno">(2)<a class="headerlink" href="#equation-eq-spectral-abscissa" title="Link to this equation">#</a></span>\[\alpha(\lambda;h_A) := \sup\{\Re(\lambda) : \det(\lambda I - A_0 - \sum_{k=1}^{m_A} A_k e^{-\lambda h_{A,k}}) = 0\}.\]</div>
+<p>for which the function <a class="reference internal" href="../reference/tdcpy.spectral_abscissa.html#module-tdcpy.spectral_abscissa" title="tdcpy.spectral_abscissa"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.spectral_abscissa</span></code></a> can be used as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">spectral_abscissa</span><span class="p">(</span><span class="n">rdde</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For the system to be stable, the spectral abscissa must be strictly negative, which is equivalent to all characteristic roots being in the left half plane.</p>
+<p>Finally, if the user wishes to incorporate the rightmost root computation within a subfunction, the low-level API <a class="reference internal" href="../reference/tdcpy.stability.html#tdcpy.stability.characteristic_roots.rightmost_root" title="tdcpy.stability.characteristic_roots.rightmost_root"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.stability.characteristic_roots.rightmost_root</span></code></a> can be called instead using:
+Often, the user may wish to perform root computations within a subfunction, for example
+within an optimization routine. In such cases, the low-level API <a class="reference internal" href="../reference/tdcpy.stability.html#tdcpy.stability.characteristic_roots.rightmost_root" title="tdcpy.stability.characteristic_roots.rightmost_root"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.stability.characteristic_roots.rightmost_root</span></code></a> comes in handy.
+The rightmost root <span class="math notranslate nohighlight">\(\lambda^*\)</span> and the related information can be obtained by calling the function as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stability.characteristic_roots</span><span class="w"> </span><span class="kn">import</span> <span class="n">rightmost_root</span>
+<span class="n">root_star</span><span class="p">,</span> <span class="n">root_info</span> <span class="o">=</span> <span class="n">rightmost_root</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">hA</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">real_part</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star</span></code> is the rightmost root found and <code class="xref py py-obj docutils literal notranslate"><span class="pre">root_info</span></code> is a tuple containing the following:</p>
+<ul class="simple">
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">M</span></code>: Characteristic matrix evaluated at <span class="math notranslate nohighlight">\(\lambda^*\)</span></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DM</span></code>: Derivative of the characteristic matrix with respect to <span class="math notranslate nohighlight">\(\lambda\)</span> evaluated at <span class="math notranslate nohighlight">\(\lambda^*\)</span></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">u</span></code>: Left eigenvector of the characteristic matrix corresponding to <span class="math notranslate nohighlight">\(\lambda^*\)</span></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">v</span></code>: Right eigenvector of the characteristic matrix corresponding to <span class="math notranslate nohighlight">\(\lambda^*\)</span></p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root_star_found</span></code>: Boolean indicating whether the rightmost root was found</p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cr_info.max_size_evp_enforced</span></code>: Maximum size of the eigenvalue problem enforced during computation.</p></li>
+</ul>
+<p>The above information is essential for computing the gradients of the spectral abscissa with respect to the system parameters, used
+extensively for gradient computation with respect to system parameters in stabilization routines.</p>
+<p><strong>Summary</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">roots</span></code></p></td>
+<td><p>Compute the characteristic roots of a retarded system</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">spectral_abscissa</span></code></p></td>
+<td><p>Compute the spectral abscissa of a retarded system</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">eigen_plot</span></code></p></td>
+<td><p>Plot the characteristic roots in the complex plane</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">roots_ddae</span></code></p></td>
+<td><p>Compute the characteristic roots using the low-level API</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">rightmost_root</span></code></p></td>
+<td><p>Compute the rightmost root using the low-level API</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="spectrum-of-a-neutral-system">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Spectrum of a neutral system</a><a class="headerlink" href="#spectrum-of-a-neutral-system" title="Link to this heading">#</a></h2>
+<p>The characteristic equation of a neutral time delay system defined by <a class="reference internal" href="definitions.html#equation-eq-ndde">(2)</a> can be written as</p>
+<div class="math notranslate nohighlight" id="equation-eq-neutral-spectrum">
+<span class="eqno">(3)<a class="headerlink" href="#equation-eq-neutral-spectrum" title="Link to this equation">#</a></span>\[\det\left(\lambda \left(I - \sum_{j=1}^{m_H} H_j e^{-\lambda h_{H_j}} \right) - A_0 - \sum_{i=1}^{m_A} A_i e^{-\lambda h_{A_i}} \right) = 0.\]</div>
+<p>Unlike retarded systems, neutral systems can have infinitely many characteristic roots in any right half plane,
+and the stability of the system is determined by the location of the roots of the associated delay-difference equation (ADDE) <a class="reference internal" href="definitions.html#equation-eq-adde">(3)</a>
+as well as the roots of the characteristic equation <a class="reference internal" href="#equation-eq-neutral-spectrum">(3)</a>.</p>
+<p>In case of neutral systems, the spectrum is extremely sensitive to inifinitesimal perturbations and therefore a small change in the delays
+can lead to a significant shift in the spectrum.
+The notion of strong stability therefore applies to neutral systems, which requires that
+the strong spectral abscissa of the associated ADDE is strictly negative in addition to the requirement of the spectral abscissa of the closed-loop being strictly negative.</p>
+<p>The strong spectral abscissa is defined as the supremum of the real part of the roots of the ADDE that is insensitive to small delay perturbations
+and can be computed using the function <code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.strong_spectral_abscissa</span></code> as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strong_alpha</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">strong_spectral_abscissa</span><span class="p">(</span><span class="n">rdde</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The below example demonstrates the computation of the spectral abscissa and the strong spectral abscissa for a neutral time-delay system.</p>
+<div class="example admonition">
+<p class="admonition-title">Example: Spectral abscissa and strong spectral abscissa of a neutral system</p>
+<p>Consider the neutral time-delay system described by:</p>
+<div class="math notranslate nohighlight">
+\[\dot{x}(t) - \frac{3}{4} x(t-1) + \frac{1}{2} x(t-2) = \frac{1}{4} x(t) + \frac{3}{4} x(t - 2)\]</div>
+<p>We can compute the spectral abscissa and the strong spectral abscissa of this system using the code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tds</span>
+<span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.25</span><span class="p">]])</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.75</span><span class="p">]])</span>
+<span class="n">hA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">2.</span><span class="p">])</span>
+<span class="n">H1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">0.75</span><span class="p">]])</span>
+<span class="n">H2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">]])</span>
+<span class="n">hH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span><span class="mf">2.</span><span class="p">])</span>
+<span class="n">ndde</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">NDDE</span><span class="p">(</span><span class="n">H</span> <span class="o">=</span> <span class="p">[</span><span class="n">H1</span><span class="p">,</span><span class="n">H2</span><span class="p">],</span> <span class="n">hH</span> <span class="o">=</span> <span class="n">hH</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="p">[</span><span class="n">A0</span><span class="p">,</span> <span class="n">A1</span><span class="p">],</span> <span class="n">hA</span><span class="o">=</span><span class="n">hA</span><span class="p">)</span>
+
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">spectral_abscissa</span><span class="p">(</span><span class="n">ndde</span><span class="p">)</span>
+<span class="n">CD</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">strong_spectral_abscissa</span><span class="p">(</span><span class="n">ndde</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, the spectral abscissa is equal to the strong spectral abscissa.
+To obtain the strong spectral abscissa of the associated ADDE, we can use the function <code class="xref py py-obj docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code> as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">diff</span> <span class="o">=</span> <span class="n">ndde</span><span class="o">.</span><span class="n">get_delay_difference_equation</span><span class="p">()</span>
+<span class="n">sa_diff</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">spectral_abscissa_diff</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The corresponding low-level API is <code class="xref py py-obj docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code> from the <a class="reference internal" href="../reference/tdcpy.stability.html#module-tdcpy.stability.spectral_abscissa" title="tdcpy.stability.spectral_abscissa"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy.stability.spectral_abscissa</span></code></a> module, which can be called using <code class="xref py py-obj docutils literal notranslate"><span class="pre">sa_diff,</span> <span class="pre">info</span> <span class="pre">=</span> <span class="pre">spectral_abscissa_diff(H,</span> <span class="pre">hH,</span> <span class="pre">r=-1.0)</span></code>.
+For the roots of the characteristic equation, we can use the function <code class="xref py py-obj docutils literal notranslate"><span class="pre">roots</span></code> similar to the retarded case.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.plot.eigenvalues</span><span class="w"> </span><span class="kn">import</span> <span class="n">eigen_plot</span>
+<span class="n">roots</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">roots</span><span class="p">(</span><span class="n">ndde</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span><span class="mi">500</span><span class="p">])</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">eigen_plot</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Characteristic roots of a neutral system&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-center">
+<img alt="../_images/neutral_spectrum.png" class="plot-directive" src="../_images/neutral_spectrum.png" />
+</figure>
+</div>
+<p><strong>Summary</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">get_delay_difference_equation</span></code></p></td>
+<td><p>Extract the delay-difference equation of a neutral system</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code></p></td>
+<td><p>Compute the spectral abscissa of the associated delay-difference equation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">rightmost_root</span></code></p></td>
+<td><p>Compute the rightmost root using the low-level API</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="spectrum-of-a-ddae">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Spectrum of a DDAE</a><a class="headerlink" href="#spectrum-of-a-ddae" title="Link to this heading">#</a></h2>
+<p>The characteristic equation of a DDAE defined by <a class="reference internal" href="definitions.html#equation-eq-ddae">(4)</a> reads as</p>
+<div class="math notranslate nohighlight" id="equation-eq-ddae-spectrum">
+<span class="eqno">(4)<a class="headerlink" href="#equation-eq-ddae-spectrum" title="Link to this equation">#</a></span>\[\det\left(\lambda E - A_0 - \sum_{i=1}^m A_i e^{-\lambda h_i}\right) = 0.\]</div>
+<p>Like for DDAEs, the spectrum consists of roots of the DDE as well as the roots of the ADDE if the system is neutral.
+At first, we check if the system is retarded or neutral using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_retarded</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">is_essentially_retarded</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="n">is_neutral</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">is_essentially_neutral</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The software internally extracts the delay-difference equation and checks if the delay-difference equation has dependency on the delays.
+If yes, then the system is deemed neutral, otherwise it is retarded.</p>
+<p>Since DDAEs encompass both retarded and neutral systems, the notion of strong stability and the related definitions also extend to DDAEs.
+The below example demonstrates the computation of the spectral abscissa and the strong spectral abscissa for a DDAE.</p>
+<div class="example admonition">
+<p class="admonition-title">Example: Spectral abscissa and strong spectral abscissa of a DDAE</p>
+<p>Consider the following delay descriptor system with two delays:</p>
+<div class="math notranslate nohighlight">
+\[E \dot{x}(t) = A_0 x(t) + A_1 x(t - 1) + A_2 x(t - 2)\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}E = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 0 \end{bmatrix}, \quad A_0 = \begin{bmatrix} 0.25 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}, \quad A_1 = \begin{bmatrix} 0.75 &amp; 0 \\ 0 &amp; -1.5 \end{bmatrix}, \quad A_2 = \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; 3 \end{bmatrix}.\end{split}\]</div>
+<p>We can create the respective DDAE object using the code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tds</span>
+
+<span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">hA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mf">2.</span><span class="p">])</span>
+<span class="n">ddae</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">DDAE</span><span class="p">(</span><span class="n">E</span><span class="o">=</span><span class="n">E</span><span class="p">,</span> <span class="n">A</span><span class="o">=</span><span class="p">[</span><span class="n">A0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">A2</span><span class="p">],</span> <span class="n">hA</span><span class="o">=</span><span class="n">hA</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let us check if the system is retarded or neutral</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">is_retarded</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">is_essentially_retarded</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+<span class="n">is_neutral</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">is_essentially_neutral</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can compute the spectral abscissa and the strong spectral abscissa of this system as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">spectral_abscissa</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+<span class="n">CD</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">strong_spectral_abscissa</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Summary</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">is_essentially_retarded</span></code></p></td>
+<td><p>Check if a DDAE is essentially retarded</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">is_essentially_neutral</span></code></p></td>
+<td><p>Check if a DDAE is essentially neutral</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">get_delay_difference_equation</span></code></p></td>
+<td><p>Extract the delay-difference equation of the DDAE</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">spectral_abscissa_diff</span></code></p></td>
+<td><p>Compute the spectral abscissa of the associated delay-difference equation</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="definitions.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Creating TDS Objects</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="controller_design.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Controller Design</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spectrum-of-a-retarded-system">Spectrum of a retarded system</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spectrum-of-a-neutral-system">Spectrum of a neutral system</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spectrum-of-a-ddae">Spectrum of a DDAE</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/analysis.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Adam Peichl.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,726 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Controller Design &#8212; tdcpy 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorial/controller_design';</script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="references.html" />
+    <link rel="prev" title="Computing the characteristic roots" href="analysis.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.1" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.svg" class="logo__image only-light" alt="tdcpy 0.0.1 documentation - Home"/>
+    <img src="../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="tdcpy 0.0.1 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../auto_examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../credits.html">
+    Credits
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="definitions.html">Creating TDS Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Computing the characteristic roots</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Controller Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User Guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Controller Design</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="controller-design">
+<h1>Controller Design<a class="headerlink" href="#controller-design" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a> can be used for designing the following classes of controllers for time-delay systems:</p>
+<ul class="simple">
+<li><p>Static feedback controllers</p></li>
+<li><p>Dynamic controllers</p></li>
+<li><p>Delayed feedback controllers</p></li>
+</ul>
+<p>The software natively supports the design of controllers for systems described by delay-differential algebraic equations (DDAEs) of the form</p>
+<div class="math notranslate nohighlight" id="equation-eq-plant">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eq-plant" title="Link to this equation">#</a></span>\[ \begin{align}\begin{aligned}E \dot{x}(t) = \sum_{i=0}^{m_A} A_i x(t - \tau_i) + \sum_{i=0}^{m_B} B_i u(t - \tau_i)\\y(t) = \sum_{i=0}^{m_C} C_i x(t - \tau_i) + \sum_{i=0}^{m_D} D_i u(t - \tau_i)\end{aligned}\end{align} \]</div>
+<p>where <span class="math notranslate nohighlight">\((A_i, B_i, C_i, D_i)\)</span> are the system matrices corresponding to their respective delays.
+Both retarded and neutral systems can be easily converted to DDAEs, which is why the above model is rather convenient.</p>
+<p>In <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a>, the controller, whether static, dynamic, or delayed, can generally be defined as a DDAE of the form:</p>
+<div class="math notranslate nohighlight" id="equation-eq-controller">
+<span class="eqno">(2)<a class="headerlink" href="#equation-eq-controller" title="Link to this equation">#</a></span>\[ \begin{align}\begin{aligned}\dot{x}_c(t) = \sum_{i=0}^{m_{A_c}} A_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{B_c}} B_{c_i} y(t - \tau_i)\\u(t) = \sum_{i=0}^{m_{C_c}} C_{c_i} x_c(t - \tau_i) + \sum_{i=0}^{m_{D_c}} D_{c_i} y(t - \tau_i)\end{aligned}\end{align} \]</div>
+<p>where <span class="math notranslate nohighlight">\(x_c(t) \in \mathbb{R}^{n_c}\)</span> is the controller state, <span class="math notranslate nohighlight">\(n_c\)</span> denoting the order of the controller, and <span class="math notranslate nohighlight">\(y(t)\)</span> is the system output.</p>
+<p>In the packed representation, the controller gain matrix can be viewed as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}K = \left[ \begin{array}{c | c}
+ A_C    &amp;   B_C \\
+ \hline
+ C_C    &amp;   D_C \\
+\end{array} \right]\end{split}\]</div>
+<p>The interconnection of the plant and the controller can be visualized in the following block diagram:</p>
+<blockquote>
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>                             ___________________
+                u1[-1]      |                   |  y1[-1]
+            ---------------&gt;|                   |----------------&gt;
+        u1[0],...,u1[nu-2]  |      SYSTEM       |  y1[0],...,y[ny-2]
+                     ------&gt;|                   |-------
+                    |       |___________________|       |
+                    |                                   |
+                    |        ___________________        |
+y2[0],...,y2[ny-2]  |       |                   |       | u2[0],...,u1[nu-2]
+                     -------|                   |&lt;------
+                y2[-1]      |    CONTROLLER     |  u2[-1]
+            &lt;---------------|                   |&lt;---------------
+                            |___________________|
+</pre></div>
+</div>
+</div></blockquote>
+<p>We distinguish between <code class="xref py py-obj docutils literal notranslate"><span class="pre">TDS-Control</span></code> and <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a> in how the inputs and outputs are defined.
+<a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a>, the user does not specifically differentiate between the matrices <span class="math notranslate nohighlight">\(C_1, C_2\)</span> corresponding to the control outputs <span class="math notranslate nohighlight">\(y(t)\)</span> (for feedback) and the system outputs <span class="math notranslate nohighlight">\(z(t)\)</span> separately,
+or between the matrices <span class="math notranslate nohighlight">\(B_1, B_2\)</span> corresponding to the respective control inputs <span class="math notranslate nohighlight">\(u(t)\)</span> (for actuation) and the exogenous inputs <span class="math notranslate nohighlight">\(w(t)\)</span>.
+Instead, the columns of the input matrix <span class="math notranslate nohighlight">\(B\)</span> are stacked horizontally to include both the control inputs and the exogenous inputs, with the user specifies
+the indices corresponding to the control inputs <code class="xref py py-obj docutils literal notranslate"><span class="pre">u_indices</span></code>. The remaining indices are automatically selected as <code class="xref py py-obj docutils literal notranslate"><span class="pre">w_indices</span></code>.
+The same case goes for the outputs, with <code class="xref py py-obj docutils literal notranslate"><span class="pre">y_indices</span></code> and the <code class="xref py py-obj docutils literal notranslate"><span class="pre">z_indices</span></code> the indices of the control outputs and performance outputs, respectively.
+We wish for the reader to keep the above picture in mind, as it shall be useful in the subsequent controller design.</p>
+<p>As a preliminary step to the controller design, the user defines the <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">DDAE</span>
+<span class="n">ddae</span> <span class="o">=</span> <span class="n">DDAE</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">hA</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">hB</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">hC</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">hD</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternately, if the system is defined as an <code class="xref py py-obj docutils literal notranslate"><span class="pre">NDDE</span></code>, the user simply converts the <code class="xref py py-obj docutils literal notranslate"><span class="pre">NDDE</span></code> to a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">to_ddae</span></code> method.</p>
+<section id="defining-a-controller-structure">
+<h2>Defining a controller structure<a class="headerlink" href="#defining-a-controller-structure" title="Link to this heading">#</a></h2>
+<p>For defining the controller, the user may proceed as follows:</p>
+<ol class="arabic simple">
+<li><p><strong>Static output feedback controller:</strong></p></li>
+</ol>
+<p>A controller with static output feedback is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[u(t) = K y(t)\]</div>
+<p>The simplest way to define such a controller structure is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nu</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>       <span class="c1"># dimensions (nu, ny, m_D+1)</span>
+</pre></div>
+</div>
+<p>Here, the controller is of order <span class="math notranslate nohighlight">\(n_c=0\)</span> with no feedback delays i.e. <code class="xref py py-obj docutils literal notranslate"><span class="pre">m_D=0</span></code>.
+Comparing with <a class="reference internal" href="#equation-eq-controller">(2)</a>, the matrices <span class="math notranslate nohighlight">\(A_{c_i}, B_{c_i}, C_{c_i}\)</span> are zero for all <span class="math notranslate nohighlight">\(i\)</span>,
+with <span class="math notranslate nohighlight">\(D_{c_0} = K\)</span>. The function <code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.ClosedLoop</span></code> is then used to interconnect the plant and the controller to form the closed-loop system.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClosedLoop</span>
+<span class="n">closed_loop</span> <span class="o">=</span> <span class="n">ClosedLoop</span><span class="p">(</span><span class="n">ddae</span><span class="p">,</span><span class="n">order</span><span class="p">,</span><span class="n">y_indices</span><span class="p">,</span><span class="n">u_indices</span><span class="p">,</span><span class="n">K</span><span class="p">)</span>
+</pre></div>
+</div>
+<details class="admonition note" open="open">
+<summary class="admonition-title">Note</summary>
+<p>A <strong>second</strong> approach to define a static output feedback controller is to use the <code class="xref py py-func docutils literal notranslate"><span class="pre">create_static_controller</span></code> function from the
+<a class="reference internal" href="../reference/tdcpy.controller.html#module-tdcpy.controller" title="tdcpy.controller"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tdcpy.controller</span></code></a> module. Using this method, the software creates the controller directly as a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> object. The syntax is as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_static_controller</span>
+<span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nu</span><span class="p">,</span> <span class="n">ny</span><span class="p">])</span>
+<span class="n">controller</span> <span class="o">=</span> <span class="n">create_static_controller</span><span class="p">(</span><span class="n">K</span><span class="o">=</span><span class="n">K</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the function returns a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> object with the fields <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.A</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.B</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.C</span></code> as zero matrices, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.D</span></code> containing the static gain <code class="xref py py-obj docutils literal notranslate"><span class="pre">K</span></code>.
+The interconnection of the plant and the controller is be performed using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">interconnect</span></code> function from the <a class="reference internal" href="../reference/tdcpy.controller.html#module-tdcpy.controller" title="tdcpy.controller"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tdcpy.controller</span></code></a> module:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">interconnect</span>
+<span class="n">closed_loop</span> <span class="o">=</span> <span class="n">interconnect</span><span class="p">(</span><span class="n">ddae</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="n">y_indices</span><span class="p">,</span> <span class="n">u_indices</span><span class="p">)</span>
+</pre></div>
+</div>
+</details>
+<ol class="arabic simple" start="2">
+<li><p><strong>Dynamic controller:</strong></p></li>
+</ol>
+<p>A dynamic controller of order <span class="math notranslate nohighlight">\(n_c &gt; 0\)</span> can be defined as follows</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\begin{split}\dot{x}_c(t) = A_c x_c(t) + B_c y(t) \\\end{split}\\u(t) = C_c x_c(t) + D_c y(t)\end{aligned}\end{align} \]</div>
+<p>Similar to the static case, once the matrices <span class="math notranslate nohighlight">\(A_c, B_c, C_c, D_c\)</span> are defined, the controller can be created using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_dynamic_controller</span>
+<span class="n">controller</span> <span class="o">=</span> <span class="n">create_dynamic_controller</span><span class="p">(</span><span class="n">Ac</span><span class="o">=</span><span class="n">Ac</span><span class="p">,</span> <span class="n">Bc</span><span class="o">=</span><span class="n">Bc</span><span class="p">,</span> <span class="n">Cc</span><span class="o">=</span><span class="n">Cc</span><span class="p">,</span> <span class="n">Dc</span><span class="o">=</span><span class="n">Dc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The function returns a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> object with the fields <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.A</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.B</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.C</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">controller.D</span></code> containing the respective matrices of the dynamic controller
+and the interconnection of the plant and the controller is be performed using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">interconnect</span></code> function.</p>
+<ol class="arabic simple" start="3">
+<li><p><strong>Delayed and dynamic feedback controller:</strong></p></li>
+</ol>
+<p>In a similar way, a delayed and dynamic feedback controller can be defined as per controller equation <a class="reference internal" href="#equation-eq-controller">(2)</a>.</p>
+<p>In <a class="reference internal" href="../reference/tdcpy.html#module-tdcpy" title="tdcpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tdcpy</span></code></a>, a neat way of creating such a controller structure for dynamic controllers is by using the function <code class="xref py py-obj docutils literal notranslate"><span class="pre">concatenatw_2x2_by_delays</span></code> from the <a class="reference internal" href="../reference/tdcpy.common.html#module-tdcpy.common.composition" title="tdcpy.common.composition"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tdcpy.common.composition</span></code></a> module.
+The function creates a DDAE representation of the controller matrices by concatenating the respective matrices <span class="math notranslate nohighlight">\(A_c, B_c, C_c, D_c\)</span> with the appropriate delays,
+and internally adding appropriate slack variables where necessary. This enables an equivalent controller representation in the form:</p>
+<div class="math notranslate nohighlight">
+\[\tilde{u}(t) = K \tilde{y}(t)\]</div>
+<p>with <span class="math notranslate nohighlight">\(K = \begin{bmatrix} A_c &amp; B_c \\\\ C_c &amp; D_c \end{bmatrix}\)</span>.</p>
+<p>The above structure is later used for creating the subsequent closed-loop using the <code class="xref py py-func docutils literal notranslate"><span class="pre">tdcpy.ClosedLoop</span></code> function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.closed_loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClosedLoop</span><span class="p">,</span> <span class="n">concatenate_2x2_by_delays</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_dynamic_controller</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">DDAE</span>
+
+<span class="n">Ac</span><span class="p">,</span> <span class="n">hAc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nAc</span><span class="p">)</span>
+<span class="n">Bc</span><span class="p">,</span> <span class="n">hBc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nc</span><span class="p">,</span> <span class="n">ny</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nBc</span><span class="p">)</span>
+<span class="n">Cc</span><span class="p">,</span> <span class="n">hCc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nu</span><span class="p">,</span> <span class="n">nc</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nCc</span><span class="p">)</span>
+<span class="n">Dc</span><span class="p">,</span> <span class="n">hDc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nu</span><span class="p">,</span> <span class="n">ny</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nDc</span><span class="p">)</span>
+
+<span class="n">cont</span> <span class="o">=</span> <span class="n">DDAE</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="n">Ac</span><span class="p">,</span>  <span class="n">B</span><span class="o">=</span><span class="n">Bc</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">Cc</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="n">Dc</span><span class="p">,</span> <span class="n">hA</span><span class="o">=</span><span class="n">hAc</span><span class="p">,</span> <span class="n">hB</span><span class="o">=</span><span class="n">hBc</span><span class="p">,</span> <span class="n">hC</span><span class="o">=</span><span class="n">hCc</span><span class="p">,</span> <span class="n">hD</span><span class="o">=</span><span class="n">hDc</span><span class="p">)</span>        <span class="c1"># create a dynamic controller as a DDAE object</span>
+<span class="n">E</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">hK</span> <span class="o">=</span> <span class="n">concatenate_2x2_by_delays</span><span class="p">(</span><span class="n">cont</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">hA</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">hB</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">hC</span><span class="p">,</span> <span class="n">cont</span><span class="o">.</span><span class="n">hD</span><span class="p">)</span>    <span class="c1"># concatenate the controller matrices into a single matrix K</span>
+<span class="n">closed_loop</span> <span class="o">=</span> <span class="n">ClosedLoop</span><span class="p">(</span><span class="n">ddae</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y1_indices</span><span class="p">,</span> <span class="n">u1_indices</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">hK</span><span class="p">)</span>           <span class="c1"># form the closed-loop</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-obj docutils literal notranslate"><span class="pre">cont</span></code> object is now a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DDAE</span></code> with the fields <code class="xref py py-obj docutils literal notranslate"><span class="pre">cont.A</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cont.B</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cont.C</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cont.D</span></code> containing the respective matrices of the dynamic controller.
+The argument <code class="xref py py-obj docutils literal notranslate"><span class="pre">nc=0</span></code> may seem redundant in this setting, since the controller has been defined already. However, it can be helpful when incorporated in high-level routines when the controller order is
+increased iteratively. An alternate way of forming the closed-loop is by using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">interconnect</span></code> function.</p>
+<p><strong>Summary</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">ClosedLoop</span></code></p></td>
+<td><p>Interconnect the plant and the controller to form the closed-loop system</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">create_static_controller</span></code></p></td>
+<td><p>Create a static output feedback controller as a DDAE object</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">interconnect</span></code></p></td>
+<td><p>Interconnect the plant and the controller to form the closed-loop system</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">create_dynamic_controller</span></code></p></td>
+<td><p>Design a stabilizing controller using the BFGS optimization method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">concatenate_2x2_by_delays</span></code></p></td>
+<td><p>Concatenate the controller matrices into a single matrix K</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In what follows, we will see how the above controller structures can be used for designing stabilizing controllers.</p>
+</section>
+<section id="design-of-a-stabilizing-controllers-for-a-retarded-time-delay-system">
+<h2>Design of a stabilizing controllers for a retarded time-delay system<a class="headerlink" href="#design-of-a-stabilizing-controllers-for-a-retarded-time-delay-system" title="Link to this heading">#</a></h2>
+<p>We consider the interconnection of a retarded time-delay system defined by:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\dot{x}(t) = A_0 x(t) + \sum_{i=1}^{m} A_i x(t - \tau_i) + B u(t)\\y(t) = C x(t)\end{aligned}\end{align} \]</div>
+<p>with a static output feedback controller of the form:</p>
+<div class="math notranslate nohighlight">
+\[u(t) = K y(t)\]</div>
+<p>The above interconnection yields a closed-loop defined as:</p>
+<div class="math notranslate nohighlight">
+\[\dot{x}(t) = A_0 x(t) + \sum_{i=1}^{m} A_i x(t - \tau_i) + B K C x(t)\]</div>
+<p>The characteristic equation of the closed-loop system reads as:</p>
+<div class="math notranslate nohighlight">
+\[\det(\lambda I - A_0 - \sum_{i=1}^{m} A_i e^{-\lambda \tau_i} - B K C) = 0\]</div>
+<p>and its spectral abscissa:</p>
+<div class="math notranslate nohighlight">
+\[\alpha = \sup \{ \text{Re}(\lambda) : \det(\lambda I - A_0 - \sum_{i=1}^{m} A_i e^{-\lambda \tau_i} - B K C) = 0 \}\]</div>
+<p>For the above system to be stable, we require that <span class="math notranslate nohighlight">\(\alpha &lt; 0\)</span>.
+The stabilization objective is therefore to find controller parameters <span class="math notranslate nohighlight">\(K\)</span> such that the spectral abscissa of the closed-loop system is negative.</p>
+<p>For desiging a stabilizing controller, we used the <code class="xref py py-obj docutils literal notranslate"><span class="pre">design_bfgs</span></code> function from the <a class="reference internal" href="../reference/tdcpy.stabopt.html#module-tdcpy.stabopt" title="tdcpy.stabopt"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tdcpy.stabopt</span></code></a> module, which utilizes the <code class="xref py py-obj docutils literal notranslate"><span class="pre">L-BFGS</span></code> solver from the <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.html#module-scipy.optimize" title="(in SciPy v1.17.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize</span></code></a> library.
+The below example demonstrates the design of a stabilizing controller for a retarded time-delay system.</p>
+<p><strong>Summary</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">design_bfgs</span></code></p></td>
+<td><p>Low-level function for stabilization of retarded systems</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">func_sa</span></code></p></td>
+<td><p>Function to compute the objective function and the gradient of the spectral abscissa with respect to the controller parameters</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-func docutils literal notranslate"><span class="pre">minimize_spectral_abscissa</span></code></p></td>
+<td><p>High-level API for designing a stabilizing controller</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="example admonition">
+<p class="admonition-title">Example: Design of a stabilizing controller for a retarded time-delay system</p>
+<p>We consider the retarded system defined by the system matrices:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.stabopt.controller_bfgs</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize_spectral_abscissa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tdcpy.ddae</span><span class="w"> </span><span class="kn">import</span> <span class="n">DDAE</span>
+<span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="p">]])</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">A0</span><span class="p">,</span> <span class="n">A1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">hA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+<span class="n">Bu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.1</span><span class="p">],[</span><span class="o">-</span><span class="mf">0.2</span><span class="p">]</span>    <span class="p">])</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">Bu</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">hB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">])</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">C</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">hC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>    <span class="c1"># must be defined, otherwise error!</span>
+<span class="n">hD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">])</span>
+<span class="n">ddae</span> <span class="o">=</span> <span class="n">DDAE</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="n">A</span><span class="p">,</span><span class="n">hA</span><span class="o">=</span><span class="n">hA</span><span class="p">,</span><span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span><span class="n">hB</span><span class="o">=</span><span class="n">hB</span><span class="p">,</span><span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span><span class="n">hC</span><span class="o">=</span><span class="n">hC</span><span class="p">,</span><span class="n">D</span><span class="o">=</span><span class="n">D</span><span class="p">,</span><span class="n">hD</span><span class="o">=</span><span class="n">hD</span><span class="p">)</span>
+
+<span class="n">sa</span> <span class="o">=</span> <span class="n">tds</span><span class="o">.</span><span class="n">spectral_abscissa</span><span class="p">(</span><span class="n">ddae</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spectral abscissa of the open-loop system: </span><span class="si">{</span><span class="n">sa</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">sol</span> <span class="o">=</span> <span class="n">minimize_spectral_abscissa</span><span class="p">(</span><span class="n">ddae</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;disp&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;barrier&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimal controller parameters: </span><span class="si">{</span><span class="n">sol</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">, objective function value: </span><span class="si">{</span><span class="n">sol</span><span class="o">.</span><span class="n">fun</span><span class="si">}</span><span class="s2">, success: </span><span class="si">{</span><span class="n">sol</span><span class="o">.</span><span class="n">success</span><span class="si">}</span><span class="s2">, message: </span><span class="si">{</span><span class="n">sol</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The function <code class="xref py py-obj docutils literal notranslate"><span class="pre">minimize_spectral_abscissa</span></code> returns an optimization result <code class="xref py py-obj docutils literal notranslate"><span class="pre">sol</span></code> which is a tuple containing the result from the optimization.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="analysis.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Computing the characteristic roots</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="references.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">References</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-a-controller-structure">Defining a controller structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#design-of-a-stabilizing-controllers-for-a-retarded-time-delay-system">Design of a stabilizing controllers for a retarded time-delay system</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/controller_design.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Adam Peichl.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

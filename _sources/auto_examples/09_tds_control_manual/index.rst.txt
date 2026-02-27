@@ -1,0 +1,82 @@
+
+
+.. _sphx_glr_auto_examples_09_tds_control_manual:
+
+.. _tds_control_manual_examples:
+
+Examples from tds-control manual
+================================
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We consider the following retarded delay differential equation (RDDE) from verheyden2008efficient Section 6.1:">
+
+.. only:: html
+
+  .. image:: /auto_examples/09_tds_control_manual/images/thumb/sphx_glr_example_2_01_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/09_tds_control_manual/example_2_01`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example 2.1 - Stability analysis of retarded DDE</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Example 2.6 from appeltans2023analysis Section 2.3.2 demonstrates that the exponential stability of neutral systems might be fragile with respect to small delay perturbations.">
+
+.. only:: html
+
+  .. image:: /auto_examples/09_tds_control_manual/images/thumb/sphx_glr_example_2_06_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/09_tds_control_manual/example_2_06`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example 2.6 - Stability analysis of neutral DDE with multiple delays</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We will follow example 2.12 from appeltans2023analysis Section 2.6.2. In there, for given plant and controller">
+
+.. only:: html
+
+  .. image:: /auto_examples/09_tds_control_manual/images/thumb/sphx_glr_example_2_12_thumb.png
+    :alt:
+
+  :doc:`/auto_examples/09_tds_control_manual/example_2_12`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example 2.12 - Stability analysis of a Smith predictor with delay mismatch</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/09_tds_control_manual/example_2_01
+   /auto_examples/09_tds_control_manual/example_2_06
+   /auto_examples/09_tds_control_manual/example_2_12
+
