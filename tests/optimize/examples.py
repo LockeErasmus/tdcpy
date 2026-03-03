@@ -1,3 +1,6 @@
+"""
+Notorious examples of functions I can use for testing quazi-newton algorithms.
+"""
 
 import numpy as np
 
@@ -66,8 +69,6 @@ def powell_singular(x, n):
         dfx[k+3] += -10*t2 - 40*t4**3
 
     return fx, dfx
-
-import numpy as np
 
 def abs_rosenbrock_nd(x, n, a=1, b=100):
     x = np.asarray(x, dtype=float)
