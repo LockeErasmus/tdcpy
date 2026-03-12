@@ -5,6 +5,144 @@ import numpy.typing as npt
 from numpy.linalg import norm
 from scipy.optimize import OptimizeResult
 
+
+class BFGSInverse:
+    """ Dense BFGS update class """
+    def __init__(self, n, scale=1.0):
+        self.n = n
+        self.I = np.eye(n)
+        self.B = scale * self.I
+        
+    def apply(self, V: npt.NDArray):
+        """ Apply B (approximation of hessian inverse H^{-1})"""
+        V = np.asarray(V)
+        return self.B @ V
+    
+    def update(self, s: npt.NDArray, y: npt.NDArray, tol: float=1e-12):
+        """ Dense update """
+        s = s.flatten()
+        y = y.flatten()
+
+        ys = y @ s
+    
+        if ys <= tol:
+            return
+        
+        s_col = s.reshape(-1, 1)
+        y_col = y.reshape(-1, 1)
+
+        rho = 1.0 / ys
+        Vmat = self.I - rho * s_col @ y_col.T
+        self.B = Vmat @ self.B @ Vmat.T + rho * s_col @ s_col.T
+
+class LBFGSInverse:
+    """ Limited memory version of BFGSInverse """
+
+class BFGSInverse:
+    """
+    Hybrid BFGS inverse:
+    - Dense mode (memory=None)
+    - L-BFGS mode (memory=m)
+    """
+
+    def __init__(self, n, scale=1.0, memory: int|None=None):
+        self.n = n
+        self.memory = memory
+
+        if memory is None:
+            # Dense mode
+            self.B = scale * np.eye(n)
+        else:
+            # L-BFGS mode
+            self.s_list = []
+            self.y_list = []
+            self.rho_list = []
+            self.gamma = scale
+
+    # ==========================
+    # Apply H^{-1}
+    # ==========================
+
+    def apply(self, V):
+        V = np.asarray(V)
+
+        if self.memory is None:
+            return self.B @ V
+
+        # L-BFGS two-loop recursion
+        if V.ndim == 1:
+            return self._two_loop(V)
+        elif V.ndim == 2:
+            return np.column_stack([self._two_loop(V[:, i])
+                                    for i in range(V.shape[1])])
+        else:
+            raise ValueError("Input must be vector or 2D matrix.")
+
+    def _two_loop(self, q):
+        q = q.copy()
+        alpha = []
+
+        # First loop
+        for s, y, rho in reversed(list(zip(
+                self.s_list, self.y_list, self.rho_list))):
+            a = rho * (s @ q)
+            alpha.append(a)
+            q -= a * y
+
+        # Initial scaling
+        r = self.gamma * q
+
+        # Second loop
+        for s, y, rho, a in zip(
+                self.s_list, self.y_list,
+                self.rho_list, reversed(alpha)):
+            b = rho * (y @ r)
+            r += s * (a - b)
+
+        return r
+
+    # ==========================
+    # Update
+    # ==========================
+
+    def update(self, s, y, damping=True):
+
+        s = s.flatten()
+        y = y.flatten()
+
+        ys = y @ s
+        if ys <= 1e-12:
+            return
+
+        if self.memory is None:
+            # Dense update
+            s_col = s.reshape(-1, 1)
+            y_col = y.reshape(-1, 1)
+
+            rho = 1.0 / ys
+            I = np.eye(self.n)
+            Vmat = I - rho * s_col @ y_col.T
+            self.B = Vmat @ self.B @ Vmat.T + rho * s_col @ s_col.T
+
+        else:
+            # L-BFGS update
+            rho = 1.0 / ys
+
+            if len(self.s_list) == self.memory:
+                self.s_list.pop(0)
+                self.y_list.pop(0)
+                self.rho_list.pop(0)
+
+            self.s_list.append(s)
+            self.y_list.append(y)
+            self.rho_list.append(rho)
+
+            # Update scaling
+            self.gamma = ys / (y @ y)
+
+
+
+
 def _weak_wolfe_line_search(fg: Callable, x: npt.NDArray, p, f0, g0, c1=1e-4, c2=0.1, alpha0=1.0,
                             max_iter=40):
 
