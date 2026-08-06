@@ -71,6 +71,10 @@ def zeros(tds: RDDE | NDDE | DDAE, r: list, input_index: int=0, output_index: in
     # compress - TODO consider as kwarg? or always do compression?
     compressed_A, compressed_hA = compress_matrices_delays(A, hA)
 
+    print(E, compressed_hA)
+    for i in range(len(compressed_hA)):
+        print(compressed_A[:, :, i])
+        
     # roots of new DDAE (E, A, hA) <=> transmission zeros
     cr, cr_info = roots_ddae(E, compressed_A, compressed_hA, r=r, **kwargs)
 

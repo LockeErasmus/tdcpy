@@ -5,7 +5,6 @@ import numpy.typing as npt
 from numpy.linalg import norm
 from scipy.optimize import OptimizeResult
 
-
 class BFGSInverse:
     """ Dense BFGS update class """
     def __init__(self, n, scale=1.0):
